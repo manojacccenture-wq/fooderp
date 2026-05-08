@@ -1,0 +1,60 @@
+@layer semantic {
+  :root {
+    /* ============================================
+       BACKGROUND COLORS
+       ============================================ */
+    --color-bg-primary: var(--color-neutral-0);
+    --color-bg-secondary: var(--color-neutral-100);
+    --color-bg-tertiary: var(--color-neutral-150);
+    --color-bg-inverse: var(--color-neutral-900);
+
+    /* ============================================
+       TEXT COLORS
+       ============================================ */
+    --color-text-primary: var(--color-neutral-900);
+    --color-text-secondary: var(--color-neutral-600);
+    --color-text-tertiary: var(--color-neutral-500);
+    --color-text-inverse: var(--color-neutral-0);
+    --color-text-muted: var(--color-neutral-400);
+
+    /* ============================================
+       INTERACTIVE COLORS
+       ============================================ */
+    --color-interactive-primary: var(--color-primary-3);
+    --color-interactive-secondary: var(--color-secondary-0);
+    --color-interactive-tertiary: var(--color-tertiary-1);
+    --color-interactive-hover: var(--color-primary-1);
+    --color-interactive-active: var(--color-primary-2);
+
+    /* ============================================
+       STATE COLORS
+       ============================================ */
+    --color-success: var(--color-success-500);
+    --color-success-light: var(--color-success-200);
+    --color-warning: var(--color-secondary-0);
+    --color-warning-light: var(--color-secondary-5);
+    --color-error: var(--color-danger-500);
+    --color-error-light: var(--color-danger-200);
+    --color-info: var(--color-primary-3);
+
+    /* ============================================
+       BORDER COLORS
+       ============================================ */
+    --color-border-default: var(--color-neutral-200);
+    --color-border-light: var(--color-neutral-150);
+    --color-border-dark: var(--color-neutral-300);
+
+    /* ============================================
+       COMPONENT BACKGROUNDS
+       ============================================ */
+    --color-surface-default: var(--color-neutral-0);
+    --color-surface-subtle: var(--color-neutral-100);
+    --color-surface-emphasis: var(--color-neutral-200);
+
+    /* ============================================
+       OVERLAY/MODAL
+       ============================================ */
+    --color-overlay: rgba(33, 33, 52, 0.5);
+    --color-overlay-dark: rgba(33, 33, 52, 0.7);
+  }
+}

@@ -1,0 +1,40 @@
+@layer semantic {
+  :root {
+    /* ============================================
+       SPACING SEMANTICS
+       ============================================ */
+    --spacing-section: var(--spacing-2xl);
+    --spacing-component: var(--spacing-lg);
+    --spacing-element: var(--spacing-md);
+    --spacing-compact: var(--spacing-xs);
+    --spacing-inset: var(--spacing-md);
+    --spacing-inset-lg: var(--spacing-lg);
+
+    /* ============================================
+       RADIUS SEMANTICS
+       ============================================ */
+    --radius-default: var(--radius-lg);
+    --radius-button: var(--radius-md);
+    --radius-card: var(--radius-lg);
+    --radius-input: var(--radius-md);
+    --radius-small: var(--radius-sm);
+
+    /* ============================================
+       SHADOW SEMANTICS
+       ============================================ */
+    --shadow-card-default: var(--shadow-card);
+    --shadow-card-hover: var(--shadow-hover);
+    --shadow-dropdown: var(--shadow-lg);
+    --shadow-modal: var(--shadow-2xl);
+
+    /* ============================================
+       Z-INDEX SCALE
+       ============================================ */
+    --z-base: 0;
+    --z-elevated: 10;
+    --z-floating: 20;
+    --z-modal: 100;
+    --z-tooltip: 110;
+    --z-notification: 120;
+  }
+}

@@ -1,0 +1,94 @@
+@layer tokens {
+  :root {
+    /* ============================================
+       FONT FAMILIES
+       ============================================ */
+    --font-family-primary: 'Mulish', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-family-secondary: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* ============================================
+       FONT WEIGHTS
+       ============================================ */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+
+    /* ============================================
+       FONT SIZES - HEADINGS
+       ============================================ */
+    --font-size-h1: 26px;
+    --font-size-h2: 22px;
+    --font-size-h3: 22px;
+    --font-size-h4: 18px;
+    --font-size-h5: 16px;
+    --font-size-h6: 16px;
+
+    /* ============================================
+       FONT SIZES - BODY & TEXT
+       ============================================ */
+    --font-size-body-lg: 16px;
+    --font-size-body-md: 14px;
+    --font-size-caption-lg: 15px;
+    --font-size-caption-md: 14px;
+    --font-size-caption-sm: 12px;
+    --font-size-subtitle-lg: 18px;
+    --font-size-subtitle-md: 16px;
+    --font-size-subtitle-sm: 14px;
+
+    /* ============================================
+       FONT SIZES - UI ELEMENTS
+       ============================================ */
+    --font-size-button-sm: 14px;
+    --font-size-button-md: 16px;
+    --font-size-label: 14px;
+    --font-size-label-sm: 12px;
+    --font-size-label-xs: 13px;
+    --font-size-price-sm: 14px;
+    --font-size-price-md: 16px;
+    --font-size-price-lg: 24px;
+
+    /* ============================================
+       LINE HEIGHTS
+       ============================================ */
+    --line-height-heading-1: 36px;
+    --line-height-heading-2: 30px;
+    --line-height-heading-3: 30px;
+    --line-height-heading-4: 22px;
+    --line-height-heading-5: 22px;
+    --line-height-heading-6: 22px;
+
+    --line-height-subtitle-lg: 28px;
+    --line-height-subtitle-md: 26px;
+    --line-height-subtitle-sm: 22px;
+
+    --line-height-body-lg: 28px;
+    --line-height-body-md: 24px;
+
+    --line-height-caption-lg: 24px;
+    --line-height-caption-md: 20px;
+    --line-height-caption-sm: 22px;
+
+    --line-height-button-sm: 22px;
+    --line-height-button-md: 22px;
+
+    --line-height-price-sm: 20px;
+    --line-height-price-md: 20px;
+    --line-height-price-lg: 20px;
+
+    --line-height-label: 22px;
+    --line-height-label-sm: 14px;
+    --line-height-label-xs: 18px;
+    --line-height-label-placeholder: 18px;
+
+    /* ============================================
+       LETTER SPACING
+       ============================================ */
+    --letter-spacing-heading-1: -0.5px;
+    --letter-spacing-heading-2: -0.5px;
+    --letter-spacing-heading-tight: -0.5px;
+    --letter-spacing-normal: 0px;
+  }
+}
+

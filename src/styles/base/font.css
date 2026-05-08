@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@500&family=Mulish:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  html,
+  body {
+    font-family: var(--font-family-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  /* ============================================
+     FORM ELEMENTS
+     ============================================ */
+  input,
+  textarea,
+  select,
+  button {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-base);
+  }
+
+  /* ============================================
+     LINKS
+     ============================================ */
+  a {
+    color: var(--color-interactive-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--color-interactive-hover);
+  }
+
+  a:active {
+    color: var(--color-interactive-active);
+  }
+}

@@ -1,0 +1,359 @@
+@layer base {
+  /* ============================================
+     AUTOMATIC TYPOGRAPHY FOR NATIVE TAGS
+     ============================================ */
+
+  /* H1 - Uses Heading 1 (DM Sans) */
+  h1 {
+    font-family: var(--text-heading-1-family);
+    font-size: var(--text-heading-1-size);
+    font-weight: var(--text-heading-1-weight);
+    line-height: var(--text-heading-1-line-height);
+    letter-spacing: var(--text-heading-1-letter-spacing);
+    margin: 0;
+  }
+
+  /* H2 - Uses Heading 2 (DM Sans) */
+  h2 {
+    font-family: var(--text-heading-2-family);
+    font-size: var(--text-heading-2-size);
+    font-weight: var(--text-heading-2-weight);
+    line-height: var(--text-heading-2-line-height);
+    letter-spacing: var(--text-heading-2-letter-spacing);
+    margin: 0;
+  }
+
+  /* H3 - Uses Heading 3 (Mulish) */
+  h3 {
+    font-family: var(--text-heading-3-family);
+    font-size: var(--text-heading-3-size);
+    font-weight: var(--text-heading-3-weight);
+    line-height: var(--text-heading-3-line-height);
+    letter-spacing: var(--text-heading-3-letter-spacing);
+    margin: 0;
+  }
+
+  /* H4 - Uses Heading 4 (Mulish) */
+  h4 {
+    font-family: var(--text-heading-4-family);
+    font-size: var(--text-heading-4-size);
+    font-weight: var(--text-heading-4-weight);
+    line-height: var(--text-heading-4-line-height);
+    letter-spacing: var(--text-heading-4-letter-spacing);
+    margin: 0;
+  }
+
+  /* H5 - Uses Heading 5 (Mulish) */
+  h5 {
+    font-family: var(--text-heading-5-family);
+    font-size: var(--text-heading-5-size);
+    font-weight: var(--text-heading-5-weight);
+    line-height: var(--text-heading-5-line-height);
+    letter-spacing: var(--text-heading-5-letter-spacing);
+    margin: 0;
+  }
+
+  /* H6 - Uses Heading 6 (Mulish) */
+  h6 {
+    font-family: var(--text-heading-6-family);
+    font-size: var(--text-heading-6-size);
+    font-weight: var(--text-heading-6-weight);
+    line-height: var(--text-heading-6-line-height);
+    letter-spacing: var(--text-heading-6-letter-spacing);
+    margin: 0;
+  }
+
+  /* P - Uses Body 1 (Mulish) */
+  p {
+    font-family: var(--text-body-1-family);
+    font-size: var(--text-body-1-size);
+    font-weight: var(--text-body-1-weight);
+    line-height: var(--text-body-1-line-height);
+    letter-spacing: var(--text-body-1-letter-spacing);
+    margin: 0;
+  }
+
+  /* SMALL - Uses Caption 3 (Mulish) */
+  small {
+    font-family: var(--text-caption-3-family);
+    font-size: var(--text-caption-3-size);
+    font-weight: var(--text-caption-3-weight);
+    line-height: var(--text-caption-3-line-height);
+    letter-spacing: var(--text-caption-3-letter-spacing);
+  }
+
+  /* STRONG/B - Maintains body weight but bold */
+  strong,
+  b {
+    font-weight: var(--font-weight-bold);
+  }
+
+  /* EM/I - Maintains font but italic (if available) */
+  em,
+  i {
+    font-style: italic;
+  }
+
+  /* LABEL - Uses Label Default */
+  label {
+    font-family: var(--text-label-default-family);
+    font-size: var(--text-label-default-size);
+    font-weight: var(--text-label-default-weight);
+    line-height: var(--text-label-default-line-height);
+    letter-spacing: var(--text-label-default-letter-spacing);
+    display: block;
+  }
+
+  /* BUTTON - Uses Button Medium */
+  button {
+    font-family: var(--text-button-md-family);
+    font-size: var(--text-button-md-size);
+    font-weight: var(--text-button-md-weight);
+    line-height: var(--text-button-md-line-height);
+    letter-spacing: var(--text-button-md-letter-spacing);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* INPUT - Uses Label Default */
+  input,
+  textarea,
+  select {
+    font-family: var(--text-label-default-family);
+    font-size: var(--text-label-default-size);
+    font-weight: var(--text-label-default-weight);
+    line-height: var(--text-label-default-line-height);
+    letter-spacing: var(--text-label-default-letter-spacing);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    font-weight: var(--text-label-placeholder-weight);
+  }
+
+  /* ============================================
+     SEMANTIC TYPOGRAPHY UTILITY CLASSES
+     ============================================ */
+
+  /* Heading Classes */
+  .text-heading-1 {
+    font-family: var(--text-heading-1-family);
+    font-size: var(--text-heading-1-size);
+    font-weight: var(--text-heading-1-weight);
+    line-height: var(--text-heading-1-line-height);
+    letter-spacing: var(--text-heading-1-letter-spacing);
+  }
+
+  .text-heading-2 {
+    font-family: var(--text-heading-2-family);
+    font-size: var(--text-heading-2-size);
+    font-weight: var(--text-heading-2-weight);
+    line-height: var(--text-heading-2-line-height);
+    letter-spacing: var(--text-heading-2-letter-spacing);
+  }
+
+  .text-heading-3 {
+    font-family: var(--text-heading-3-family);
+    font-size: var(--text-heading-3-size);
+    font-weight: var(--text-heading-3-weight);
+    line-height: var(--text-heading-3-line-height);
+    letter-spacing: var(--text-heading-3-letter-spacing);
+  }
+
+  .text-heading-4 {
+    font-family: var(--text-heading-4-family);
+    font-size: var(--text-heading-4-size);
+    font-weight: var(--text-heading-4-weight);
+    line-height: var(--text-heading-4-line-height);
+    letter-spacing: var(--text-heading-4-letter-spacing);
+  }
+
+  .text-heading-5 {
+    font-family: var(--text-heading-5-family);
+    font-size: var(--text-heading-5-size);
+    font-weight: var(--text-heading-5-weight);
+    line-height: var(--text-heading-5-line-height);
+    letter-spacing: var(--text-heading-5-letter-spacing);
+  }
+
+  .text-heading-6 {
+    font-family: var(--text-heading-6-family);
+    font-size: var(--text-heading-6-size);
+    font-weight: var(--text-heading-6-weight);
+    line-height: var(--text-heading-6-line-height);
+    letter-spacing: var(--text-heading-6-letter-spacing);
+  }
+
+  /* Subtitle Classes */
+  .text-subtitle-1 {
+    font-family: var(--text-subtitle-1-family);
+    font-size: var(--text-subtitle-1-size);
+    font-weight: var(--text-subtitle-1-weight);
+    line-height: var(--text-subtitle-1-line-height);
+    letter-spacing: var(--text-subtitle-1-letter-spacing);
+  }
+
+  .text-subtitle-2 {
+    font-family: var(--text-subtitle-2-family);
+    font-size: var(--text-subtitle-2-size);
+    font-weight: var(--text-subtitle-2-weight);
+    line-height: var(--text-subtitle-2-line-height);
+    letter-spacing: var(--text-subtitle-2-letter-spacing);
+  }
+
+  .text-subtitle-3 {
+    font-family: var(--text-subtitle-3-family);
+    font-size: var(--text-subtitle-3-size);
+    font-weight: var(--text-subtitle-3-weight);
+    line-height: var(--text-subtitle-3-line-height);
+    letter-spacing: var(--text-subtitle-3-letter-spacing);
+  }
+
+  /* Body Classes */
+  .text-body-1 {
+    font-family: var(--text-body-1-family);
+    font-size: var(--text-body-1-size);
+    font-weight: var(--text-body-1-weight);
+    line-height: var(--text-body-1-line-height);
+    letter-spacing: var(--text-body-1-letter-spacing);
+  }
+
+  .text-body-2 {
+    font-family: var(--text-body-2-family);
+    font-size: var(--text-body-2-size);
+    font-weight: var(--text-body-2-weight);
+    line-height: var(--text-body-2-line-height);
+    letter-spacing: var(--text-body-2-letter-spacing);
+  }
+
+  /* Caption Classes */
+  .text-caption-1 {
+    font-family: var(--text-caption-1-family);
+    font-size: var(--text-caption-1-size);
+    font-weight: var(--text-caption-1-weight);
+    line-height: var(--text-caption-1-line-height);
+    letter-spacing: var(--text-caption-1-letter-spacing);
+  }
+
+  .text-caption-2 {
+    font-family: var(--text-caption-2-family);
+    font-size: var(--text-caption-2-size);
+    font-weight: var(--text-caption-2-weight);
+    line-height: var(--text-caption-2-line-height);
+    letter-spacing: var(--text-caption-2-letter-spacing);
+  }
+
+  .text-caption-3 {
+    font-family: var(--text-caption-3-family);
+    font-size: var(--text-caption-3-size);
+    font-weight: var(--text-caption-3-weight);
+    line-height: var(--text-caption-3-line-height);
+    letter-spacing: var(--text-caption-3-letter-spacing);
+  }
+
+  /* Button Classes */
+  .text-button-sm {
+    font-family: var(--text-button-sm-family);
+    font-size: var(--text-button-sm-size);
+    font-weight: var(--text-button-sm-weight);
+    line-height: var(--text-button-sm-line-height);
+    letter-spacing: var(--text-button-sm-letter-spacing);
+  }
+
+  .text-button-md {
+    font-family: var(--text-button-md-family);
+    font-size: var(--text-button-md-size);
+    font-weight: var(--text-button-md-weight);
+    line-height: var(--text-button-md-line-height);
+    letter-spacing: var(--text-button-md-letter-spacing);
+  }
+
+  .text-button-md-extrabold {
+    font-family: var(--text-button-md-extrabold-family);
+    font-size: var(--text-button-md-extrabold-size);
+    font-weight: var(--text-button-md-extrabold-weight);
+    line-height: var(--text-button-md-extrabold-line-height);
+    letter-spacing: var(--text-button-md-extrabold-letter-spacing);
+  }
+
+  /* Price Classes */
+  .text-price-sm {
+    font-family: var(--text-price-sm-family);
+    font-size: var(--text-price-sm-size);
+    font-weight: var(--text-price-sm-weight);
+    line-height: var(--text-price-sm-line-height);
+    letter-spacing: var(--text-price-sm-letter-spacing);
+  }
+
+  .text-price-md {
+    font-family: var(--text-price-md-family);
+    font-size: var(--text-price-md-size);
+    font-weight: var(--text-price-md-weight);
+    line-height: var(--text-price-md-line-height);
+    letter-spacing: var(--text-price-md-letter-spacing);
+  }
+
+  .text-price-lg {
+    font-family: var(--text-price-lg-family);
+    font-size: var(--text-price-lg-size);
+    font-weight: var(--text-price-lg-weight);
+    line-height: var(--text-price-lg-line-height);
+    letter-spacing: var(--text-price-lg-letter-spacing);
+  }
+
+  /* Label Classes */
+  .text-label-default {
+    font-family: var(--text-label-default-family);
+    font-size: var(--text-label-default-size);
+    font-weight: var(--text-label-default-weight);
+    line-height: var(--text-label-default-line-height);
+    letter-spacing: var(--text-label-default-letter-spacing);
+  }
+
+  .text-label-active {
+    font-family: var(--text-label-active-family);
+    font-size: var(--text-label-active-size);
+    font-weight: var(--text-label-active-weight);
+    line-height: var(--text-label-active-line-height);
+    letter-spacing: var(--text-label-active-letter-spacing);
+  }
+
+  .text-label-external {
+    font-family: var(--text-label-external-family);
+    font-size: var(--text-label-external-size);
+    font-weight: var(--text-label-external-weight);
+    line-height: var(--text-label-external-line-height);
+    letter-spacing: var(--text-label-external-letter-spacing);
+  }
+
+  .text-label-placeholder {
+    font-family: var(--text-label-placeholder-family);
+    font-size: var(--text-label-placeholder-size);
+    font-weight: var(--text-label-placeholder-weight);
+    line-height: var(--text-label-placeholder-line-height);
+    letter-spacing: var(--text-label-placeholder-letter-spacing);
+  }
+
+  /* Card Detail Classes */
+  .text-card-detail-sm {
+    font-family: var(--text-card-detail-sm-family);
+    font-size: var(--text-card-detail-sm-size);
+    font-weight: var(--text-card-detail-sm-weight);
+    line-height: var(--text-card-detail-sm-line-height);
+    letter-spacing: var(--text-card-detail-sm-letter-spacing);
+  }
+
+  .text-card-detail-md {
+    font-family: var(--text-card-detail-md-family);
+    font-size: var(--text-card-detail-md-size);
+    font-weight: var(--text-card-detail-md-weight);
+    line-height: var(--text-card-detail-md-line-height);
+    letter-spacing: var(--text-card-detail-md-letter-spacing);
+  }
+}

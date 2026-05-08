@@ -1,0 +1,40 @@
+/* ============================================
+   DESIGN SYSTEM IMPORTS
+   ============================================ */
+   @import "tailwindcss";
+@import './styles/index.css';
+
+/* ============================================
+   ROOT ELEMENT
+   ============================================ */
+#root {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ============================================
+   KEYBOARD INLINE STYLE
+   ============================================ */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--text-h);
+  background: var(--code-bg);
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ============================================
+   INLINE CODE STYLE
+   ============================================ */
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--text-h);
+}

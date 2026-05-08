@@ -1,0 +1,17 @@
+@layer tokens {
+  :root {
+    /* ============================================
+       BORDER WIDTHS
+       ============================================ */
+    --border-width-thin: 1px;
+    --border-width-normal: 2px;
+    --border-width-thick: 3px;
+
+    /* ============================================
+       BORDER COLORS
+       ============================================ */
+    --border-color-light: var(--color-neutral-150);
+    --border-color-medium: var(--color-neutral-200);
+    --border-color-dark: var(--color-neutral-300);
+  }
+}

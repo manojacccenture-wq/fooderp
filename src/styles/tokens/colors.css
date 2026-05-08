@@ -1,0 +1,65 @@
+@layer tokens {
+  :root {
+    /* ============================================
+       NEUTRAL COLOR SCALE
+       ============================================ */
+    --color-neutral-900: #212134;
+    --color-neutral-800: #32324D;
+    --color-neutral-700: #4A4A6A;
+    --color-neutral-600: #666687;
+    --color-neutral-500: #8E8EA9;
+    --color-neutral-400: #A5A5BA;
+    --color-neutral-300: #C0C0CF;
+    --color-neutral-200: #DCDCE4;
+    --color-neutral-150: #EAEAEF;
+    --color-neutral-100: #F6F6F9;
+    --color-neutral-0: #FFFFFF;
+
+    /* ============================================
+       PRIMARY COLOR SCALE (Purple)
+       ============================================ */
+    --color-primary-1: #3A2D78;
+    --color-primary-2: #E23744;
+    --color-primary-3: #8981AE;
+    --color-primary-4: #C4C0D7;
+    --color-primary-5: #EBEAF2;
+
+    /* ============================================
+       SECONDARY COLOR SCALE (Yellow)
+       ============================================ */
+    --color-secondary-0: #FAA300;
+    --color-secondary-1: #FFB01D;
+    --color-secondary-2: #FFC861;
+    --color-secondary-3: #FFD88E;
+    --color-secondary-4: #FFE7BB;
+    --color-secondary-5: #FFF7E8;
+
+    /* ============================================
+       TERTIARY COLOR SCALE (Orange)
+       ============================================ */
+    --color-tertiary-1: #FF7B2C;
+    --color-tertiary-2: #FF9556;
+    --color-tertiary-3: #FFB080;
+    --color-tertiary-4: #FFD7C0;
+    --color-tertiary-5: #FFF2EA;
+
+    /* ============================================
+       SUCCESS STATE COLORS
+       ============================================ */
+    --color-success-700: #24A44B;
+    --color-success-500: #4AD775;
+    --color-success-200: #B4EFC6;
+
+    /* ============================================
+       DANGER STATE COLORS
+       ============================================ */
+    --color-danger-700: #CB0E0E;
+    --color-danger-500: #F24343;
+    --color-danger-200: #FCCCCC;
+
+    /* ============================================
+       BORDER COLORS
+       ============================================ */
+    --color-border-light: #EDF2F7;
+  }
+}

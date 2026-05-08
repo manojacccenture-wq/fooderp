@@ -1,0 +1,61 @@
+@import './font.css';
+@import './typography-base.css';
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    overflow-x: hidden;
+  }
+
+  /* ============================================
+     FOCUS STYLES
+     ============================================ */
+  *:focus-visible {
+    outline: 2px solid var(--color-interactive-primary);
+    outline-offset: 2px;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--color-interactive-primary);
+    outline-offset: 2px;
+  }
+
+  /* ============================================
+     DISABLED STATES
+     ============================================ */
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ============================================
+     SELECTION
+     ============================================ */
+  ::selection {
+    background-color: var(--color-primary-5);
+    color: var(--color-primary-1);
+  }
+
+  ::-moz-selection {
+    background-color: var(--color-primary-5);
+    color: var(--color-primary-1);
+  }
+}
+

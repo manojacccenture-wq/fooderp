@@ -1,0 +1,49 @@
+@layer components {
+  .color-card {
+    display: flex;
+    gap: var(--spacing-component);
+    align-items: center;
+    width: 100%;
+  }
+
+  .color-card__swatch {
+    width: 80px;
+    height: 70px;
+    border-radius: var(--radius-default);
+    flex-shrink: 0;
+    box-shadow: var(--shadow-card-default);
+    transition: box-shadow 0.2s ease;
+  }
+
+  .color-card__swatch:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .color-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .color-card__name {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-tight);
+  }
+
+  .color-card__hex {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-tight);
+  }
+
+  .color-card__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-item-gap);
+  }
+}

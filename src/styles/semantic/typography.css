@@ -1,0 +1,125 @@
+@layer semantic {
+  :root {
+    /* ============================================
+       SEMANTIC TYPOGRAPHY - HEADINGS
+       ============================================ */
+
+    --text-heading-1-family: var(--font-family-secondary);
+    --text-heading-1-size: var(--font-size-h1);
+    --text-heading-1-weight: var(--font-weight-medium);
+    --text-heading-1-line-height: var(--line-height-heading-1);
+    --text-heading-1-letter-spacing: var(--letter-spacing-heading-1);
+
+    --text-heading-2-family: var(--font-family-secondary);
+    --text-heading-2-size: var(--font-size-h2);
+    --text-heading-2-weight: var(--font-weight-medium);
+    --text-heading-2-line-height: var(--line-height-heading-2);
+    --text-heading-2-letter-spacing: var(--letter-spacing-heading-2);
+
+    --text-heading-3-family: var(--font-family-primary);
+    --text-heading-3-size: var(--font-size-h3);
+    --text-heading-3-weight: var(--font-weight-bold);
+    --text-heading-3-line-height: var(--line-height-heading-3);
+    --text-heading-3-letter-spacing: var(--letter-spacing-normal);
+
+    --text-heading-4-family: var(--font-family-primary);
+    --text-heading-4-size: var(--font-size-h4);
+    --text-heading-4-weight: var(--font-weight-semibold);
+    --text-heading-4-line-height: var(--line-height-heading-4);
+    --text-heading-4-letter-spacing: var(--letter-spacing-normal);
+
+    --text-heading-5-family: var(--font-family-primary);
+    --text-heading-5-size: var(--font-size-h5);
+    --text-heading-5-weight: var(--font-weight-semibold);
+    --text-heading-5-line-height: var(--line-height-heading-5);
+    --text-heading-5-letter-spacing: var(--letter-spacing-normal);
+
+    --text-heading-6-family: var(--font-family-primary);
+    --text-heading-6-size: var(--font-size-h6);
+    --text-heading-6-weight: var(--font-weight-semibold);
+    --text-heading-6-line-height: var(--line-height-heading-6);
+    --text-heading-6-letter-spacing: var(--letter-spacing-normal);
+
+    /* ============================================
+       SUBTITLES
+       ============================================ */
+
+    --text-subtitle-1-family: var(--font-family-primary);
+    --text-subtitle-1-size: var(--font-size-subtitle-lg);
+    --text-subtitle-1-weight: var(--font-weight-semibold);
+    --text-subtitle-1-line-height: var(--line-height-subtitle-lg);
+    --text-subtitle-1-letter-spacing: var(--letter-spacing-normal);
+
+    --text-subtitle-2-family: var(--font-family-primary);
+    --text-subtitle-2-size: var(--font-size-subtitle-md);
+    --text-subtitle-2-weight: var(--font-weight-bold);
+    --text-subtitle-2-line-height: var(--line-height-subtitle-md);
+    --text-subtitle-2-letter-spacing: var(--letter-spacing-normal);
+
+    --text-subtitle-3-family: var(--font-family-primary);
+    --text-subtitle-3-size: var(--font-size-subtitle-sm);
+    --text-subtitle-3-weight: var(--font-weight-semibold);
+    --text-subtitle-3-line-height: var(--line-height-subtitle-sm);
+    --text-subtitle-3-letter-spacing: var(--letter-spacing-normal);
+
+    /* ============================================
+       BODY
+       ============================================ */
+
+    --text-body-1-family: var(--font-family-primary);
+    --text-body-1-size: var(--font-size-body-lg);
+    --text-body-1-weight: var(--font-weight-medium);
+    --text-body-1-line-height: var(--line-height-body-lg);
+    --text-body-1-letter-spacing: var(--letter-spacing-normal);
+
+    --text-body-2-family: var(--font-family-primary);
+    --text-body-2-size: var(--font-size-body-md);
+    --text-body-2-weight: var(--font-weight-medium);
+    --text-body-2-line-height: var(--line-height-body-md);
+    --text-body-2-letter-spacing: var(--letter-spacing-normal);
+
+    /* ============================================
+       CAPTIONS
+       ============================================ */
+
+    --text-caption-1-family: var(--font-family-primary);
+    --text-caption-1-size: var(--font-size-caption-lg);
+    --text-caption-1-weight: var(--font-weight-regular);
+    --text-caption-1-line-height: var(--line-height-caption-lg);
+    --text-caption-1-letter-spacing: var(--letter-spacing-normal);
+
+    --text-caption-2-family: var(--font-family-primary);
+    --text-caption-2-size: var(--font-size-caption-md);
+    --text-caption-2-weight: var(--font-weight-medium);
+    --text-caption-2-line-height: var(--line-height-caption-md);
+    --text-caption-2-letter-spacing: var(--letter-spacing-normal);
+
+    --text-caption-3-family: var(--font-family-primary);
+    --text-caption-3-size: var(--font-size-caption-sm);
+    --text-caption-3-weight: var(--font-weight-regular);
+    --text-caption-3-line-height: var(--line-height-caption-sm);
+    --text-caption-3-letter-spacing: var(--letter-spacing-normal);
+
+    /* ============================================
+       BUTTONS
+       ============================================ */
+
+    --text-button-sm-family: var(--font-family-primary);
+    --text-button-sm-size: var(--font-size-button-sm);
+    --text-button-sm-weight: var(--font-weight-semibold);
+    --text-button-sm-line-height: var(--line-height-button-sm);
+
+    --text-button-md-family: var(--font-family-primary);
+    --text-button-md-size: var(--font-size-button-md);
+    --text-button-md-weight: var(--font-weight-bold);
+    --text-button-md-line-height: var(--line-height-button-md);
+
+    /* ============================================
+       PRICES
+       ============================================ */
+
+    --text-price-sm-size: var(--font-size-price-sm);
+    --text-price-md-size: var(--font-size-price-md);
+    --text-price-lg-size: var(--font-size-price-lg);
+  }
+}

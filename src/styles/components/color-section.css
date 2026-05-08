@@ -1,0 +1,27 @@
+@layer components {
+  .color-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-section-gap);
+  }
+
+  .color-section__title {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .color-section__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-section-gap);
+  }
+
+  .color-section__column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-item-gap);
+  }
+}
