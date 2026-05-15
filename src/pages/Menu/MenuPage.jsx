@@ -93,6 +93,9 @@ export const MenuPage = () => {
 
   const [selectedItemForAction, setSelectedItemForAction] = useState(null);
 
+  const [orderType, setOrderType] = useState('dine_in'); // 'dine_in' | 'take_away'
+  const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
+
   // Modals & Discount
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
@@ -428,25 +431,67 @@ export const MenuPage = () => {
                         <div className="px-4 mt-6">
                           <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
                           <div className="flex gap-4">
-                            <button className="bg-[#ffb01d] text-white rounded-[16px] px-4 py-[12px] font-bold text-[16px]">Dine In</button>
-                            <button className="bg-transparent text-[#212134] rounded-[16px] px-4 py-[12px] font-bold text-[16px]">Take away</button>
+                            <button 
+                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'dine_in' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")} 
+                              onClick={() => setOrderType('dine_in')}
+                            >
+                              Dine In
+                            </button>
+                            <button 
+                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")} 
+                              onClick={() => setOrderType('take_away')}
+                            >
+                              Take away
+                            </button>
                           </div>
-                          <div className="grid grid-cols-4 gap-[16px] mt-6">
-                            {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
-                              let borderColor = '#b4efc6';
-                              let textColor = '#24a44b';
-                              if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
-                              if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
-                              return (
-                                <button key={num} className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px]" style={{ borderColor, color: textColor }}>{num}</button>
-                              );
-                            })}
-                          </div>
+                          
+                          {orderType === 'dine_in' && (
+                            <div className="grid grid-cols-4 gap-[16px] mt-6">
+                              {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
+                                let borderColor = '#b4efc6';
+                                let textColor = '#24a44b';
+                                if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
+                                if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
+                                return (
+                                  <button key={num} className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px]" style={{ borderColor, color: textColor }}>{num}</button>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
 
-                        <div className="px-4 mt-8 flex flex-col gap-[16px]">
+                        {orderType === 'take_away' && (
+                          <div className="px-4 mt-6">
+                            <div className="bg-[#fff7e8] rounded-[8px] py-[10px] px-4 mb-4">
+                              <span className="text-[14px] font-bold text-[#32324d]">Payment Summary</span>
+                            </div>
+                            <div className="bg-white rounded-[16px] p-4 flex flex-col gap-3 border border-[#f3f3f5] mb-4 shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[14px] font-semibold text-[#666687]">Total Amount</span>
+                                <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{totalAmount.toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[14px] font-semibold text-[#666687]">Tax</span>
+                                <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{tax.toFixed(2)}</span>
+                              </div>
+                              <div className="w-full h-px border-t border-dashed border-[#eaeaef] my-1"></div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[16px] font-bold text-[#32324d]">Total price</span>
+                                <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{finalPrice.toFixed(2)}</span>
+                              </div>
+                            </div>
+                            <div className="bg-[#fff7e8] rounded-[16px] p-4 flex justify-between items-center border border-[#ffb01d]/20">
+                              <span className="text-[16px] font-bold text-[#32324d]">Total</span>
+                              <span className="text-[16px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{finalPrice.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="px-4 mt-6 flex flex-col gap-[16px]">
                           <input type="text" defaultValue="9629917347" className="w-full h-[54px] border border-[#ff7b2c] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
-                          <input type="text" placeholder="Guests" className="w-full h-[54px] border border-[#eaeaef] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
+                          {orderType === 'dine_in' && (
+                            <input type="text" placeholder="Guests" className="w-full h-[54px] border border-[#eaeaef] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
+                          )}
                           <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] outline-none resize-none"></textarea>
                         </div>
                       </>
@@ -518,27 +563,45 @@ export const MenuPage = () => {
               <div className="mt-6 mb-6">
                 <span className="text-[14px] font-semibold text-[#666687] block mb-3">Payment Mode</span>
                 <div className="flex gap-2 mb-4">
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#ffb01d] text-white text-[12px] font-bold">Cash</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">Upi</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">Card</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">Due</button>
-                </div>
-
-                <input type="text" defaultValue="600" className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[14px] font-bold text-[#666687] outline-none mb-3" />
-                <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4">
-                  <span className="text-[12px] font-bold text-[#24a44b]">85 change to return</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  {['500', '200', '100', '50', '20', '10'].map(amt => (
-                    <button key={amt} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8]">
-                      <span className="text-[#ff9556]">-</span> {amt} <span className="text-[#ff9556]">+</span>
+                  {['Cash', 'Upi', 'Card', 'Due'].map(mode => (
+                    <button 
+                      key={mode}
+                      className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", paymentMode === mode ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}
+                      onClick={() => setPaymentMode(mode)}
+                    >
+                      {mode}
                     </button>
                   ))}
                 </div>
-                <button className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8]">
-                  Custom amount
-                </button>
+
+                {paymentMode === 'Due' ? (
+                  <div className="flex flex-col gap-3 mb-6">
+                    <input type="text" placeholder="Customer name" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                    <input type="text" placeholder="Mobile Number" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                    <input type="text" placeholder="Customer given amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                    <input type="text" placeholder="Due amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                    <input type="date" placeholder="Due date" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                    <textarea placeholder="Reason for discount" className="w-full h-[80px] border border-[#eaeaef] rounded-[16px] p-4 text-[12px] font-semibold outline-none resize-none text-[#32324d] placeholder:text-[#8e8ea9]"></textarea>
+                  </div>
+                ) : (
+                  <>
+                    <input type="text" defaultValue="600" className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[14px] font-bold text-[#666687] outline-none mb-3" />
+                    <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4">
+                      <span className="text-[12px] font-bold text-[#24a44b]">85 change to return</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {['500', '200', '100', '50', '20', '10'].map(amt => (
+                        <button key={amt} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8]">
+                          <span className="text-[#ff9556]">-</span> {amt} <span className="text-[#ff9556]">+</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-6">
+                      Custom amount
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -553,17 +616,25 @@ export const MenuPage = () => {
               </button>
             ) : kotStatus === 'idle' ? (
               <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handleSendKOT}>
-                Send to KOT
+                {orderType === 'take_away' ? 'Print Billing' : 'Send to KOT'}
               </button>
             ) : null
           ) : rightView === 'checkout' && (
             <div className="flex flex-col gap-3">
-              <button className="w-full bg-[#dcdce4] text-[#32324d] py-[14px] rounded-[16px] font-bold text-[16px]" onClick={() => setIsDiscountModalOpen(true)}>
-                Apply Discount
-              </button>
-              <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); }}>
-                Mark as paid
-              </button>
+              {paymentMode === 'Due' ? (
+                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
+                  Mark as Due
+                </button>
+              ) : (
+                <>
+                  <button className="w-full bg-[#dcdce4] text-[#32324d] py-[14px] rounded-[16px] font-bold text-[16px]" onClick={() => setIsDiscountModalOpen(true)}>
+                    Apply Discount
+                  </button>
+                  <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
+                    Mark as paid
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
