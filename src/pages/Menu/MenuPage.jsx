@@ -608,7 +608,7 @@ export const MenuPage = () => {
         )}
 
         {/* Bottom Button Fixed */}
-        <div className="px-4 pt-4 pb-8 shrink-0 bg-white">
+        <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
           {rightView === 'order' ? (
             kotStatus === 'sent' ? (
               <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setRightView('checkout')}>
