@@ -423,30 +423,34 @@ export const MenuPage = () => {
                   </div>
                 ) : (
                   <>
-                    <div className="px-4 mt-6">
-                      <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
-                      <div className="flex gap-4">
-                        <button className="bg-[#ffb01d] text-white rounded-[16px] px-4 py-[12px] font-bold text-[16px]">Dine In</button>
-                        <button className="bg-transparent text-[#212134] rounded-[16px] px-4 py-[12px] font-bold text-[16px]">Take away</button>
-                      </div>
-                      <div className="grid grid-cols-4 gap-[16px] mt-6">
-                        {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
-                          let borderColor = '#b4efc6';
-                          let textColor = '#24a44b';
-                          if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
-                          if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
-                          return (
-                            <button key={num} className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px]" style={{ borderColor, color: textColor }}>{num}</button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    {kotStatus !== 'sent' && (
+                      <>
+                        <div className="px-4 mt-6">
+                          <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
+                          <div className="flex gap-4">
+                            <button className="bg-[#ffb01d] text-white rounded-[16px] px-4 py-[12px] font-bold text-[16px]">Dine In</button>
+                            <button className="bg-transparent text-[#212134] rounded-[16px] px-4 py-[12px] font-bold text-[16px]">Take away</button>
+                          </div>
+                          <div className="grid grid-cols-4 gap-[16px] mt-6">
+                            {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
+                              let borderColor = '#b4efc6';
+                              let textColor = '#24a44b';
+                              if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
+                              if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
+                              return (
+                                <button key={num} className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px]" style={{ borderColor, color: textColor }}>{num}</button>
+                              );
+                            })}
+                          </div>
+                        </div>
 
-                    <div className="px-4 mt-8 flex flex-col gap-[16px]">
-                      <input type="text" defaultValue="9629917347" className="w-full h-[54px] border border-[#ff7b2c] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
-                      <input type="text" placeholder="Guests" className="w-full h-[54px] border border-[#eaeaef] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
-                      <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] outline-none resize-none"></textarea>
-                    </div>
+                        <div className="px-4 mt-8 flex flex-col gap-[16px]">
+                          <input type="text" defaultValue="9629917347" className="w-full h-[54px] border border-[#ff7b2c] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
+                          <input type="text" placeholder="Guests" className="w-full h-[54px] border border-[#eaeaef] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
+                          <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] outline-none resize-none"></textarea>
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
               </>
