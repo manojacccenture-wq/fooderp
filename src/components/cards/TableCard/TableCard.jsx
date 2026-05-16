@@ -42,7 +42,9 @@ export const TableCard = ({
   reservedGuests,
   onStartOrder,
   onChangeTable,
-  isSelected
+  onMergeTable,
+  isSelected,
+  minimalView
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -61,55 +63,64 @@ export const TableCard = ({
     setShowMenu(false);
     if (action === 'Change table') {
       onChangeTable && onChangeTable(tableNo);
+    } else if (action === 'Merge table') {
+      onMergeTable && onMergeTable(tableNo);
     }
     // Other actions...
   };
 
-  const renderDropdown = () => (
-    <div className="absolute top-[16px] left-[16px] z-20" ref={menuRef}>
-      <button 
-        onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-        className="p-1 -ml-1 rounded-[8px] hover:bg-[#f6f6f9] transition-colors flex items-center justify-center"
-      >
-        <ThreeDotsIcon />
-      </button>
-      
-      {showMenu && (
-        <div className="absolute top-[32px] left-0 w-[140px] bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] py-2 border border-[#eaeaef] flex flex-col gap-1">
-          {['Change table', 'Merge table', 'Cancel Food', 'Replace Food'].map(opt => (
-            <button 
-              key={opt} 
-              onClick={(e) => { e.stopPropagation(); handleAction(opt); }} 
-              className="w-full text-left px-4 py-2 text-[12px] font-semibold text-[#4a4a6a] hover:bg-[#f6f6f9] transition-all duration-200 active:scale-[0.98]"
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  const renderDropdown = () => {
+    if (minimalView) return null;
+    return (
+      <div className="absolute top-[16px] left-[16px] z-20" ref={menuRef}>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+          className="p-1 -ml-1 rounded-[8px] hover:bg-[#f6f6f9] transition-colors flex items-center justify-center"
+        >
+          <ThreeDotsIcon />
+        </button>
+        
+        {showMenu && (
+          <div className="absolute top-[32px] left-0 w-[140px] bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] py-2 border border-[#eaeaef] flex flex-col gap-1">
+            {['Change table', 'Merge table', 'Cancel Food', 'Replace Food'].map(opt => (
+              <button 
+                key={opt} 
+                onClick={(e) => { e.stopPropagation(); handleAction(opt); }} 
+                className="w-full text-left px-4 py-2 text-[12px] font-semibold text-[#4a4a6a] hover:bg-[#f6f6f9] transition-all duration-200 active:scale-[0.98]"
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   
   if (status === 'available') {
     return (
-      <div className={`w-[293px] h-[183px] border-2 rounded-[16px] relative shrink-0 transition-colors duration-200 ${
+      <div className={`w-[293px] h-[183px] cursor-pointer border-2 rounded-[16px] relative shrink-0 transition-colors duration-200 ${
         isSelected ? 'border-[#4ad775] bg-[rgba(180,239,198,0.12)]' : 'border-[#eaeaef] bg-white'
-      }`}>
+      }`}
+        onClick={onStartOrder}
+      >
         {renderDropdown()}
         <div className="absolute top-[12px] right-[12px] h-[28px] px-4 bg-[#b4efc6] rounded-[16px] flex items-center justify-center">
           <span className="text-[8px] font-bold text-[#24a44b]">Available</span>
         </div>
-        <div className="absolute top-[64px] left-0 right-0 flex flex-col items-center gap-[9px]">
+        <div className={`absolute left-0 right-0 flex flex-col items-center ${minimalView ? 'top-[80px]' : 'top-[64px] gap-[9px]'}`}>
           <h3 className="text-[16px] font-extrabold text-[#4a4a6a]">Table {tableNo}</h3>
-          <p className="text-[12px] font-medium text-[#8e8ea9]">Ready for new order</p>
+          {!minimalView && <p className="text-[12px] font-medium text-[#8e8ea9]">Ready for new order</p>}
         </div>
-        <button 
-          onClick={onStartOrder}
-          className="absolute top-[127px] right-[9px] w-[130px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold"
-        >
-          Book Table
-        </button>
+        {!minimalView && (
+          <button 
+            onClick={onStartOrder}
+            className="absolute top-[127px] right-[9px] w-[130px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold"
+          >
+            Book Table
+          </button>
+        )}
       </div>
     );
   }
