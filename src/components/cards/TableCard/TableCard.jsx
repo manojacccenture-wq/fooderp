@@ -44,6 +44,8 @@ export const TableCard = ({
   onStartOrder,
   onChangeTable,
   onMergeTable,
+  onCancelFood,
+  onReplaceFood,
   isSelected,
   minimalView
 }) => {
@@ -67,6 +69,10 @@ export const TableCard = ({
       onChangeTable && onChangeTable(tableNo);
     } else if (action === 'Merge table') {
       onMergeTable && onMergeTable(tableNo);
+    } else if (action === 'Cancel Food') {
+      onCancelFood && onCancelFood(tableNo);
+    } else if (action === 'Replace Food') {
+      onReplaceFood && onReplaceFood(tableNo);
     }
     // Other actions...
   };

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { TableCard } from '../../components/cards/TableCard/TableCard';
 import { StartOrderModal } from './StartOrderModal';
 import { TableSelectionView } from './TableSelectionView';
+import { CancelFoodView } from './CancelFoodView';
+import { ReplaceFoodView } from './ReplaceFoodView';
 
 // Centralized mock data matching exact Figma configuration
 const initialTableData = [
@@ -24,7 +26,7 @@ export const DineInPage = () => {
   const navigate = useNavigate();
   const [tables, setTables] = useState(initialTableData);
   const [selectedTableForOrder, setSelectedTableForOrder] = useState(null);
-  const [actionTarget, setActionTarget] = useState(null); // { type: 'change' | 'merge', tableNo: string }
+  const [actionTarget, setActionTarget] = useState(null); // { type: 'change' | 'merge' | 'cancel-food' | 'replace-food', tableNo: string }
   
   const totalTables = 10; // "Top Number of Table (10)" as per design
 
@@ -97,11 +99,45 @@ export const DineInPage = () => {
     }
   };
 
+  const handleConfirmCancellation = (tableNo, data) => {
+    console.log('Cancellation confirmed for table:', tableNo, data);
+    setTables(prev => prev.map(t => {
+      if (t.tableNo === tableNo) {
+        return { ...t, customerName: t.customerName + " (Cancelled)" };
+      }
+      return t;
+    }));
+    setActionTarget(null);
+  };
+
+  const handleConfirmReplacement = (tableNo, data) => {
+    console.log('Replacement confirmed for table:', tableNo, data);
+    setTables(prev => prev.map(t => {
+      if (t.tableNo === tableNo) {
+        return { ...t, customerName: t.customerName + " (Replaced)" };
+      }
+      return t;
+    }));
+    setActionTarget(null);
+  };
+
   return (
     <div className="w-full min-h-screen bg-white">
       {/* Main Content container matches the exact width in Figma 947px */}
       <div className="p-11 mx-auto pt-[74px]">
-        {actionTarget ? (
+        {actionTarget?.type === 'cancel-food' ? (
+          <CancelFoodView
+            tableNo={actionTarget.tableNo}
+            onClose={() => setActionTarget(null)}
+            onConfirmCancellation={handleConfirmCancellation}
+          />
+        ) : actionTarget?.type === 'replace-food' ? (
+          <ReplaceFoodView
+            tableNo={actionTarget.tableNo}
+            onClose={() => setActionTarget(null)}
+            onConfirmReplacement={handleConfirmReplacement}
+          />
+        ) : actionTarget ? (
           <TableSelectionView
             isActive={!!actionTarget}
             onCancel={() => setActionTarget(null)}
@@ -131,6 +167,8 @@ export const DineInPage = () => {
                   onStartOrder={() => setSelectedTableForOrder(table.tableNo)}
                   onChangeTable={(tableNo) => setActionTarget({ type: 'change', tableNo })}
                   onMergeTable={(tableNo) => setActionTarget({ type: 'merge', tableNo })}
+                  onCancelFood={(tableNo) => setActionTarget({ type: 'cancel-food', tableNo })}
+                  onReplaceFood={(tableNo) => setActionTarget({ type: 'replace-food', tableNo })}
                 />
               ))}
             </div>
