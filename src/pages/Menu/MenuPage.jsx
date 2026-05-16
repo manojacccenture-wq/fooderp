@@ -75,7 +75,7 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
       </div>
       <div className="absolute right-3 bottom-3 flex items-end gap-[2px]">
         <span className="text-[12px] font-bold text-[#ffb080] pb-[1px]">₹</span>
-        <span className="text-[16px] font-extrabold text-[#ff7b2c]">{price}</span>
+        <span className="text-[16px] font-extrabold text-[#ff7b2c]">{(Number(price) * quantity).toFixed(2)}</span>
       </div>
     </div>
   );
@@ -123,6 +123,14 @@ export const MenuPage = () => {
 
   const products = [
     { itemNo: "401", title: "Mutton Gravy", price: "160", isVeg: false, quantity: 3, image: imgAvocadoSandwich },
+    {
+      itemNo: "403",
+      title: "Chicken Biriyani",
+      price: "180",
+      isVeg: false,
+      quantity: 0,
+      image: imgAvocadoSandwich1
+    },
     { itemNo: "402", title: "Non veg thali", price: "120", isVeg: false, quantity: 0, image: imgAvocadoSandwich1 },
     { itemNo: "203", title: "Veg Thali", price: "160", isVeg: true, quantity: 0, image: imgAvocadoSandwich2 },
     { itemNo: "204", title: "Panner Gravy", price: "160", isVeg: true, quantity: 0, image: imgAvocadoSandwich3 },
@@ -261,12 +269,29 @@ export const MenuPage = () => {
     });
   };
   // Calculations
-  const totalAmount = orderItems.reduce((acc, item) => acc + (Number(item.price) * item.quantity), 0);
-  const tax = totalAmount > 0 ? totalAmount * 0.05 : 0;
-  const finalPrice = totalAmount + tax - discountAmount;
-  const totalHeldPrice = heldItems.reduce((acc, item) => acc + (Number(item.price) * item.quantity), 0);
+
+
+
+  const subtotal = orderItems.reduce(
+    (acc, item) => acc + Number(item.price) * item.quantity,
+    0
+  );
+
+  const totalQuantity = orderItems.reduce(
+    (acc, item) => acc + item.quantity,
+    0
+  );
+
   const isSplitView = heldItems.length > 0;
 
+  const tax = subtotal * 0.08;
+
+  const finalPrice = subtotal + tax - discountAmount;
+
+  const totalHeldPrice = heldItems.reduce(
+    (acc, item) => acc + Number(item.price) * item.quantity,
+    0
+  );
   // Render components
   const renderMenuContent = (isReplaceMode = false) => (
     <>
@@ -285,7 +310,7 @@ export const MenuPage = () => {
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
           placeholder="Search by Item No or Product Name"
-          className="flex-1 bg-transparent border-none outline-none text-[14px] text-[#666687] placeholder:text-[#8e8ea9]"
+          className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-[14px] text-[#666687] placeholder:text-[#8e8ea9]"
         />
         <div className="ml-3 cursor-pointer">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7B2C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -576,7 +601,7 @@ export const MenuPage = () => {
                             <div className="bg-white rounded-[16px] p-4 flex flex-col gap-3 border border-[#f3f3f5] mb-4 shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]">
                               <div className="flex justify-between items-center">
                                 <span className="text-[14px] font-semibold text-[#666687]">Total Amount</span>
-                                <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{totalAmount.toFixed(2)}</span>
+                                <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{subtotal.toFixed(2)}</span>
                               </div>
                               <div className="flex justify-between items-center">
                                 <span className="text-[14px] font-semibold text-[#666687]">Tax</span>
@@ -596,11 +621,11 @@ export const MenuPage = () => {
                         )}
 
                         <div className="px-4 mt-6 flex flex-col gap-[16px]">
-                          <input type="text" defaultValue="9629917347" className="w-full h-[54px] border border-[#ff7b2c] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
+                          <input type="text" placeholder='Phone Number' className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
                           {orderType === 'dine_in' && (
-                            <input type="text" placeholder="Guests" className="w-full h-[54px] border border-[#eaeaef] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none" />
+                            <input type="text" placeholder="Guests" className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
                           )}
-                          <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] outline-none resize-none"></textarea>
+                          <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] resize-none"></textarea>
                         </div>
                       </>
                     )}
@@ -628,7 +653,7 @@ export const MenuPage = () => {
               <div className="bg-white rounded-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] p-4 flex flex-col gap-3 border border-[#f3f3f5]">
                 <div className="flex justify-between items-center">
                   <span className="text-[14px] font-semibold text-[#666687]">Total Amount</span>
-                  <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{totalAmount.toFixed(2)}</span>
+                  <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-[14px] font-semibold text-[#666687]">Tax</span>
@@ -758,7 +783,7 @@ export const MenuPage = () => {
       <ApplyDiscountModal
         isOpen={isDiscountModalOpen}
         onClose={() => setIsDiscountModalOpen(false)}
-        totalAmount={totalAmount}
+        totalAmount={subtotal}
         tax={tax}
         onApply={(amount) => setDiscountAmount(amount)}
       />
