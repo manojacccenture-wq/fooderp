@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Custom icons to match the design without external libraries
 const UserIcon = () => (
@@ -48,6 +49,7 @@ export const TableCard = ({
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+  const navigate=useNavigate()
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -188,7 +190,7 @@ export const TableCard = ({
           Cancel
         </button>
         <button 
-          onClick={onStartOrder}
+          onClick={()=>navigate("/dashboard/menu")}
           className="absolute top-[127px] right-[16px] w-[92px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold"
         >
           Start Order
