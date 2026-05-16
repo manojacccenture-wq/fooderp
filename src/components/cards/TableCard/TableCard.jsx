@@ -1,38 +1,112 @@
-import React, { useState } from 'react';
-import { TableActionMenu } from '../TableActionMenu/TableActionMenu';
+import React, { useState, useRef, useEffect } from 'react';
+
+// Custom icons to match the design without external libraries
+const UserIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8ea9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+const TimerIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8ea9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+    <path d="M16 2l4 4M8 2L4 6"></path>
+  </svg>
+);
+
+const GuestsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8e8ea9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+    <circle cx="9" cy="7" r="4"></circle>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+  </svg>
+);
+
+const ThreeDotsIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8e8ea9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="5" cy="12" r="2" fill="#8e8ea9" stroke="none" />
+    <circle cx="12" cy="12" r="2" fill="#8e8ea9" stroke="none" />
+    <circle cx="19" cy="12" r="2" fill="#8e8ea9" stroke="none" />
+  </svg>
+);
 
 export const TableCard = ({ 
-  tableNumber, 
-  variant = 'available',
-  amount,
+  tableNo, 
+  status,
+  customerName,
   guests,
-  timer,
-  onBookTable,
-  onCompleteOrder,
+  duration,
+  reservedGuests,
   onStartOrder,
-  onCancel,
-  onActionMenuSelect
+  onChangeTable,
+  isSelected
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
 
-  if (variant === 'available') {
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleAction = (action) => {
+    setShowMenu(false);
+    if (action === 'Change table') {
+      onChangeTable && onChangeTable(tableNo);
+    }
+    // Other actions...
+  };
+
+  const renderDropdown = () => (
+    <div className="absolute top-[16px] left-[16px] z-20" ref={menuRef}>
+      <button 
+        onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+        className="p-1 -ml-1 rounded-[8px] hover:bg-[#f6f6f9] transition-colors flex items-center justify-center"
+      >
+        <ThreeDotsIcon />
+      </button>
+      
+      {showMenu && (
+        <div className="absolute top-[32px] left-0 w-[140px] bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] py-2 border border-[#eaeaef] flex flex-col gap-1">
+          {['Change table', 'Merge table', 'Cancel Food', 'Replace Food'].map(opt => (
+            <button 
+              key={opt} 
+              onClick={(e) => { e.stopPropagation(); handleAction(opt); }} 
+              className="w-full text-left px-4 py-2 text-[12px] font-semibold text-[#4a4a6a] hover:bg-[#f6f6f9] transition-all duration-200 active:scale-[0.98]"
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  
+  if (status === 'available') {
     return (
-      <div className="bg-white border-2 border-[var(--color-neutral-150)] h-[183px] w-[293px] rounded-[16px] flex flex-col relative">
-        {/* Available Badge */}
-        <div className="absolute bg-[var(--color-success-200)] px-4 py-3 rounded-[16px] top-3 right-3 h-[28px] flex items-center justify-center">
-          <span className="text-[8px] font-bold text-[var(--color-success-700)]">Available</span>
+      <div className={`w-[293px] h-[183px] border-2 rounded-[16px] relative shrink-0 transition-colors duration-200 ${
+        isSelected ? 'border-[#4ad775] bg-[rgba(180,239,198,0.12)]' : 'border-[#eaeaef] bg-white'
+      }`}>
+        {renderDropdown()}
+        <div className="absolute top-[12px] right-[12px] h-[28px] px-4 bg-[#b4efc6] rounded-[16px] flex items-center justify-center">
+          <span className="text-[8px] font-bold text-[#24a44b]">Available</span>
         </div>
-
-        {/* Table Number and Subtitle */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4">
-          <h3 className="text-heading-5 text-[var(--color-neutral-700)] leading-[22px]">Table {tableNumber}</h3>
-          <p className="text-caption-1 text-[var(--color-neutral-500)] text-center leading-[8px]">Ready for new order</p>
+        <div className="absolute top-[64px] left-0 right-0 flex flex-col items-center gap-[9px]">
+          <h3 className="text-[16px] font-extrabold text-[#4a4a6a]">Table {tableNo}</h3>
+          <p className="text-[12px] font-medium text-[#8e8ea9]">Ready for new order</p>
         </div>
-
-        {/* Book Table Button */}
-        <button
-          onClick={onBookTable}
-          className="absolute bottom-[17px] left-5 right-5 bg-[var(--color-secondary-1)] text-white px-[10.182px] py-[8.727px] rounded-[11.636px] text-[12px] font-bold hover:opacity-90 transition-opacity leading-[14.545px]"
+        <button 
+          onClick={onStartOrder}
+          className="absolute top-[127px] right-[9px] w-[130px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold"
         >
           Book Table
         </button>
@@ -40,110 +114,74 @@ export const TableCard = ({
     );
   }
 
-  if (variant === 'occupied') {
+  if (status === 'occupied') {
     return (
-      <div className="bg-white border-2 border-[var(--color-neutral-150)] h-[183px] w-[293px] rounded-[16px] flex flex-col relative">
-        {/* Top Row: Table Number and Badge */}
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-          <h3 className="text-heading-5 text-[var(--color-neutral-700)] leading-[22px]">Table {tableNumber}</h3>
-          <div className="bg-[var(--color-danger-200)] px-4 py-3 rounded-[16px] h-[28px] flex items-center justify-center">
-            <span className="text-[8px] font-bold text-[var(--color-danger-500)]">Occupied</span>
+      <div className="w-[293px] h-[183px] bg-white border-2 border-[#eaeaef] rounded-[16px] relative shrink-0">
+        {renderDropdown()}
+        <h3 className="absolute top-[20px] left-[48px] text-[16px] font-extrabold text-[#4a4a6a]">Table {tableNo}</h3>
+        <div className="absolute top-[16px] right-[16px] h-[28px] px-4 bg-[#fccccc] rounded-[16px] flex items-center justify-center">
+          <span className="text-[8px] font-bold text-[#f24343]">Occupied</span>
+        </div>
+        
+        {/* Customer Name Row */}
+        <div className="absolute top-[61px] left-[19px] flex items-center gap-[12px] h-[36px]">
+          <div className="w-[36px] h-[36px] bg-[#f6f6f9] rounded-[32px] flex items-center justify-center shrink-0">
+            <UserIcon />
           </div>
+          <span className="text-[12px] font-semibold text-[#8e8ea9]">{customerName}</span>
         </div>
 
-        {/* Amount, Guests, Timer Section */}
-        <div className="absolute top-[61px] left-4 h-[132px] w-[115px] flex flex-col gap-4">
-          {/* Amount Row */}
-          <div className="flex gap-3 h-9 items-center">
-            <div className="bg-[var(--color-neutral-100)] px-2 py-2 rounded-[32px] flex-shrink-0">
-              <span className="text-[12px]">₹</span>
-            </div>
-            <span className="text-subtitle-1 text-[var(--color-neutral-500)] leading-[22px]">{amount}</span>
+        {/* Timer Row */}
+        <div className="absolute top-[127px] left-[19px] flex items-center gap-[12px] h-[36px]">
+          <div className="w-[36px] h-[36px] bg-[#f6f6f9] rounded-[32px] flex items-center justify-center shrink-0">
+            <TimerIcon />
           </div>
+          <span className="text-[12px] font-semibold text-[#8e8ea9]">{duration}</span>
+        </div>
 
-          {/* Timer Row */}
-          <div className="flex gap-3 h-9 items-center">
-            <div className="bg-[var(--color-neutral-100)] px-2 py-2 rounded-[30px] flex-shrink-0">
-              <span className="text-[12px]">⏱</span>
-            </div>
-            <span className="text-subtitle-1 text-[var(--color-neutral-500)] leading-[22px]">{timer}</span>
+        {/* Guests Row */}
+        <div className="absolute top-[61px] left-[133px] flex items-center gap-[12px] h-[36px]">
+          <div className="w-[36px] h-[36px] bg-[#f6f6f9] rounded-[32px] flex items-center justify-center shrink-0">
+            <GuestsIcon />
           </div>
+          <span className="text-[12px] font-semibold text-[#8e8ea9]">{guests} Guests</span>
         </div>
 
-        {/* Guests Section (Top Right) */}
-        <div className="absolute top-[62px] left-[133px] right-[41px] h-9 flex gap-3 items-center">
-          <div className="bg-[var(--color-neutral-100)] px-2 py-2 rounded-[25px] flex-shrink-0">
-            <span className="text-[12px]">👥</span>
-          </div>
-          <span className="text-subtitle-1 text-[var(--color-neutral-500)] leading-[22px]">{guests} Guests</span>
-        </div>
-
-        {/* Complete Order Button */}
-        <div className="absolute bottom-[17px] left-[156px] right-[41px]">
-          <button
-            onClick={onCompleteOrder}
-            className="w-[121px] bg-[var(--color-secondary-1)] text-white px-[10.182px] py-[8.727px] rounded-[11.636px] text-[12px] font-bold hover:opacity-90 transition-opacity leading-[14.545px]"
-          >
-            Completer Order
-          </button>
-        </div>
-
-        {/* Action Menu Button */}
-        <div className="absolute bottom-[17px] left-4 relative">
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="bg-[var(--color-neutral-100)] text-[var(--color-neutral-700)] px-3 py-2 rounded-[8px] hover:opacity-80 transition-opacity text-[16px]"
-          >
-            ⋮
-          </button>
-          {showMenu && (
-            <TableActionMenu 
-              onSelect={(action) => {
-                onActionMenuSelect(action);
-                setShowMenu(false);
-              }}
-              onClose={() => setShowMenu(false)}
-            />
-          )}
-        </div>
+        {/* Button */}
+        <button className="absolute top-[127px] right-[16px] w-[121px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold">
+          Completer Order
+        </button>
       </div>
     );
   }
 
-  if (variant === 'reserved') {
+  if (status === 'reserved') {
     return (
-      <div className="bg-white border-2 border-[var(--color-neutral-150)] h-[183px] w-[293px] rounded-[16px] flex flex-col relative">
-        {/* Top Row: Table Number and Badge */}
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-          <h3 className="text-heading-5 text-[var(--color-neutral-700)] leading-[22px]">Table {tableNumber}</h3>
-          <div className="bg-[var(--color-secondary-4)] px-4 py-3 rounded-[16px] h-[28px] flex items-center justify-center">
-            <span className="text-[8px] font-bold text-[var(--color-secondary-1)]">Reserved</span>
-          </div>
+      <div className="w-[293px] h-[183px] bg-white border-2 border-[#eaeaef] rounded-[16px] relative shrink-0">
+        {renderDropdown()}
+        <h3 className="absolute top-[20px] left-[48px] text-[20px] font-extrabold text-[#4a4a6a]">Table {tableNo}</h3>
+        <div className="absolute top-[16px] right-[16px] h-[28px] px-4 bg-[#ffe7bb] rounded-[16px] flex items-center justify-center">
+          <span className="text-[8px] font-bold text-[#ffb01d]">Reserved</span>
         </div>
 
-        {/* Guests Section */}
-        <div className="absolute top-[61px] left-4 right-4 flex gap-3 items-center">
-          <div className="bg-white px-2 py-2 rounded-[25px] flex-shrink-0">
-            <span className="text-[12px]">👥</span>
+        {/* Expected Guests Row */}
+        <div className="absolute top-[61px] left-[19px] flex items-center gap-[12px] h-[36px]">
+          <div className="w-[36px] h-[36px] bg-white rounded-[32px] flex items-center justify-center shrink-0">
+            <GuestsIcon />
           </div>
-          <span className="text-subtitle-1 text-[var(--color-neutral-500)] leading-[22px] whitespace-nowrap">{guests} Guests Excepted</span>
+          <span className="text-[16px] font-semibold text-[#8e8ea9]">{reservedGuests} Guests Excepted</span>
         </div>
 
-        {/* Buttons Section */}
-        <div className="absolute bottom-[17px] left-4 right-4 flex gap-2">
-          <button
-            onClick={onCancel}
-            className="flex-1 bg-[var(--color-danger-500)] text-white px-[10.182px] py-[8.727px] rounded-[11.636px] text-[12px] font-bold hover:opacity-90 transition-opacity leading-[14.545px]"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onStartOrder}
-            className="flex-1 bg-[var(--color-secondary-1)] text-white px-[10.182px] py-[8.727px] rounded-[11.636px] text-[12px] font-bold hover:opacity-90 transition-opacity leading-[14.545px]"
-          >
-            Start Order
-          </button>
-        </div>
+        {/* Buttons */}
+        <button className="absolute top-[127px] left-[82px] w-[92px] h-[32px] bg-[#f24343] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold">
+          Cancel
+        </button>
+        <button 
+          onClick={onStartOrder}
+          className="absolute top-[127px] right-[16px] w-[92px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold"
+        >
+          Start Order
+        </button>
       </div>
     );
   }
