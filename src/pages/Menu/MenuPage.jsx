@@ -88,6 +88,8 @@ export const MenuPage = () => {
   const [activeCategory, setActiveCategory] = useState("All Dishes");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
+  const [guestCount, setGuestCount] = useState(4);
+
   // States lifted to MenuPage
   const [orderItems, setOrderItems] = useState([
     { id: 1, image: imgAvocadoSandwich1, title: "Chicken Biriyani", price: 120, quantity: 2 },
@@ -104,6 +106,9 @@ export const MenuPage = () => {
 
   const [orderType, setOrderType] = useState('dine_in'); // 'dine_in' | 'take_away'
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
+  const [splitMode, setSplitMode] = useState('full');
+  const [selectedTip, setSelectedTip] = useState(0);
+  const [customTip, setCustomTip] = useState('');
 
   // Modals & Discount
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
@@ -287,6 +292,20 @@ export const MenuPage = () => {
   const tax = subtotal * 0.08;
 
   const finalPrice = subtotal + tax - discountAmount;
+
+  // const guestCount = Number(selectedTable) || 1;
+
+  const splitCalculatedAmount =
+    splitMode === 'equal'
+      ? finalPrice / guestCount
+      : finalPrice;
+
+  const appliedTip =
+    customTip !== ''
+      ? Number(customTip)
+      : selectedTip;
+
+  const payableAmount = splitCalculatedAmount + appliedTip;
 
   const totalHeldPrice = heldItems.reduce(
     (acc, item) => acc + Number(item.price) * item.quantity,
@@ -610,12 +629,12 @@ export const MenuPage = () => {
                               <div className="w-full h-px border-t border-dashed border-[#eaeaef] my-1"></div>
                               <div className="flex justify-between items-center">
                                 <span className="text-[16px] font-bold text-[#32324d]">Total price</span>
-                                <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{finalPrice.toFixed(2)}</span>
+                                <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
                               </div>
                             </div>
                             <div className="bg-[#fff7e8] rounded-[16px] p-4 flex justify-between items-center border border-[#ffb01d]/20">
                               <span className="text-[16px] font-bold text-[#32324d]">Total</span>
-                              <span className="text-[16px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{finalPrice.toFixed(2)}</span>
+                              <span className="text-[16px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
                             </div>
                           </div>
                         )}
@@ -623,7 +642,13 @@ export const MenuPage = () => {
                         <div className="px-4 mt-6 flex flex-col gap-[16px]">
                           <input type="text" placeholder='Phone Number' className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
                           {orderType === 'dine_in' && (
-                            <input type="text" placeholder="Guests" className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
+                            <input
+                              type="number"
+                              value={guestCount}
+                              onChange={(e) => setGuestCount(Number(e.target.value) )}
+                              placeholder="Guests"
+                              className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]"
+                            />
                           )}
                           <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] resize-none"></textarea>
                         </div>
@@ -668,29 +693,99 @@ export const MenuPage = () => {
                 <div className="w-full h-px border-t border-dashed border-[#eaeaef] my-1"></div>
                 <div className="flex justify-between items-center">
                   <span className="text-[16px] font-bold text-[#32324d]">Total price</span>
-                  <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{finalPrice.toFixed(2)}</span>
+                  <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="mt-6">
                 <span className="text-[14px] font-semibold text-[#666687] block mb-3">Split bill</span>
                 <div className="flex gap-2">
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">Full Bill</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#ffb01d] text-white text-[12px] font-bold">Equal Split</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">By Item</button>
+                  <button
+                    onClick={() => setSplitMode('full')}
+                    className={clsx(
+                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                      splitMode === 'full'
+                        ? "bg-[#ffb01d] text-white"
+                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                    )}
+                  >
+                    Full Bill
+                  </button>
+
+                  <button
+                    onClick={() => setSplitMode('equal')}
+                    className={clsx(
+                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                      splitMode === 'equal'
+                        ? "bg-[#ffb01d] text-white"
+                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                    )}
+                  >
+                    Equal Split
+                  </button>
+
+                  <button
+                    onClick={() => setSplitMode('by_item')}
+                    className={clsx(
+                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                      splitMode === 'by_item'
+                        ? "bg-[#ffb01d] text-white"
+                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                    )}
+                  >
+                    By Item
+                  </button>
                 </div>
-                <span className="text-[12px] text-[#8e8ea9] block mt-2">Split among 2 guests</span>
+                <span className="text-[12px] text-[#8e8ea9] block mt-2">
+                  {splitMode === 'equal'
+                    ? `Each guest pays ₹${splitCalculatedAmount.toFixed(2)}`
+                    : `Full bill amount ₹${payableAmount.toFixed(2)}`}
+                </span>
               </div>
 
               <div className="mt-6">
                 <span className="text-[14px] font-semibold text-[#666687] block mb-3">Add Tip</span>
                 <div className="flex gap-2 mb-3">
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">20</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#ffb01d] text-white text-[12px] font-bold">50</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">100</button>
-                  <button className="flex-1 py-2 rounded-[16px] bg-[#f3f5f9] text-[#32324d] text-[12px] font-bold hover:bg-[#eaeaef]">No tip</button>
+                  {[20, 50, 100].map((tip) => (
+                    <button
+                      key={tip}
+                      onClick={() => {
+                        setSelectedTip(tip);
+                        setCustomTip('');
+                      }}
+                      className={clsx(
+                        "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                        selectedTip === tip && customTip === ''
+                          ? "bg-[#ffb01d] text-white"
+                          : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                      )}
+                    >
+                      {tip}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => {
+                      setSelectedTip(0);
+                      setCustomTip('');
+                    }}
+                    className={clsx(
+                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                      selectedTip === 0 && customTip === ''
+                        ? "bg-[#ffb01d] text-white"
+                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                    )}
+                  >
+                    No tip
+                  </button>
                 </div>
-                <input type="text" placeholder="Custom tip amount-" className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[12px] font-semibold outline-none" />
+                <input
+                  type="number"
+                  value={customTip}
+                  onChange={(e) => setCustomTip(e.target.value)}
+                  placeholder="Custom tip amount-"
+                  className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[12px] font-semibold outline-none"
+                />
               </div>
 
               <div className="mt-6 mb-6">
