@@ -13,9 +13,18 @@ const imgAvocadoSandwich1 = image2;
 const imgAvocadoSandwich2 = image3;
 const imgAvocadoSandwich3 = image4;
 
-const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete }) => {
+const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
+  onSelect, }) => {
   return (
-    <div className="bg-white border border-[#faa300] rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative">
+    <div
+      onClick={onSelect}
+      className={clsx(
+        "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer",
+        isSelected
+          ? "border-[#faa300]"
+          : "border-[#eaeaef]"
+      )}
+    >
       <div className="w-[50px] h-[50px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)]">
         <img src={image} alt={title} className="w-full h-full object-cover" />
       </div>
@@ -101,6 +110,10 @@ export const MenuPage = () => {
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
 
+
+  const [selectedTable, setSelectedTable] = useState('01');
+  const [selectedOrderItem, setSelectedOrderItem] = useState(null);
+
   const categories = [
     { label: "All Dishes", active: true },
     { label: "Veg", active: false },
@@ -160,7 +173,24 @@ export const MenuPage = () => {
     setOrderItems(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
   };
   const handleDecrease = (id) => {
-    setOrderItems(prev => prev.map(item => item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item));
+    setOrderItems((prev) => {
+      const existing = prev.find((item) => item.id === id);
+
+      if (!existing) return prev;
+
+      if (existing.quantity === 1) {
+        return prev.filter((item) => item.id !== id);
+      }
+
+      return prev.map((item) =>
+        item.id === id
+          ? {
+            ...item,
+            quantity: item.quantity - 1,
+          }
+          : item
+      );
+    });
   };
   const handleRemove = (id) => {
     setOrderItems(prev => prev.filter(item => item.id !== id));
@@ -198,6 +228,38 @@ export const MenuPage = () => {
     }, 2000);
   };
 
+
+
+
+  const handleProductCardClick = (product) => {
+    setOrderItems((prev) => {
+      const existingItem = prev.find(
+        (item) => item.title === product.title
+      );
+
+      if (existingItem) {
+        return prev.map((item) =>
+          item.title === product.title
+            ? {
+              ...item,
+              quantity: item.quantity + 1,
+            }
+            : item
+        );
+      }
+
+      return [
+        ...prev,
+        {
+          id: Date.now(),
+          image: product.image,
+          title: product.title,
+          price: Number(product.price),
+          quantity: 1,
+        },
+      ];
+    });
+  };
   // Calculations
   const totalAmount = orderItems.reduce((acc, item) => acc + (Number(item.price) * item.quantity), 0);
   const tax = totalAmount > 0 ? totalAmount * 0.05 : 0;
@@ -257,14 +319,38 @@ export const MenuPage = () => {
         <div className="flex gap-4 flex-wrap max-w-[751px]">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((p, index) => (
-              <div key={index} onClick={() => {
-                if (isReplaceMode && selectedItemForAction) {
-                  // Replace flow
-                  setOrderItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
-                  setCenterView('menu');
-                }
-              }} className={isReplaceMode ? "cursor-pointer" : ""}>
-                <ProductCard {...p} quantity={isReplaceMode ? 0 : p.quantity} />
+              <div key={index}
+
+                onClick={() => {
+                  if (isReplaceMode && selectedItemForAction) {
+                    setOrderItems(prev =>
+                      prev.map(i =>
+                        i.id === selectedItemForAction.id
+                          ? {
+                            ...p,
+                            id: i.id,
+                            quantity: i.quantity,
+                          }
+                          : i
+                      )
+                    );
+
+                    setCenterView('menu');
+                    return;
+                  }
+
+                  handleProductCardClick(p);
+                }}
+
+                className={isReplaceMode ? "cursor-pointer" : ""}>
+                <ProductCard
+                  {...p}
+                  quantity={
+                    isReplaceMode
+                      ? 0
+                      : orderItems.find(item => item.title === p.title)?.quantity || 0
+                  }
+                />
               </div>
             ))
           ) : (
@@ -389,6 +475,8 @@ export const MenuPage = () => {
                       onSplit={() => handleSplitClick(item)}
                       onReplace={kotStatus === 'sent' ? () => handleReplaceClick(item) : undefined}
                       showDelete={kotStatus === 'idle'}
+                      isSelected={selectedOrderItem === item.id}
+                      onSelect={() => setSelectedOrderItem(item.id)}
                     />
                   ))}
                   {orderItems.length === 0 && (
@@ -431,20 +519,20 @@ export const MenuPage = () => {
                         <div className="px-4 mt-6">
                           <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
                           <div className="flex gap-4">
-                            <button 
-                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'dine_in' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")} 
+                            <button
+                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'dine_in' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
                               onClick={() => setOrderType('dine_in')}
                             >
                               Dine In
                             </button>
-                            <button 
-                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")} 
+                            <button
+                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
                               onClick={() => setOrderType('take_away')}
                             >
                               Take away
                             </button>
                           </div>
-                          
+
                           {orderType === 'dine_in' && (
                             <div className="grid grid-cols-4 gap-[16px] mt-6">
                               {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
@@ -453,7 +541,27 @@ export const MenuPage = () => {
                                 if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
                                 if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
                                 return (
-                                  <button key={num} className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px]" style={{ borderColor, color: textColor }}>{num}</button>
+                                  <button
+                                    key={num}
+                                    onClick={() => setSelectedTable(num)}
+                                    className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px] transition-colors"
+                                    style={{
+                                      borderColor:
+                                        selectedTable === num
+                                          ? '#faa300'
+                                          : borderColor,
+                                      color:
+                                        selectedTable === num
+                                          ? '#faa300'
+                                          : textColor,
+                                      backgroundColor:
+                                        selectedTable === num
+                                          ? '#fff7e8'
+                                          : 'transparent',
+                                    }}
+                                  >
+                                    {num}
+                                  </button>
                                 );
                               })}
                             </div>
@@ -564,7 +672,7 @@ export const MenuPage = () => {
                 <span className="text-[14px] font-semibold text-[#666687] block mb-3">Payment Mode</span>
                 <div className="flex gap-2 mb-4">
                   {['Cash', 'Upi', 'Card', 'Due'].map(mode => (
-                    <button 
+                    <button
                       key={mode}
                       className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", paymentMode === mode ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}
                       onClick={() => setPaymentMode(mode)}
