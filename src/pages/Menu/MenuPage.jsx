@@ -84,6 +84,10 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
 export const MenuPage = () => {
   const searchRef = useRef(null);
 
+  const paymentInputRef = useRef(null);
+
+  const [customerPaidAmount, setCustomerPaidAmount] = useState(600);
+
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState("All Dishes");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -306,6 +310,11 @@ export const MenuPage = () => {
       : selectedTip;
 
   const payableAmount = splitCalculatedAmount + appliedTip;
+
+  const changeToReturn =
+    customerPaidAmount > payableAmount
+      ? customerPaidAmount - payableAmount
+      : 0;
 
   const totalHeldPrice = heldItems.reduce(
     (acc, item) => acc + Number(item.price) * item.quantity,
@@ -645,7 +654,7 @@ export const MenuPage = () => {
                             <input
                               type="number"
                               value={guestCount}
-                              onChange={(e) => setGuestCount(Number(e.target.value) )}
+                              onChange={(e) => setGuestCount(Number(e.target.value))}
                               placeholder="Guests"
                               className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]"
                             />
@@ -813,19 +822,42 @@ export const MenuPage = () => {
                   </div>
                 ) : (
                   <>
-                    <input type="text" defaultValue="600" className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[14px] font-bold text-[#666687] outline-none mb-3" />
+                    <input
+                      ref={paymentInputRef}
+                      type="number"
+                      value={customerPaidAmount}
+                      onChange={(e) =>
+                        setCustomerPaidAmount(Number(e.target.value) || 0)
+                      }
+                      className="w-full h-[40px] border border-[#ffb01d] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] outline-none mb-3 transition-all duration-200"
+                    />
                     <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4">
-                      <span className="text-[12px] font-bold text-[#24a44b]">85 change to return</span>
+                      <span className="text-[12px] font-bold text-[#24a44b]">
+                        ₹{changeToReturn.toFixed(2)} change to return
+                      </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       {['500', '200', '100', '50', '20', '10'].map(amt => (
-                        <button key={amt} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8]">
-                          <span className="text-[#ff9556]">-</span> {amt} <span className="text-[#ff9556]">+</span>
+                        <button
+                          key={amt}
+                          onClick={() =>
+                            setCustomerPaidAmount(
+                              prev => Number(prev) + Number(amt)
+                            )
+                          }
+                          className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]"
+                        >
+                          <span className="text-[#ff9556] text-center text-2xl">-</span>
+                          {amt}
+                          <span className="text-[#ff9556] text-center text-2xl">+</span>
                         </button>
                       ))}
                     </div>
-                    <button className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-6">
+                    <button
+                      onClick={() => paymentInputRef.current?.focus()}
+                      className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-6 transition-all duration-200 active:scale-[0.98]"
+                    >
                       Custom amount
                     </button>
                   </>
