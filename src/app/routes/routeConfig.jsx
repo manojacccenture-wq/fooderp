@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'takeaways',
-        element: <div className="p-8"><h1 className="text-2xl font-bold">Takeaways Area</h1></div>,
+        element: <MenuPage initialOrderType="take_away" />,
       }
     ]
   }

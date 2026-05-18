@@ -81,7 +81,7 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
   );
 };
 
-export const MenuPage = () => {
+export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const searchRef = useRef(null);
 
   const paymentInputRef = useRef(null);
@@ -108,7 +108,7 @@ export const MenuPage = () => {
 
   const [selectedItemForAction, setSelectedItemForAction] = useState(null);
 
-  const [orderType, setOrderType] = useState('dine_in'); // 'dine_in' | 'take_away'
+  const [orderType, setOrderType] = useState(initialOrderType); // 'dine_in' | 'take_away'
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
   const [splitMode, setSplitMode] = useState('full');
   const [selectedTip, setSelectedTip] = useState(0);
@@ -144,6 +144,10 @@ export const MenuPage = () => {
     { itemNo: "203", title: "Veg Thali", price: "160", isVeg: true, quantity: 0, image: imgAvocadoSandwich2 },
     { itemNo: "204", title: "Panner Gravy", price: "160", isVeg: true, quantity: 0, image: imgAvocadoSandwich3 },
   ];
+
+  useEffect(() => {
+    setOrderType(initialOrderType);
+  }, [initialOrderType]);
 
   // CTRL + S functionality
   useEffect(() => {
@@ -238,7 +242,18 @@ export const MenuPage = () => {
     }
   };
 
+  const handlePrintBilling = () => {
+    if (orderType === 'take_away') {
+      setRightView('checkout');
+      return;
+    }
+  };
+
   const handleSendKOT = () => {
+    if (orderType === 'take_away') {
+      setRightView('checkout');
+      return;
+    }
     setKotStatus('success_anim');
     setTimeout(() => {
       setKotStatus('sent');
@@ -870,13 +885,17 @@ export const MenuPage = () => {
         {/* Bottom Button Fixed */}
         <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
           {rightView === 'order' ? (
-            kotStatus === 'sent' ? (
+            orderType === 'take_away' ? (
+              <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handlePrintBilling}>
+                Print Billing
+              </button>
+            ) : kotStatus === 'sent' ? (
               <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setRightView('checkout')}>
                 Complete Order
               </button>
             ) : kotStatus === 'idle' ? (
               <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handleSendKOT}>
-                {orderType === 'take_away' ? 'Print Billing' : 'Send to KOT'}
+                Send to KOT
               </button>
             ) : null
           ) : rightView === 'checkout' && (
