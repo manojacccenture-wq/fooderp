@@ -95,10 +95,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [guestCount, setGuestCount] = useState(4);
 
   // States lifted to MenuPage
-  const [orderItems, setOrderItems] = useState([
-    { id: 1, image: imgAvocadoSandwich1, title: "Chicken Biriyani", price: 120, quantity: 2 },
-    { id: 2, image: imgAvocadoSandwich1, title: "Non veg thali", price: 120, quantity: 2 }
-  ]);
+  const [orderItems, setOrderItems] = useState([]);
   const [heldItems, setHeldItems] = useState([]);
 
   // View states
@@ -495,429 +492,431 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       </div>
 
       {/* Right Panel */}
-      <div className="w-[354px] h-full max-h-screen bg-white border-l border-[#f3f5f9] flex flex-col relative shrink-0">
+      {/* Right Panel */}
+      {orderItems.length > 0 && (
+        <div className="w-[354px] h-full max-h-screen bg-white border-l border-[#f3f5f9] flex flex-col relative shrink-0">
 
-        {rightView === 'order' && (
-          <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
+          {rightView === 'order' && (
+            <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
 
-            {/* Header */}
-            <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
-                <span className="text-[12px] text-[#4a4a6a]">Order no : 12345</span>
-              </div>
-              <div className="flex gap-[10px]">
-                <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
-                <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
-              </div>
-            </div>
-
-            {kotStatus === 'success_anim' ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-4">
-                <span className="text-[14px] font-bold text-[#24a44b] mb-12">Order has been sent to Kot sucessfully</span>
-                <div className="relative w-[150px] h-[150px] flex items-center justify-center">
-                  <div className="absolute inset-0 rounded-full border border-[#b4efc6] animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] opacity-40"></div>
-                  <div className="absolute inset-4 rounded-full border border-[#24a44b]/30 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] opacity-60"></div>
-                  <div className="w-[70px] h-[70px] bg-[#b4efc6]/40 rounded-full flex items-center justify-center relative z-10">
-                    <div className="w-[44px] h-[44px] bg-[#24a44b] rounded-full flex items-center justify-center shadow-[0_4px_10px_rgba(36,164,75,0.3)]">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    </div>
-                  </div>
+              {/* Header */}
+              <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
+                  <span className="text-[12px] text-[#4a4a6a]">Order no : 12345</span>
+                </div>
+                <div className="flex gap-[10px]">
+                  <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
+                  <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="px-4 mt-4 flex flex-col gap-4">
-                  {orderItems.map((item) => (
-                    <OrderItem
-                      key={`curr-${item.id}`}
-                      image={item.image}
-                      title={item.title}
-                      price={item.price}
-                      quantity={item.quantity}
-                      onIncrease={() => handleIncrease(item.id)}
-                      onDecrease={() => handleDecrease(item.id)}
-                      onRemove={() => handleRemove(item.id)}
-                      onSplit={() => handleSplitClick(item)}
-                      onReplace={kotStatus === 'sent' ? () => handleReplaceClick(item) : undefined}
-                      showDelete={kotStatus === 'idle'}
-                      isSelected={selectedOrderItem === item.id}
-                      onSelect={() => setSelectedOrderItem(item.id)}
-                    />
-                  ))}
-                  {orderItems.length === 0 && (
-                    <span className="text-sm text-[#8e8ea9] text-center my-4">No items in the order.</span>
-                  )}
-                </div>
 
-                {isSplitView ? (
-                  <div className="mt-8 px-4">
-                    <div className="bg-[#ffc861]/20 border border-[#ff9556] rounded-[16px] overflow-hidden shadow-[0px_0px_1px_0px_rgba(12,26,75,0.03),0px_4px_20px_0px_rgba(50,50,71,0.04)]">
-                      <div className="flex justify-between items-center p-3">
-                        <span className="text-[16px] font-bold text-[#4a4a6a]">Held Items</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[12px] font-bold text-[#ff9556] mb-[2px]">₹</span>
-                          <span className="text-[16px] font-extrabold text-[#ff9556]">{totalHeldPrice}</span>
-                        </div>
-                      </div>
-                      <div className="p-3 pt-0 flex flex-col gap-4">
-                        {heldItems.map((item) => (
-                          <div key={`held-${item.id}`} className="flex items-center gap-3">
-                            <div className="w-[50px] h-[50px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)]">
-                              <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 flex flex-col">
-                              <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
-                              <span className="text-[14px] font-semibold text-[#666687]">{item.quantity} Quantity</span>
-                            </div>
-                            <button className="bg-[#ffb01d] text-white rounded-[16px] px-4 py-[8px] text-[12px] font-bold shadow-[0px_4px_20px_0px_rgba(50,50,71,0.02)]">
-                              Send now
-                            </button>
-                          </div>
-                        ))}
+              {kotStatus === 'success_anim' ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-4">
+                  <span className="text-[14px] font-bold text-[#24a44b] mb-12">Order has been sent to Kot sucessfully</span>
+                  <div className="relative w-[150px] h-[150px] flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border border-[#b4efc6] animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] opacity-40"></div>
+                    <div className="absolute inset-4 rounded-full border border-[#24a44b]/30 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] opacity-60"></div>
+                    <div className="w-[70px] h-[70px] bg-[#b4efc6]/40 rounded-full flex items-center justify-center relative z-10">
+                      <div className="w-[44px] h-[44px] bg-[#24a44b] rounded-full flex items-center justify-center shadow-[0_4px_10px_rgba(36,164,75,0.3)]">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    {kotStatus !== 'sent' && (
-                      <>
-                        <div className="px-4 mt-6">
-                          <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
-                          <div className="flex gap-4">
-                            <button
-                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'dine_in' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
-                              onClick={() => setOrderType('dine_in')}
-                            >
-                              Dine In
-                            </button>
-                            <button
-                              className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
-                              onClick={() => setOrderType('take_away')}
-                            >
-                              Take away
-                            </button>
-                          </div>
-
-                          {orderType === 'dine_in' && (
-                            <div className="grid grid-cols-4 gap-[16px] mt-6">
-                              {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
-                                let borderColor = '#b4efc6';
-                                let textColor = '#24a44b';
-                                if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
-                                if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
-                                return (
-                                  <button
-                                    key={num}
-                                    onClick={() => setSelectedTable(num)}
-                                    className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px] transition-colors"
-                                    style={{
-                                      borderColor:
-                                        selectedTable === num
-                                          ? '#faa300'
-                                          : borderColor,
-                                      color:
-                                        selectedTable === num
-                                          ? '#faa300'
-                                          : textColor,
-                                      backgroundColor:
-                                        selectedTable === num
-                                          ? '#fff7e8'
-                                          : 'transparent',
-                                    }}
-                                  >
-                                    {num}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-
-                        {orderType === 'take_away' && (
-                          <div className="px-4 mt-6">
-                            <div className="bg-[#fff7e8] rounded-[8px] py-[10px] px-4 mb-4">
-                              <span className="text-[14px] font-bold text-[#32324d]">Payment Summary</span>
-                            </div>
-                            <div className="bg-white rounded-[16px] p-4 flex flex-col gap-3 border border-[#f3f3f5] mb-4 shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]">
-                              <div className="flex justify-between items-center">
-                                <span className="text-[14px] font-semibold text-[#666687]">Total Amount</span>
-                                <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{subtotal.toFixed(2)}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-[14px] font-semibold text-[#666687]">Tax</span>
-                                <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{tax.toFixed(2)}</span>
-                              </div>
-                              <div className="w-full h-px border-t border-dashed border-[#eaeaef] my-1"></div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-[16px] font-bold text-[#32324d]">Total price</span>
-                                <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
-                              </div>
-                            </div>
-                            <div className="bg-[#fff7e8] rounded-[16px] p-4 flex justify-between items-center border border-[#ffb01d]/20">
-                              <span className="text-[16px] font-bold text-[#32324d]">Total</span>
-                              <span className="text-[16px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="px-4 mt-6 flex flex-col gap-[16px]">
-                          <input type="text" placeholder='Phone Number' className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
-                          {orderType === 'dine_in' && (
-                            <input
-                              type="number"
-                              value={guestCount}
-                              onChange={(e) => setGuestCount(Number(e.target.value))}
-                              placeholder="Guests"
-                              className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]"
-                            />
-                          )}
-                          <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] resize-none"></textarea>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {rightView === 'checkout' && (
-          <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
-            <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
-              <div className="flex flex-col gap-[2px]">
-                <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
-                <span className="text-[12px] text-[#4a4a6a]">Order no : 12345</span>
-              </div>
-              <div className="flex gap-[10px]">
-                <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setRightView('order'); setKotStatus('idle'); }}>Cancel order</button>
-                <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
-              </div>
-            </div>
-
-            <div className="px-4 mt-6">
-              <div className="bg-white rounded-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] p-4 flex flex-col gap-3 border border-[#f3f3f5]">
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-semibold text-[#666687]">Total Amount</span>
-                  <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-semibold text-[#666687]">Tax</span>
-                  <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{tax.toFixed(2)}</span>
-                </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-[14px] font-semibold text-[#666687]">Apply Discount</span>
-                    <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>-{discountAmount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="w-full h-px border-t border-dashed border-[#eaeaef] my-1"></div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[16px] font-bold text-[#32324d]">Total price</span>
-                  <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <span className="text-[14px] font-semibold text-[#666687] block mb-3">Split bill</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSplitMode('full')}
-                    className={clsx(
-                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
-                      splitMode === 'full'
-                        ? "bg-[#ffb01d] text-white"
-                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
-                    )}
-                  >
-                    Full Bill
-                  </button>
-
-                  <button
-                    onClick={() => setSplitMode('equal')}
-                    className={clsx(
-                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
-                      splitMode === 'equal'
-                        ? "bg-[#ffb01d] text-white"
-                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
-                    )}
-                  >
-                    Equal Split
-                  </button>
-
-                  <button
-                    onClick={() => setSplitMode('by_item')}
-                    className={clsx(
-                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
-                      splitMode === 'by_item'
-                        ? "bg-[#ffb01d] text-white"
-                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
-                    )}
-                  >
-                    By Item
-                  </button>
-                </div>
-                <span className="text-[12px] text-[#8e8ea9] block mt-2">
-                  {splitMode === 'equal'
-                    ? `Each guest pays ₹${splitCalculatedAmount.toFixed(2)}`
-                    : `Full bill amount ₹${payableAmount.toFixed(2)}`}
-                </span>
-              </div>
-
-              <div className="mt-6">
-                <span className="text-[14px] font-semibold text-[#666687] block mb-3">Add Tip</span>
-                <div className="flex gap-2 mb-3">
-                  {[20, 50, 100].map((tip) => (
-                    <button
-                      key={tip}
-                      onClick={() => {
-                        setSelectedTip(tip);
-                        setCustomTip('');
-                      }}
-                      className={clsx(
-                        "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
-                        selectedTip === tip && customTip === ''
-                          ? "bg-[#ffb01d] text-white"
-                          : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
-                      )}
-                    >
-                      {tip}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => {
-                      setSelectedTip(0);
-                      setCustomTip('');
-                    }}
-                    className={clsx(
-                      "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
-                      selectedTip === 0 && customTip === ''
-                        ? "bg-[#ffb01d] text-white"
-                        : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
-                    )}
-                  >
-                    No tip
-                  </button>
-                </div>
-                <input
-                  type="number"
-                  value={customTip}
-                  onChange={(e) => setCustomTip(e.target.value)}
-                  placeholder="Custom tip amount-"
-                  className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[12px] font-semibold outline-none"
-                />
-              </div>
-
-              <div className="mt-6 mb-6">
-                <span className="text-[14px] font-semibold text-[#666687] block mb-3">Payment Mode</span>
-                <div className="flex gap-2 mb-4">
-                  {['Cash', 'Upi', 'Card', 'Due'].map(mode => (
-                    <button
-                      key={mode}
-                      className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", paymentMode === mode ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}
-                      onClick={() => setPaymentMode(mode)}
-                    >
-                      {mode}
-                    </button>
-                  ))}
-                </div>
-
-                {paymentMode === 'Due' ? (
-                  <div className="flex flex-col gap-3 mb-6">
-                    <input type="text" placeholder="Customer name" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                    <input type="text" placeholder="Mobile Number" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                    <input type="text" placeholder="Customer given amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                    <input type="text" placeholder="Due amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                    <input type="date" placeholder="Due date" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                    <textarea placeholder="Reason for discount" className="w-full h-[80px] border border-[#eaeaef] rounded-[16px] p-4 text-[12px] font-semibold outline-none resize-none text-[#32324d] placeholder:text-[#8e8ea9]"></textarea>
-                  </div>
-                ) : (
-                  <>
-                    <input
-                      ref={paymentInputRef}
-                      type="number"
-                      value={customerPaidAmount}
-                      onChange={(e) =>
-                        setCustomerPaidAmount(Number(e.target.value) || 0)
-                      }
-                      className="w-full h-[40px] border border-[#ffb01d] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] outline-none mb-3 transition-all duration-200"
-                    />
-                    <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4">
-                      <span className="text-[12px] font-bold text-[#24a44b]">
-                        ₹{changeToReturn.toFixed(2)} change to return
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      {['500', '200', '100', '50', '20', '10'].map(amt => (
-                        <button
-                          key={amt}
-                          onClick={() =>
-                            setCustomerPaidAmount(
-                              prev => Number(prev) + Number(amt)
-                            )
-                          }
-                          className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]"
-                        >
-                          <span className="text-[#ff9556] text-center text-2xl">-</span>
-                          {amt}
-                          <span className="text-[#ff9556] text-center text-2xl">+</span>
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => paymentInputRef.current?.focus()}
-                      className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-6 transition-all duration-200 active:scale-[0.98]"
-                    >
-                      Custom amount
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Bottom Button Fixed */}
-        <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
-          {rightView === 'order' ? (
-            orderType === 'take_away' ? (
-              <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handlePrintBilling}>
-                Print Billing
-              </button>
-            ) : kotStatus === 'sent' ? (
-              <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setRightView('checkout')}>
-                Complete Order
-              </button>
-            ) : kotStatus === 'idle' ? (
-              <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handleSendKOT}>
-                Send to KOT
-              </button>
-            ) : null
-          ) : rightView === 'checkout' && (
-            <div className="flex flex-col gap-3">
-              {paymentMode === 'Due' ? (
-                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
-                  Mark as Due
-                </button>
               ) : (
                 <>
-                  <button className="w-full bg-[#dcdce4] text-[#32324d] py-[14px] rounded-[16px] font-bold text-[16px]" onClick={() => setIsDiscountModalOpen(true)}>
-                    Apply Discount
-                  </button>
-                  <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
-                    Mark as paid
-                  </button>
+                  <div className="px-4 mt-4 flex flex-col gap-4">
+                    {orderItems.map((item) => (
+                      <OrderItem
+                        key={`curr-${item.id}`}
+                        image={item.image}
+                        title={item.title}
+                        price={item.price}
+                        quantity={item.quantity}
+                        onIncrease={() => handleIncrease(item.id)}
+                        onDecrease={() => handleDecrease(item.id)}
+                        onRemove={() => handleRemove(item.id)}
+                        onSplit={() => handleSplitClick(item)}
+                        onReplace={kotStatus === 'sent' ? () => handleReplaceClick(item) : undefined}
+                        showDelete={kotStatus === 'idle'}
+                        isSelected={selectedOrderItem === item.id}
+                        onSelect={() => setSelectedOrderItem(item.id)}
+                      />
+                    ))}
+                    {orderItems.length === 0 && (
+                      <span className="text-sm text-[#8e8ea9] text-center my-4">No items in the order.</span>
+                    )}
+                  </div>
+
+                  {isSplitView ? (
+                    <div className="mt-8 px-4">
+                      <div className="bg-[#ffc861]/20 border border-[#ff9556] rounded-[16px] overflow-hidden shadow-[0px_0px_1px_0px_rgba(12,26,75,0.03),0px_4px_20px_0px_rgba(50,50,71,0.04)]">
+                        <div className="flex justify-between items-center p-3">
+                          <span className="text-[16px] font-bold text-[#4a4a6a]">Held Items</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[12px] font-bold text-[#ff9556] mb-[2px]">₹</span>
+                            <span className="text-[16px] font-extrabold text-[#ff9556]">{totalHeldPrice}</span>
+                          </div>
+                        </div>
+                        <div className="p-3 pt-0 flex flex-col gap-4">
+                          {heldItems.map((item) => (
+                            <div key={`held-${item.id}`} className="flex items-center gap-3">
+                              <div className="w-[50px] h-[50px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)]">
+                                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 flex flex-col">
+                                <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
+                                <span className="text-[14px] font-semibold text-[#666687]">{item.quantity} Quantity</span>
+                              </div>
+                              <button className="bg-[#ffb01d] text-white rounded-[16px] px-4 py-[8px] text-[12px] font-bold shadow-[0px_4px_20px_0px_rgba(50,50,71,0.02)]">
+                                Send now
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {kotStatus !== 'sent' && (
+                        <>
+                          <div className="px-4 mt-6">
+                            <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
+                            <div className="flex gap-4">
+                              <button
+                                className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'dine_in' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
+                                onClick={() => setOrderType('dine_in')}
+                              >
+                                Dine In
+                              </button>
+                              <button
+                                className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
+                                onClick={() => setOrderType('take_away')}
+                              >
+                                Take away
+                              </button>
+                            </div>
+
+                            {orderType === 'dine_in' && (
+                              <div className="grid grid-cols-4 gap-[16px] mt-6">
+                                {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
+                                  let borderColor = '#b4efc6';
+                                  let textColor = '#24a44b';
+                                  if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
+                                  if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
+                                  return (
+                                    <button
+                                      key={num}
+                                      onClick={() => setSelectedTable(num)}
+                                      className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px] transition-colors"
+                                      style={{
+                                        borderColor:
+                                          selectedTable === num
+                                            ? '#faa300'
+                                            : borderColor,
+                                        color:
+                                          selectedTable === num
+                                            ? '#faa300'
+                                            : textColor,
+                                        backgroundColor:
+                                          selectedTable === num
+                                            ? '#fff7e8'
+                                            : 'transparent',
+                                      }}
+                                    >
+                                      {num}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+
+                          {orderType === 'take_away' && (
+                            <div className="px-4 mt-6">
+                              <div className="bg-[#fff7e8] rounded-[8px] py-[10px] px-4 mb-4">
+                                <span className="text-[14px] font-bold text-[#32324d]">Payment Summary</span>
+                              </div>
+                              <div className="bg-white rounded-[16px] p-4 flex flex-col gap-3 border border-[#f3f3f5] mb-4 shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[14px] font-semibold text-[#666687]">Total Amount</span>
+                                  <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{subtotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[14px] font-semibold text-[#666687]">Tax</span>
+                                  <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{tax.toFixed(2)}</span>
+                                </div>
+                                <div className="w-full h-px border-t border-dashed border-[#eaeaef] my-1"></div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[16px] font-bold text-[#32324d]">Total price</span>
+                                  <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
+                                </div>
+                              </div>
+                              <div className="bg-[#fff7e8] rounded-[16px] p-4 flex justify-between items-center border border-[#ffb01d]/20">
+                                <span className="text-[16px] font-bold text-[#32324d]">Total</span>
+                                <span className="text-[16px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="px-4 mt-6 flex flex-col gap-[16px]">
+                            <input type="text" placeholder='Phone Number' className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
+                            {orderType === 'dine_in' && (
+                              <input
+                                type="number"
+                                value={guestCount}
+                                onChange={(e) => setGuestCount(Number(e.target.value))}
+                                placeholder="Guests"
+                                className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]"
+                              />
+                            )}
+                            <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] resize-none"></textarea>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
                 </>
               )}
             </div>
           )}
-        </div>
-      </div>
+
+          {rightView === 'checkout' && (
+            <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
+              <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
+                <div className="flex flex-col gap-[2px]">
+                  <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
+                  <span className="text-[12px] text-[#4a4a6a]">Order no : 12345</span>
+                </div>
+                <div className="flex gap-[10px]">
+                  <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setRightView('order'); setKotStatus('idle'); }}>Cancel order</button>
+                  <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
+                </div>
+              </div>
+
+              <div className="px-4 mt-6">
+                <div className="bg-white rounded-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] p-4 flex flex-col gap-3 border border-[#f3f3f5]">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] font-semibold text-[#666687]">Total Amount</span>
+                    <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] font-semibold text-[#666687]">Tax</span>
+                    <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>{tax.toFixed(2)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-[14px] font-semibold text-[#666687]">Apply Discount</span>
+                      <span className="text-[14px] font-bold text-[#32324d] flex gap-1"><small className="text-[#ff9556] mt-1">₹</small>-{discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="w-full h-px border-t border-dashed border-[#eaeaef] my-1"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[16px] font-bold text-[#32324d]">Total price</span>
+                    <span className="text-[16px] font-extrabold text-[#ff7b2c] flex gap-1"><small className="text-[#ff9556] mt-[2px]">₹</small>{payableAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <span className="text-[14px] font-semibold text-[#666687] block mb-3">Split bill</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSplitMode('full')}
+                      className={clsx(
+                        "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                        splitMode === 'full'
+                          ? "bg-[#ffb01d] text-white"
+                          : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                      )}
+                    >
+                      Full Bill
+                    </button>
+
+                    <button
+                      onClick={() => setSplitMode('equal')}
+                      className={clsx(
+                        "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                        splitMode === 'equal'
+                          ? "bg-[#ffb01d] text-white"
+                          : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                      )}
+                    >
+                      Equal Split
+                    </button>
+
+                    <button
+                      onClick={() => setSplitMode('by_item')}
+                      className={clsx(
+                        "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                        splitMode === 'by_item'
+                          ? "bg-[#ffb01d] text-white"
+                          : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                      )}
+                    >
+                      By Item
+                    </button>
+                  </div>
+                  <span className="text-[12px] text-[#8e8ea9] block mt-2">
+                    {splitMode === 'equal'
+                      ? `Each guest pays ₹${splitCalculatedAmount.toFixed(2)}`
+                      : `Full bill amount ₹${payableAmount.toFixed(2)}`}
+                  </span>
+                </div>
+
+                <div className="mt-6">
+                  <span className="text-[14px] font-semibold text-[#666687] block mb-3">Add Tip</span>
+                  <div className="flex gap-2 mb-3">
+                    {[20, 50, 100].map((tip) => (
+                      <button
+                        key={tip}
+                        onClick={() => {
+                          setSelectedTip(tip);
+                          setCustomTip('');
+                        }}
+                        className={clsx(
+                          "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                          selectedTip === tip && customTip === ''
+                            ? "bg-[#ffb01d] text-white"
+                            : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                        )}
+                      >
+                        {tip}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => {
+                        setSelectedTip(0);
+                        setCustomTip('');
+                      }}
+                      className={clsx(
+                        "flex-1 py-2 rounded-[16px] text-[12px] font-bold",
+                        selectedTip === 0 && customTip === ''
+                          ? "bg-[#ffb01d] text-white"
+                          : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]"
+                      )}
+                    >
+                      No tip
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    value={customTip}
+                    onChange={(e) => setCustomTip(e.target.value)}
+                    placeholder="Custom tip amount-"
+                    className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[12px] font-semibold outline-none"
+                  />
+                </div>
+
+                <div className="mt-6 mb-6">
+                  <span className="text-[14px] font-semibold text-[#666687] block mb-3">Payment Mode</span>
+                  <div className="flex gap-2 mb-4">
+                    {['Cash', 'Upi', 'Card', 'Due'].map(mode => (
+                      <button
+                        key={mode}
+                        className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", paymentMode === mode ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}
+                        onClick={() => setPaymentMode(mode)}
+                      >
+                        {mode}
+                      </button>
+                    ))}
+                  </div>
+
+                  {paymentMode === 'Due' ? (
+                    <div className="flex flex-col gap-3 mb-6">
+                      <input type="text" placeholder="Customer name" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                      <input type="text" placeholder="Mobile Number" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                      <input type="text" placeholder="Customer given amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                      <input type="text" placeholder="Due amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                      <input type="date" placeholder="Due date" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                      <textarea placeholder="Reason for discount" className="w-full h-[80px] border border-[#eaeaef] rounded-[16px] p-4 text-[12px] font-semibold outline-none resize-none text-[#32324d] placeholder:text-[#8e8ea9]"></textarea>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        ref={paymentInputRef}
+                        type="number"
+                        value={customerPaidAmount}
+                        onChange={(e) =>
+                          setCustomerPaidAmount(Number(e.target.value) || 0)
+                        }
+                        className="w-full h-[40px] border border-[#ffb01d] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] outline-none mb-3 transition-all duration-200"
+                      />
+                      <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4">
+                        <span className="text-[12px] font-bold text-[#24a44b]">
+                          ₹{changeToReturn.toFixed(2)} change to return
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        {['500', '200', '100', '50', '20', '10'].map(amt => (
+                          <button
+                            key={amt}
+                            onClick={() =>
+                              setCustomerPaidAmount(
+                                prev => Number(prev) + Number(amt)
+                              )
+                            }
+                            className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]"
+                          >
+                            <span className="text-[#ff9556] text-center text-2xl">-</span>
+                            {amt}
+                            <span className="text-[#ff9556] text-center text-2xl">+</span>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => paymentInputRef.current?.focus()}
+                        className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-6 transition-all duration-200 active:scale-[0.98]"
+                      >
+                        Custom amount
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Button Fixed */}
+          <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
+            {rightView === 'order' ? (
+              orderType === 'take_away' ? (
+                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handlePrintBilling}>
+                  Print Billing
+                </button>
+              ) : kotStatus === 'sent' ? (
+                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setRightView('checkout')}>
+                  Complete Order
+                </button>
+              ) : kotStatus === 'idle' ? (
+                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handleSendKOT}>
+                  Send to KOT
+                </button>
+              ) : null
+            ) : rightView === 'checkout' && (
+              <div className="flex flex-col gap-3">
+                {paymentMode === 'Due' ? (
+                  <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
+                    Mark as Due
+                  </button>
+                ) : (
+                  <>
+                    <button className="w-full bg-[#dcdce4] text-[#32324d] py-[14px] rounded-[16px] font-bold text-[16px]" onClick={() => setIsDiscountModalOpen(true)}>
+                      Apply Discount
+                    </button>
+                    <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
+                      Mark as paid
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>)}
 
       <SplitOrderModal
         isOpen={isSplitModalOpen}
