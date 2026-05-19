@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { selectAllTables, startOrderForTable } from '../../store/slices/tableSlice';
+import { selectAllTables, startOrderForTable, updateTableOrder } from '../../store/slices/tableSlice';
 import { ProductCard } from '../../components/cards/ProductCard/ProductCard';
 import image1 from "../../assets/menu/avocadoSandwich.png";
 import image2 from "../../assets/menu/non-veg-thali.png";
@@ -106,6 +106,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const [guestCount, setGuestCount] = useState(4);
+  const [phone, setPhone] = useState('');
 
   // States lifted to MenuPage
   const [orderItems, setOrderItems] = useState([]);
@@ -132,6 +133,54 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   const [selectedTable, setSelectedTable] = useState(initialTable);
   const [selectedOrderItem, setSelectedOrderItem] = useState(null);
+
+  const currentTableObj = useMemo(() => allTables.find(t => t.tableNo === selectedTable), [allTables, selectedTable]);
+  const displayCustomerName = currentTableObj?.customerName || 'Walk-in Customer';
+
+  useEffect(() => {
+    if (currentTableObj) {
+      if (currentTableObj.guests) setGuestCount(currentTableObj.guests);
+      if (currentTableObj.mobile) setPhone(currentTableObj.mobile);
+    } else {
+      setGuestCount(4);
+      setPhone('');
+    }
+  }, [currentTableObj]);
+
+  const allTablesRef = useRef(allTables);
+  useEffect(() => {
+    allTablesRef.current = allTables;
+  }, [allTables]);
+
+  const currentOrderDataRef = useRef({ orderItems, heldItems, kotStatus });
+  useEffect(() => {
+    currentOrderDataRef.current = { orderItems, heldItems, kotStatus };
+  }, [orderItems, heldItems, kotStatus]);
+
+  useEffect(() => {
+    const tableToSave = selectedTable;
+    
+    const newTableObj = allTablesRef.current.find(t => t.tableNo === selectedTable);
+    // If the table already has orderData, restore it
+    if (newTableObj && newTableObj.orderData) {
+      setOrderItems(newTableObj.orderData.orderItems || []);
+      setHeldItems(newTableObj.orderData.heldItems || []);
+      setKotStatus(newTableObj.orderData.kotStatus || 'idle');
+    } else {
+      setOrderItems([]);
+      setHeldItems([]);
+      setKotStatus('idle');
+    }
+
+    return () => {
+      if (tableToSave) {
+        dispatch(updateTableOrder({
+          tableNo: tableToSave,
+          orderData: currentOrderDataRef.current
+        }));
+      }
+    };
+  }, [selectedTable, dispatch]);
 
   const categories = [
     { label: "All Dishes", active: true },
@@ -649,7 +698,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
               <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
                 <div className="flex flex-col gap-[2px]">
                   <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
-                  <span className="text-[12px] text-[#4a4a6a]">Order no : 12345</span>
+                  <span className="text-[12px] text-[#4a4a6a]">Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}</span>
                 </div>
                 <div className="flex gap-[10px]">
                   <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
@@ -806,7 +855,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                           )}
 
                           <div className="px-4 mt-6 flex flex-col gap-[16px]">
-                            <input type="text" placeholder='Phone Number' className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
+                            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='Phone Number' className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
                             {orderType === 'dine_in' && (
                               <input
                                 type="number"
@@ -832,7 +881,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
               <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
                 <div className="flex flex-col gap-[2px]">
                   <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
-                  <span className="text-[12px] text-[#4a4a6a]">Order no : 12345</span>
+                  <span className="text-[12px] text-[#4a4a6a]">Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}</span>
                 </div>
                 <div className="flex gap-[10px]">
                   <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setRightView('order'); setKotStatus('idle'); }}>Cancel order</button>

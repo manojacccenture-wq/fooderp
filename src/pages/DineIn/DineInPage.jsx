@@ -97,6 +97,7 @@ export const DineInPage = () => {
                   duration={table.duration}
                   reservedGuests={table.reservedGuests}
                   onStartOrder={() => dispatch(setSelectedTableForOrder(table.tableNo))}
+                  onResumeOrder={() => navigate('/dashboard/menu', { state: { tableNo: table.tableNo, existingSession: true } })}
                   onChangeTable={(tableNo) => dispatch(setActionTarget({ type: 'change', tableNo }))}
                   onMergeTable={(tableNo) => dispatch(setActionTarget({ type: 'merge', tableNo }))}
                   onCancelFood={(tableNo) => dispatch(setActionTarget({ type: 'cancel-food', tableNo }))}

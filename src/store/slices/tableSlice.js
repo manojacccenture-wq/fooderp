@@ -100,6 +100,13 @@ const tableSlice = createSlice({
       if (table) {
         table.customerName = table.customerName + " (Replaced)";
       }
+    },
+    updateTableOrder: (state, action) => {
+      const { tableNo, orderData } = action.payload;
+      const table = state.tables.find(t => t.tableNo === tableNo);
+      if (table) {
+        table.orderData = orderData;
+      }
     }
   },
 });
@@ -112,7 +119,8 @@ export const {
   startOrderForTable,
   confirmSelection,
   confirmCancellation,
-  confirmReplacement
+  confirmReplacement,
+  updateTableOrder
 } = tableSlice.actions;
 
 export const selectAllTables = (state) => state.table.tables;

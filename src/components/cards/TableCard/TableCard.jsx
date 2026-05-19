@@ -46,6 +46,7 @@ export const TableCard = ({
   onMergeTable,
   onCancelFood,
   onReplaceFood,
+  onResumeOrder,
   isSelected,
   minimalView
 }) => {
@@ -135,7 +136,10 @@ export const TableCard = ({
 
   if (status === 'occupied') {
     return (
-      <div className="w-[293px] h-[183px] bg-white border-2 border-[#eaeaef] rounded-[16px] relative shrink-0">
+      <div 
+        className="w-[293px] h-[183px] bg-white border-2 border-[#eaeaef] rounded-[16px] relative shrink-0 cursor-pointer hover:border-[#ffb01d] transition-colors duration-200"
+        onClick={onResumeOrder ? () => onResumeOrder(tableNo) : undefined}
+      >
         {renderDropdown()}
         <h3 className="absolute top-[20px] left-[48px] text-[16px] font-extrabold text-[#4a4a6a]">Table {tableNo}</h3>
         <div className="absolute top-[16px] right-[16px] h-[28px] px-4 bg-[#fccccc] rounded-[16px] flex items-center justify-center">
@@ -167,8 +171,10 @@ export const TableCard = ({
         </div>
 
         {/* Button */}
-        <button className="absolute top-[127px] right-[16px] w-[121px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold">
-          Completer Order
+        <button 
+          onClick={(e) => { e.stopPropagation(); if(onResumeOrder) onResumeOrder(tableNo); }}
+          className="absolute top-[127px] right-[16px] w-[121px] h-[32px] bg-[#ffb01d] rounded-[12px] flex items-center justify-center text-white text-[12px] font-bold">
+          Complete Order
         </button>
       </div>
     );
