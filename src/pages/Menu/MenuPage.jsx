@@ -14,9 +14,10 @@ const imgAvocadoSandwich2 = image3;
 const imgAvocadoSandwich3 = image4;
 
 const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
-  onSelect, }) => {
+  onSelect, itemRef }) => {
   return (
     <div
+      ref={itemRef}
       onClick={onSelect}
       className={clsx(
         "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer",
@@ -83,6 +84,7 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
 
 export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const searchRef = useRef(null);
+  const itemRefs = useRef({});
 
   const paymentInputRef = useRef(null);
 
@@ -222,6 +224,56 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setCenterView('cancel_item');
   };
 
+  useEffect(() => {
+    const handleArrowKeys = (e) => {
+      if (!selectedOrderItem) return;
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        handleIncrease(selectedOrderItem);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        handleDecrease(selectedOrderItem);
+      }
+    };
+    window.addEventListener('keydown', handleArrowKeys);
+    return () => window.removeEventListener('keydown', handleArrowKeys);
+  }, [selectedOrderItem, orderItems]);
+
+  const handleSearchEnter = (e) => {
+    if (e.key === 'Enter') {
+      if (search.trim() !== '' && filteredProducts.length === 1) {
+        const product = filteredProducts[0];
+        let targetId = null;
+        setOrderItems(prev => {
+          const existingItem = prev.find(item => item.title === product.title);
+          if (existingItem) {
+            targetId = existingItem.id;
+            return prev.map(item => item.id === targetId ? { ...item, quantity: item.quantity + 1 } : item);
+          } else {
+            targetId = Date.now();
+            return [...prev, {
+              id: targetId,
+              image: product.image,
+              title: product.title,
+              price: Number(product.price),
+              quantity: 1,
+            }];
+          }
+        });
+        
+        setTimeout(() => {
+          if (targetId) {
+            setSelectedOrderItem(targetId);
+            itemRefs.current[targetId]?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest',
+            });
+          }
+        }, 50);
+      }
+    }
+  };
+
   const handleConfirmSplit = ({ item, kitchenQty, heldQty, reason }) => {
     if (kitchenQty > 0) {
       setOrderItems(prev => prev.map(i => i.id === item.id ? { ...i, quantity: kitchenQty } : i));
@@ -347,6 +399,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={handleSearchEnter}
           onFocus={() => setIsSearchFocused(true)}
           onBlur={() => setIsSearchFocused(false)}
           placeholder="Search by Item No or Product Name"
@@ -544,6 +597,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                         showDelete={kotStatus === 'idle'}
                         isSelected={selectedOrderItem === item.id}
                         onSelect={() => setSelectedOrderItem(item.id)}
+                        itemRef={(el) => (itemRefs.current[item.id] = el)}
                       />
                     ))}
                     {orderItems.length === 0 && (
