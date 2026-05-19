@@ -87,7 +87,11 @@ const tableSlice = createSlice({
       const { tableNo } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.customerName = table.customerName + " (Cancelled)";
+        table.status = 'available';
+        table.customerName = '';
+        table.guests = 0;
+        table.reservedGuests = 0;
+        table.duration = '';
       }
     },
     confirmReplacement: (state, action) => {

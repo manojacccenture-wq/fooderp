@@ -17,6 +17,7 @@ import {
   confirmCancellation,
   confirmReplacement
 } from '../../store/slices/tableSlice';
+import { cancelOrder } from '../../store/slices/orderSlice';
 
 export const DineInPage = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export const DineInPage = () => {
   const handleConfirmCancellation = (tableNo, data) => {
     console.log('Cancellation confirmed for table:', tableNo, data);
     dispatch(confirmCancellation({ tableNo, data }));
+    dispatch(cancelOrder());
     dispatch(setActionTarget(null));
   };
 
