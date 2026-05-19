@@ -85,6 +85,8 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
 export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const searchRef = useRef(null);
   const itemRefs = useRef({});
+  const productRefs = useRef({});
+  const [keyboardSelectedIndex, setKeyboardSelectedIndex] = useState(0);
 
   const paymentInputRef = useRef(null);
 
@@ -223,6 +225,66 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setSelectedItemForAction(item);
     setCenterView('cancel_item');
   };
+
+  useEffect(() => {
+    setKeyboardSelectedIndex(0);
+  }, [search, activeCategory]);
+
+  useEffect(() => {
+    setKeyboardSelectedIndex(prev => {
+      if (prev >= filteredProducts.length) {
+        return Math.max(filteredProducts.length - 1, 0);
+      }
+      return prev;
+    });
+  }, [filteredProducts.length]);
+
+  useEffect(() => {
+    const handleGridKeyDown = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      
+      if (!filteredProducts || filteredProducts.length === 0) return;
+
+      const columns = 4;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setKeyboardSelectedIndex(prev => Math.min(prev + 1, filteredProducts.length - 1));
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setKeyboardSelectedIndex(prev => Math.max(prev - 1, 0));
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setKeyboardSelectedIndex(prev => Math.min(prev + columns, filteredProducts.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setKeyboardSelectedIndex(prev => Math.max(prev - columns, 0));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        setKeyboardSelectedIndex(prev => {
+          const selectedProduct = filteredProducts[prev];
+          if (selectedProduct) {
+             handleProductCardClick(selectedProduct);
+          }
+          return prev;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleGridKeyDown);
+    return () => window.removeEventListener('keydown', handleGridKeyDown);
+  }, [filteredProducts]);
+
+  useEffect(() => {
+    if (keyboardSelectedIndex >= 0) {
+      productRefs.current[keyboardSelectedIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }, [keyboardSelectedIndex]);
 
   useEffect(() => {
     const handleArrowKeys = (e) => {
@@ -438,7 +500,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           {filteredProducts.length > 0 ? (
             filteredProducts.map((p, index) => (
               <div key={index}
-
+                ref={(el) => (productRefs.current[index] = el)}
                 onClick={() => {
                   if (isReplaceMode && selectedItemForAction) {
                     setOrderItems(prev =>
@@ -463,6 +525,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                 className={isReplaceMode ? "cursor-pointer" : ""}>
                 <ProductCard
                   {...p}
+                  isKeyboardSelected={keyboardSelectedIndex === index}
                   quantity={
                     isReplaceMode
                       ? 0
