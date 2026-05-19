@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import clsx from 'clsx';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { selectAllTables, startOrderForTable } from '../../store/slices/tableSlice';
 import { ProductCard } from '../../components/cards/ProductCard/ProductCard';
 import image1 from "../../assets/menu/avocadoSandwich.png";
 import image2 from "../../assets/menu/non-veg-thali.png";
@@ -83,6 +86,12 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
 };
 
 export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
+  const location = useLocation();
+  const dispatch = useAppDispatch();
+  const allTables = useAppSelector(selectAllTables);
+  const isDineInFlow = !!location.state?.tableNo;
+  const initialTable = location.state?.tableNo || null;
+
   const searchRef = useRef(null);
   const itemRefs = useRef({});
   const productRefs = useRef({});
@@ -121,7 +130,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [discountAmount, setDiscountAmount] = useState(0);
 
 
-  const [selectedTable, setSelectedTable] = useState('01');
+  const [selectedTable, setSelectedTable] = useState(initialTable);
   const [selectedOrderItem, setSelectedOrderItem] = useState(null);
 
   const categories = [
@@ -378,6 +387,14 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       setRightView('checkout');
       return;
     }
+    
+    if (orderType === 'dine_in' && !isDineInFlow && selectedTable) {
+      dispatch(startOrderForTable({ 
+        tableNo: selectedTable, 
+        formData: { name: 'Walk-in Customer', guests: guestCount, time: '' } 
+      }));
+    }
+
     setKotStatus('success_anim');
     setTimeout(() => {
       setKotStatus('sent');
@@ -732,29 +749,25 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
                             {orderType === 'dine_in' && (
                               <div className="grid grid-cols-4 gap-[16px] mt-6">
-                                {['01', '02', '03', '04', '05', '06', '07', '08'].map((num) => {
-                                  let borderColor = '#b4efc6';
-                                  let textColor = '#24a44b';
-                                  if (num === '01') { borderColor = '#faa300'; textColor = '#faa300'; }
-                                  if (num === '06' || num === '08') { borderColor = '#e23744'; textColor = '#e23744'; }
+                                {allTables.slice(0, 8).map((table) => {
+                                  const num = table.tableNo;
+                                  const isAvailable = table.status === 'available';
+                                  let borderColor = isAvailable ? '#b4efc6' : '#e23744';
+                                  let textColor = isAvailable ? '#24a44b' : '#e23744';
+                                  if (selectedTable === num) { borderColor = '#faa300'; textColor = '#faa300'; }
+                                  
+                                  const isDisabled = isDineInFlow ? (num !== selectedTable) : !isAvailable;
+
                                   return (
                                     <button
                                       key={num}
-                                      onClick={() => setSelectedTable(num)}
-                                      className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px] transition-colors"
+                                      disabled={isDisabled}
+                                      onClick={() => !isDisabled && setSelectedTable(num)}
+                                      className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                       style={{
-                                        borderColor:
-                                          selectedTable === num
-                                            ? '#faa300'
-                                            : borderColor,
-                                        color:
-                                          selectedTable === num
-                                            ? '#faa300'
-                                            : textColor,
-                                        backgroundColor:
-                                          selectedTable === num
-                                            ? '#fff7e8'
-                                            : 'transparent',
+                                        borderColor: selectedTable === num ? '#faa300' : borderColor,
+                                        color: selectedTable === num ? '#faa300' : textColor,
+                                        backgroundColor: selectedTable === num ? '#fff7e8' : 'transparent',
                                       }}
                                     >
                                       {num}
@@ -1023,7 +1036,11 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                   Complete Order
                 </button>
               ) : kotStatus === 'idle' ? (
-                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handleSendKOT}>
+                <button 
+                  className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
+                  onClick={handleSendKOT}
+                  disabled={orderType === 'dine_in' && !selectedTable}
+                >
                   Send to KOT
                 </button>
               ) : null
