@@ -239,6 +239,11 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     });
   }, [filteredProducts.length]);
 
+  const keyboardIndexRef = useRef(keyboardSelectedIndex);
+  useEffect(() => {
+    keyboardIndexRef.current = keyboardSelectedIndex;
+  }, [keyboardSelectedIndex]);
+
   useEffect(() => {
     const handleGridKeyDown = (e) => {
       const tag = document.activeElement?.tagName;
@@ -246,29 +251,37 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       
       if (!filteredProducts || filteredProducts.length === 0) return;
 
-      const columns = 4;
-
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         setKeyboardSelectedIndex(prev => Math.min(prev + 1, filteredProducts.length - 1));
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         setKeyboardSelectedIndex(prev => Math.max(prev - 1, 0));
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setKeyboardSelectedIndex(prev => Math.min(prev + columns, filteredProducts.length - 1));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setKeyboardSelectedIndex(prev => Math.max(prev - columns, 0));
+        const activeProduct = filteredProducts[keyboardIndexRef.current];
+        if (activeProduct) {
+          handleProductCardClick(activeProduct);
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const activeProduct = filteredProducts[keyboardIndexRef.current];
+        if (activeProduct) {
+          setOrderItems(prev => {
+            const existingItem = prev.find(item => item.title === activeProduct.title);
+            if (!existingItem) return prev;
+            if (existingItem.quantity === 1) {
+              return prev.filter(item => item.title !== activeProduct.title);
+            }
+            return prev.map(item => item.title === activeProduct.title ? { ...item, quantity: item.quantity - 1 } : item);
+          });
+        }
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        setKeyboardSelectedIndex(prev => {
-          const selectedProduct = filteredProducts[prev];
-          if (selectedProduct) {
-             handleProductCardClick(selectedProduct);
-          }
-          return prev;
-        });
+        const activeProduct = filteredProducts[keyboardIndexRef.current];
+        if (activeProduct) {
+          handleProductCardClick(activeProduct);
+        }
       }
     };
 
