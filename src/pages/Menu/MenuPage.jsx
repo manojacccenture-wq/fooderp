@@ -688,8 +688,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
       {/* Right Panel */}
       {/* Right Panel */}
-      {orderItems.length > 0 && (
-        <div className="w-[354px] h-full max-h-screen bg-white border-l border-[#f3f5f9] flex flex-col relative shrink-0">
+      <div className="w-[354px] h-full max-h-screen bg-white border-l border-[#f3f5f9] flex flex-col relative shrink-0">
 
           {rightView === 'order' && (
             <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
@@ -743,7 +742,14 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                       />
                     ))}
                     {orderItems.length === 0 && (
-                      <span className="text-sm text-[#8e8ea9] text-center my-4">No items in the order.</span>
+                      <div className="flex flex-col items-center justify-center py-8 opacity-60">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8e8ea9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3">
+                          <circle cx="9" cy="21" r="1"></circle>
+                          <circle cx="20" cy="21" r="1"></circle>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <span className="text-[14px] font-bold text-[#8e8ea9]">Please select a product</span>
+                      </div>
                     )}
                   </div>
 
@@ -777,7 +783,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                     </div>
                   ) : (
                     <>
-                      {kotStatus !== 'sent' && (
+                      {kotStatus !== 'sent' && orderItems.length > 0 && (
                         <>
                           <div className="px-4 mt-6">
                             <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
@@ -1074,10 +1080,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           )}
 
           {/* Bottom Button Fixed */}
+          {orderItems.length > 0 && (
           <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
             {rightView === 'order' ? (
               orderType === 'take_away' ? (
-                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handlePrintBilling}>
+                <button 
+                  className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
+                  onClick={handlePrintBilling}
+                  disabled={orderItems.length === 0}
+                >
                   Print Billing
                 </button>
               ) : kotStatus === 'sent' ? (
@@ -1088,7 +1099,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                 <button 
                   className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
                   onClick={handleSendKOT}
-                  disabled={orderType === 'dine_in' && !selectedTable}
+                  disabled={(orderType === 'dine_in' && !selectedTable) || orderItems.length === 0}
                 >
                   Send to KOT
                 </button>
@@ -1112,7 +1123,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
               </div>
             )}
           </div>
-        </div>)}
+          )}
+        </div>
 
       <SplitOrderModal
         isOpen={isSplitModalOpen}
