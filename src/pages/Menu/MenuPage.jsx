@@ -91,6 +91,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const allTables = useAppSelector(selectAllTables);
   const isDineInFlow = !!location.state?.tableNo;
   const initialTable = location.state?.tableNo || null;
+  const isTakeawayPage = location.pathname === '/dashboard/takeaways';
 
   const searchRef = useRef(null);
   const itemRefs = useRef({});
@@ -788,12 +789,14 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                           <div className="px-4 mt-6">
                             <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
                             <div className="flex gap-4">
-                              <button
-                                className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'dine_in' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
-                                onClick={() => setOrderType('dine_in')}
-                              >
-                                Dine In
-                              </button>
+                              {!isTakeawayPage && (
+                                <button
+                                  className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'dine_in' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
+                                  onClick={() => setOrderType('dine_in')}
+                                >
+                                  Dine In
+                                </button>
+                              )}
                               <button
                                 className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
                                 onClick={() => setOrderType('take_away')}
