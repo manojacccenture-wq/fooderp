@@ -161,15 +161,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     const tableToSave = selectedTable;
     
     const newTableObj = allTablesRef.current.find(t => t.tableNo === selectedTable);
-    // If the table already has orderData, restore it
-    if (newTableObj && newTableObj.orderData) {
-      setOrderItems(newTableObj.orderData.orderItems || []);
-      setHeldItems(newTableObj.orderData.heldItems || []);
-      setKotStatus(newTableObj.orderData.kotStatus || 'idle');
+    // If the table already has orderData, restore it ONLY if the current cart is empty.
+    // This ensures table selection NEVER modifies existing selected products.
+    if (newTableObj && newTableObj.orderData && newTableObj.orderData.orderItems?.length > 0) {
+      setOrderItems(prev => prev.length === 0 ? (newTableObj.orderData.orderItems || []) : prev);
+      setHeldItems(prev => prev.length === 0 ? (newTableObj.orderData.heldItems || []) : prev);
+      setKotStatus(prev => prev === 'idle' ? (newTableObj.orderData.kotStatus || 'idle') : prev);
     } else {
-      setOrderItems([]);
-      setHeldItems([]);
-      setKotStatus('idle');
+      // DO NOT clear existing cart items when assigning a table!
+      // This preserves existing selected products and attaches them to the new table.
     }
 
     return () => {
