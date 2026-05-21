@@ -4,8 +4,8 @@ export const TableActionMenu = ({ onSelect, onClose }) => {
   const menuItems = [
     { label: 'Change table', action: 'change-table' },
     { label: 'Merge Table', action: 'merge-table' },
-    { label: 'Cancel Food', action: 'cancel-food' },
-    { label: 'Replace Food', action: 'replace-food' },
+    // { label: 'Cancel Food', action: 'cancel-food' },
+    // { label: 'Replace Food', action: 'replace-food' },
   ];
 
   return (

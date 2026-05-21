@@ -84,7 +84,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const initialTable = location.state?.tableNo || null;
   const isTakeawayPage = location.pathname === '/dashboard/takeaways';
 
-  const searchRef = useRef(null);
   const itemRefs = useRef({});
 
   const paymentInputRef = useRef(null);
@@ -123,6 +122,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const currentTableObj = useMemo(() => allTables.find(t => t.tableNo === selectedTable), [allTables, selectedTable]);
   const displayCustomerName = currentTableObj?.customerName || 'Walk-in Customer';
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (currentTableObj) {
       if (currentTableObj.guests) setGuestCount(currentTableObj.guests);
@@ -168,6 +168,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     };
   }, [selectedTable, dispatch]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     setOrderType(initialOrderType);
   }, [initialOrderType]);
@@ -208,7 +209,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setCenterView('cancel_item');
   };
 
-  const handleConfirmSplit = ({ item, kitchenQty, heldQty, reason }) => {
+  const handleConfirmSplit = ({ item, kitchenQty, heldQty }) => {
     if (kitchenQty > 0) {
       setOrderItems(prev => prev.map(i => i.id === item.id ? { ...i, quantity: kitchenQty } : i));
     } else {
@@ -289,11 +290,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   const subtotal = orderItems.reduce(
     (acc, item) => acc + Number(item.price) * item.quantity,
-    0
-  );
-
-  const totalQuantity = orderItems.reduce(
-    (acc, item) => acc + item.quantity,
     0
   );
 
@@ -437,7 +433,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
             {centerView === 'replace_item' && (
               <div className="flex flex-col gap-6 w-full">
                 <div className="bg-[#ffc861]/20 border border-[#ffb01d] rounded-[16px] p-4 text-[#32324d] font-semibold text-[14px]">
-                  Replace Item: The original item will be replaced with a new item without cancellation. The order amount will be adjusted accordingly.
+                  Replace Item: The original item will be replaced with a new item without cancellation. The order amount will be adjusted accordingly.
                 </div>
                 {renderMenuContent(true)}
               </div>

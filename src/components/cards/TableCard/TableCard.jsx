@@ -91,7 +91,7 @@ export const TableCard = ({
         
         {showMenu && (
           <div className="absolute top-[32px] left-0 w-[140px] bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] py-2 border border-[#eaeaef] flex flex-col gap-1">
-            {['Change table', 'Merge table', 'Cancel Food', 'Replace Food'].map(opt => (
+            {['Change table', 'Merge table'/* , 'Cancel Food', 'Replace Food' */].map(opt => (
               <button 
                 key={opt} 
                 onClick={(e) => { e.stopPropagation(); handleAction(opt); }} 
