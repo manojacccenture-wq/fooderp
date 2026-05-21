@@ -3,18 +3,9 @@ import { useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { selectAllTables, startOrderForTable, updateTableOrder } from '../../store/slices/tableSlice';
-import { ProductCard } from '../../components/cards/ProductCard/ProductCard';
-import image1 from "../../assets/menu/avocadoSandwich.png";
-import image2 from "../../assets/menu/non-veg-thali.png";
-import image3 from "../../assets/menu/veg-thali.png";
-import image4 from "../../assets/menu/paneer.png";
 import { SplitOrderModal } from '../../components/orders/SplitOrderModal/SplitOrderModal';
 import { ApplyDiscountModal } from '../../components/orders/ApplyDiscountModal/ApplyDiscountModal';
-
-const imgAvocadoSandwich = image1;
-const imgAvocadoSandwich1 = image2;
-const imgAvocadoSandwich2 = image3;
-const imgAvocadoSandwich3 = image4;
+import { MenuContent } from '../../components/menu/MenuContent';
 
 const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
   onSelect, itemRef }) => {
@@ -95,16 +86,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   const searchRef = useRef(null);
   const itemRefs = useRef({});
-  const productRefs = useRef({});
-  const [keyboardSelectedIndex, setKeyboardSelectedIndex] = useState(0);
 
   const paymentInputRef = useRef(null);
 
   const [customerPaidAmount, setCustomerPaidAmount] = useState(600);
-
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState("All Dishes");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const [guestCount, setGuestCount] = useState(4);
   const [phone, setPhone] = useState('');
@@ -183,71 +168,9 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     };
   }, [selectedTable, dispatch]);
 
-  const categories = [
-    { label: "All Dishes", active: true },
-    { label: "Veg", active: false },
-    { label: "Non Veg", active: false },
-    { label: "Desert", active: false },
-  ];
-
-  const products = [
-    { itemNo: "401", title: "Mutton Gravy", price: "160", isVeg: false, quantity: 3, image: imgAvocadoSandwich },
-    {
-      itemNo: "403",
-      title: "Chicken Biriyani",
-      price: "180",
-      isVeg: false,
-      quantity: 0,
-      image: imgAvocadoSandwich1
-    },
-    { itemNo: "402", title: "Non veg thali", price: "120", isVeg: false, quantity: 0, image: imgAvocadoSandwich1 },
-    { itemNo: "203", title: "Veg Thali", price: "160", isVeg: true, quantity: 0, image: imgAvocadoSandwich2 },
-    { itemNo: "204", title: "Panner Gravy", price: "160", isVeg: true, quantity: 0, image: imgAvocadoSandwich3 },
-  ];
-
   useEffect(() => {
     setOrderType(initialOrderType);
   }, [initialOrderType]);
-
-  // CTRL + S functionality
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
-      if (e.key === '1') setActiveCategory("All Dishes");
-      if (e.key === '2') setActiveCategory("Veg");
-      if (e.key === '3') setActiveCategory("Non Veg");
-      if (e.key === '4') setActiveCategory("Desert");
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    const firstChar = search.trim().charAt(0);
-    if (firstChar === '2') setActiveCategory("Veg");
-    else if (firstChar === '4') setActiveCategory("Non Veg");
-    else if (firstChar === '5') setActiveCategory("Desert");
-    else if (search.trim() === '') setActiveCategory("All Dishes");
-  }, [search]);
-
-  const filteredProducts = useMemo(() => {
-    let filtered = products;
-    if (activeCategory === "Veg") filtered = filtered.filter(p => p.itemNo.startsWith('2'));
-    if (activeCategory === "Non Veg") filtered = filtered.filter(p => p.itemNo.startsWith('4'));
-    if (activeCategory === "Desert") filtered = filtered.filter(p => p.itemNo.startsWith('5'));
-    if (search.trim()) {
-      const searchValue = search.toLowerCase();
-      filtered = filtered.filter((product) =>
-        product.title.toLowerCase().includes(searchValue) ||
-        product.itemNo.toLowerCase().startsWith(searchValue)
-      );
-    }
-    return filtered;
-  }, [search, activeCategory, products]);
 
   // Order Handlers
   const handleIncrease = (id) => {
@@ -283,129 +206,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const handleReplaceClick = (item) => {
     setSelectedItemForAction(item);
     setCenterView('cancel_item');
-  };
-
-  useEffect(() => {
-    setKeyboardSelectedIndex(0);
-  }, [search, activeCategory]);
-
-  useEffect(() => {
-    setKeyboardSelectedIndex(prev => {
-      if (prev >= filteredProducts.length) {
-        return Math.max(filteredProducts.length - 1, 0);
-      }
-      return prev;
-    });
-  }, [filteredProducts.length]);
-
-  const keyboardIndexRef = useRef(keyboardSelectedIndex);
-  useEffect(() => {
-    keyboardIndexRef.current = keyboardSelectedIndex;
-  }, [keyboardSelectedIndex]);
-
-  useEffect(() => {
-    const handleGridKeyDown = (e) => {
-      const tag = document.activeElement?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      
-      if (!filteredProducts || filteredProducts.length === 0) return;
-
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        setKeyboardSelectedIndex(prev => Math.min(prev + 1, filteredProducts.length - 1));
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        setKeyboardSelectedIndex(prev => Math.max(prev - 1, 0));
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        const activeProduct = filteredProducts[keyboardIndexRef.current];
-        if (activeProduct) {
-          handleProductCardClick(activeProduct);
-        }
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        const activeProduct = filteredProducts[keyboardIndexRef.current];
-        if (activeProduct) {
-          setOrderItems(prev => {
-            const existingItem = prev.find(item => item.title === activeProduct.title);
-            if (!existingItem) return prev;
-            if (existingItem.quantity === 1) {
-              return prev.filter(item => item.title !== activeProduct.title);
-            }
-            return prev.map(item => item.title === activeProduct.title ? { ...item, quantity: item.quantity - 1 } : item);
-          });
-        }
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        const activeProduct = filteredProducts[keyboardIndexRef.current];
-        if (activeProduct) {
-          handleProductCardClick(activeProduct);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleGridKeyDown);
-    return () => window.removeEventListener('keydown', handleGridKeyDown);
-  }, [filteredProducts]);
-
-  useEffect(() => {
-    if (keyboardSelectedIndex >= 0) {
-      productRefs.current[keyboardSelectedIndex]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest'
-      });
-    }
-  }, [keyboardSelectedIndex]);
-
-  useEffect(() => {
-    const handleArrowKeys = (e) => {
-      if (!selectedOrderItem) return;
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        handleIncrease(selectedOrderItem);
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        handleDecrease(selectedOrderItem);
-      }
-    };
-    window.addEventListener('keydown', handleArrowKeys);
-    return () => window.removeEventListener('keydown', handleArrowKeys);
-  }, [selectedOrderItem, orderItems]);
-
-  const handleSearchEnter = (e) => {
-    if (e.key === 'Enter') {
-      if (search.trim() !== '' && filteredProducts.length === 1) {
-        const product = filteredProducts[0];
-        let targetId = null;
-        setOrderItems(prev => {
-          const existingItem = prev.find(item => item.title === product.title);
-          if (existingItem) {
-            targetId = existingItem.id;
-            return prev.map(item => item.id === targetId ? { ...item, quantity: item.quantity + 1 } : item);
-          } else {
-            targetId = Date.now();
-            return [...prev, {
-              id: targetId,
-              image: product.image,
-              title: product.title,
-              price: Number(product.price),
-              quantity: 1,
-            }];
-          }
-        });
-        
-        setTimeout(() => {
-          if (targetId) {
-            setSelectedOrderItem(targetId);
-            itemRefs.current[targetId]?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'nearest',
-            });
-          }
-        }, 50);
-      }
-    }
   };
 
   const handleConfirmSplit = ({ item, kitchenQty, heldQty, reason }) => {
@@ -528,100 +328,60 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   );
   // Render components
   const renderMenuContent = (isReplaceMode = false) => (
-    <>
-      <div className={clsx(
-        "w-full max-w-[769px] h-[54px] bg-white border rounded-[16px] flex items-center px-4 py-3 mb-8 transition-colors",
-        isSearchFocused ? "border-[#ffb01d]" : "border-[#eaeaef]"
-      )}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8E8EA9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-3">
-          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input
-          ref={searchRef}
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={handleSearchEnter}
-          onFocus={() => setIsSearchFocused(true)}
-          onBlur={() => setIsSearchFocused(false)}
-          placeholder="Search by Item No or Product Name"
-          className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-[14px] text-[#666687] placeholder:text-[#8e8ea9]"
-        />
-        <div className="ml-3 cursor-pointer">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7B2C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-            <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
-          </svg>
-        </div>
-      </div>
-
-      <div className="flex gap-2 mb-8">
-        {categories.map((cat, index) => (
-          <button
-            key={index}
-            onClick={() => setActiveCategory(cat.label)}
-            className={clsx(
-              "px-[16px] py-[10px] rounded-[16px] text-[14px] font-bold whitespace-nowrap transition-colors",
-              activeCategory === cat.label
-                ? 'bg-[#ffb01d] text-white'
-                : 'bg-transparent text-[#666687] hover:bg-[#f3f5f9]'
-            )}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col gap-4">
-        <h2 className="text-[18px] font-bold text-[#4a4a6a] mb-1">Top 10 Today</h2>
-        <div className="flex gap-4 flex-wrap max-w-[751px]">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((p, index) => (
-              <div key={index}
-                ref={(el) => (productRefs.current[index] = el)}
-                onClick={() => {
-                  if (isReplaceMode && selectedItemForAction) {
-                    setOrderItems(prev =>
-                      prev.map(i =>
-                        i.id === selectedItemForAction.id
-                          ? {
-                            ...p,
-                            id: i.id,
-                            quantity: i.quantity,
-                          }
-                          : i
-                      )
-                    );
-
-                    setCenterView('menu');
-                    return;
-                  }
-
-                  handleProductCardClick(p);
-                }}
-
-                className={isReplaceMode ? "cursor-pointer" : ""}>
-                <ProductCard
-                  {...p}
-                  isKeyboardSelected={keyboardSelectedIndex === index}
-                  quantity={
-                    isReplaceMode
-                      ? 0
-                      : orderItems.find(item => item.title === p.title)?.quantity || 0
-                  }
-                />
-              </div>
-            ))
-          ) : (
-            <div className="w-full flex items-center justify-center py-10">
-              <span className="text-[#8e8ea9] text-[14px]">No products found</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
+    <MenuContent
+      orderItems={orderItems}
+      isReplaceMode={isReplaceMode}
+      replacementSelectedProductId={selectedItemForAction?.itemNo}
+      onProductClick={(p) => {
+        if (isReplaceMode && selectedItemForAction) {
+          setOrderItems(prev =>
+            prev.map(i =>
+              i.id === selectedItemForAction.id
+                ? {
+                  ...p,
+                  id: i.id,
+                  quantity: i.quantity,
+                }
+                : i
+            )
+          );
+          setCenterView('menu');
+          return;
+        }
+        handleProductCardClick(p);
+      }}
+      onProductEnter={(p) => {
+        if (isReplaceMode && selectedItemForAction) {
+          setOrderItems(prev =>
+            prev.map(i =>
+              i.id === selectedItemForAction.id
+                ? {
+                  ...p,
+                  id: i.id,
+                  quantity: i.quantity,
+                }
+                : i
+            )
+          );
+          setCenterView('menu');
+          return;
+        }
+        handleProductCardClick(p);
+      }}
+      onProductDecrease={(p) => {
+        setOrderItems(prev => {
+          const existingItem = prev.find(item => item.title === p.title);
+          if (!existingItem) return prev;
+          if (existingItem.quantity === 1) {
+            return prev.filter(item => item.title !== p.title);
+          }
+          return prev.map(item => item.title === p.title ? { ...item, quantity: item.quantity - 1 } : item);
+        });
+      }}
+      selectedOrderItem={selectedOrderItem}
+      onIncreaseSelected={handleIncrease}
+      onDecreaseSelected={handleDecrease}
+    />
   );
 
   return (
