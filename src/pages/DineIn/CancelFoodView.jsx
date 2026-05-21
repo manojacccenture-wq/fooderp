@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAppSelector } from '../../store/hooks';
+import { selectAllTables } from '../../store/slices/tableSlice';
 import clsx from 'clsx';
 
 // Reuse order item card pattern from MenuPage
@@ -50,14 +52,17 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
 };
 
 export const CancelFoodView = ({ tableNo, onClose, onConfirmCancellation }) => {
+  const allTables = useAppSelector(selectAllTables);
+  const selectedTable = allTables.find(t => t.tableNo === tableNo);
+
   const [selectedReason, setSelectedReason] = useState("");
   const [remarks, setRemarks] = useState("");
   
-  // Mock order items for the view - in real app this would come from state/props
-  const [orderItems, setOrderItems] = useState([
-    { id: 1, image: "http://localhost:3845/assets/457decdb571c02070bc7add243bd80cae81aeb7f.png", title: "Chicken Biriyani", price: 120, quantity: 2 },
-    { id: 2, image: "http://localhost:3845/assets/9c489a346f0d6c27a9687c5b68bc1fef4c902d3c.png", title: "Non veg thali", price: 120, quantity: 2 }
-  ]);
+  const [orderItems, setOrderItems] = useState(() => selectedTable?.orderData?.orderItems || []);
+
+  useEffect(() => {
+    setOrderItems(selectedTable?.orderData?.orderItems || []);
+  }, [selectedTable]);
 
   const reasons = [
     "Customer change mind", "Item out of stock", 
@@ -137,7 +142,7 @@ export const CancelFoodView = ({ tableNo, onClose, onConfirmCancellation }) => {
          <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
            <div className="flex flex-col gap-[2px]">
              <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
-             <span className="text-[12px] text-[#4a4a6a]">Order no : 12345</span>
+             <span className="text-[12px] text-[#4a4a6a]">Customer: {selectedTable?.customerName || 'Walk-in'} | Table: {tableNo}</span>
            </div>
          </div>
 
@@ -185,7 +190,8 @@ export const CancelFoodView = ({ tableNo, onClose, onConfirmCancellation }) => {
          <div className="px-4 mt-6 flex flex-col gap-3">
             <input 
               type="text" 
-              defaultValue="9629917347"
+              defaultValue={selectedTable?.mobile || ""}
+              placeholder="Phone Number"
               className="w-full h-[54px] border border-[#eaeaef] rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none focus:border-[#ffb01d] transition-colors" 
             />
          </div>
