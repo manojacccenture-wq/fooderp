@@ -1,8 +1,9 @@
 import React from 'react';
 import clsx from 'clsx';
+import { SpecialInstructionTags } from './SpecialInstructionTags';
 
 // OrderItem internal component or imported
-const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, showDelete, isSelected, onSelect, onSplit, onReplace, replaceModeSelection, showQuantityControls = true }) => {
+const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, showDelete, isSelected, onSelect, onSplit, onReplace, replaceModeSelection, showQuantityControls = true, specialInstructions, onAddInstruction }) => {
   return (
     <div 
       onClick={onSelect}
@@ -36,6 +37,7 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
             <span className="text-[14px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
           </div>
         )}
+        <SpecialInstructionTags instructions={specialInstructions} />
       </div>
       
       {/* Action Icons Top Right */}
@@ -46,6 +48,11 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
           </div>
         ) : (
           <>
+            {onAddInstruction && (
+              <div onClick={(e) => { e.stopPropagation(); onAddInstruction(); }} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#6b4eff] transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sticky-note"><path d="M21 9a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"/><path d="M15 3v5a1 1 0 0 0 1 1h5"/></svg>
+              </div>
+            )}
             {onSplit && (
               <div onClick={(e) => { e.stopPropagation(); onSplit(); }} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#666687]">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -105,6 +112,7 @@ export const OrderSummarySidebar = ({
   onRemove,
   onSplit,
   onReplace,
+  onAddInstruction,
   selectedOrderItemId,
   onSelectOrderItem,
   
@@ -147,6 +155,8 @@ export const OrderSummarySidebar = ({
             onRemove={undefined}
             onSplit={onSplit ? () => onSplit(item) : undefined}
             onReplace={onReplace ? () => onReplace(item) : undefined}
+            onAddInstruction={onAddInstruction ? () => onAddInstruction(item) : undefined}
+            specialInstructions={item.specialInstructions}
             showDelete={false}
             showQuantityControls={false}
             
@@ -174,6 +184,8 @@ export const OrderSummarySidebar = ({
                 onRemove={onRemove ? () => onRemove(item.id) : undefined}
                 onSplit={onSplit ? () => onSplit(item) : undefined}
                 onReplace={undefined}
+                onAddInstruction={onAddInstruction ? () => onAddInstruction(item) : undefined}
+                specialInstructions={item.specialInstructions}
                 showDelete={mode === 'menu' || mode === 'cancel-food'}
                 showQuantityControls={true}
                 

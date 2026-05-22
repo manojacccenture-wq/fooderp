@@ -6,9 +6,11 @@ import { selectAllTables, startOrderForTable, updateTableOrder } from '../../sto
 import { SplitOrderModal } from '../../components/orders/SplitOrderModal/SplitOrderModal';
 import { ApplyDiscountModal } from '../../components/orders/ApplyDiscountModal/ApplyDiscountModal';
 import { MenuContent } from '../../components/menu/MenuContent';
+import { SpecialInstructionTags } from '../../components/orders/SpecialInstructionTags';
+import { SpecialInstructionsModal } from '../../components/orders/SpecialInstructionsModal';
 
 const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
-  onSelect, itemRef, showQuantityControls = true }) => {
+  onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction }) => {
   return (
     <div
       ref={itemRef}
@@ -40,8 +42,14 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
             <span className="text-[14px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
           </div>
         )}
+        <SpecialInstructionTags instructions={specialInstructions} />
       </div>
       <div className="absolute right-3 top-3 flex gap-[6px]">
+        {onAddInstruction && (
+          <div onClick={(e) => { e.stopPropagation(); onAddInstruction(); }} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#6b4eff] transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sticky-note"><path d="M21 9a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"/><path d="M15 3v5a1 1 0 0 0 1 1h5"/></svg>
+          </div>
+        )}
         {onSplit && (
           <div onClick={onSplit} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#666687]">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -121,6 +129,9 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
+
+  const [isSpecialInstructionsModalOpen, setIsSpecialInstructionsModalOpen] = useState(false);
+  const [itemForInstructions, setItemForInstructions] = useState(null);
 
 
   const [selectedTable, setSelectedTable] = useState(initialTable);
@@ -224,6 +235,17 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setCenterView('cancel_item');
   };
 
+  const handleOpenInstructions = (item) => {
+    setItemForInstructions(item);
+    setIsSpecialInstructionsModalOpen(true);
+  };
+
+  const handleSaveInstructions = (itemId, instructions) => {
+    setDraftOrderItems(prev => prev.map(item => item.id === itemId ? { ...item, specialInstructions: instructions } : item));
+    setSentKotItems(prev => prev.map(item => item.id === itemId ? { ...item, specialInstructions: instructions } : item));
+    setIsSpecialInstructionsModalOpen(false);
+  };
+
   const handleConfirmSplit = ({ item, kitchenQty, heldQty }) => {
     // If splitting from draft order items
     setDraftOrderItems(prev => {
@@ -315,6 +337,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           title: product.title,
           price: Number(product.price),
           quantity: 1,
+          specialInstructionGroups: product.specialInstructionGroups || [],
         },
       ];
     });
@@ -511,6 +534,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                         quantity={item.quantity}
                         onSplit={() => handleSplitClick(item)}
                         onReplace={() => handleReplaceClick(item)}
+                        onAddInstruction={() => handleOpenInstructions(item)}
+                        specialInstructions={item.specialInstructions}
                         showDelete={false}
                         showQuantityControls={false}
                         isSelected={selectedOrderItem === item.id}
@@ -535,6 +560,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                             onDecrease={() => handleDecrease(item.id)}
                             onRemove={() => handleRemove(item.id)}
                             onSplit={() => handleSplitClick(item)}
+                            onAddInstruction={() => handleOpenInstructions(item)}
+                            specialInstructions={item.specialInstructions}
                             showDelete={true}
                             showQuantityControls={true}
                             isSelected={selectedOrderItem === item.id}
@@ -945,6 +972,13 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         totalAmount={subtotal}
         tax={tax}
         onApply={(amount) => setDiscountAmount(amount)}
+      />
+
+      <SpecialInstructionsModal
+        isOpen={isSpecialInstructionsModalOpen}
+        item={itemForInstructions}
+        onClose={() => setIsSpecialInstructionsModalOpen(false)}
+        onSave={handleSaveInstructions}
       />
 
     </div>
