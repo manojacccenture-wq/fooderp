@@ -15,7 +15,8 @@ import {
   startOrderForTable,
   confirmSelection,
   confirmCancellation,
-  confirmReplacement
+  confirmReplacement,
+  cancelTable
 } from '../../store/slices/tableSlice';
 import { cancelOrder } from '../../store/slices/orderSlice';
 
@@ -102,6 +103,7 @@ export const DineInPage = () => {
                   onMergeTable={(tableNo) => dispatch(setActionTarget({ type: 'merge', tableNo }))}
                   onCancelFood={(tableNo) => dispatch(setActionTarget({ type: 'cancel-food', tableNo }))}
                   onReplaceFood={(tableNo) => dispatch(setActionTarget({ type: 'replace-food', tableNo }))}
+                  onCancelTable={(tableNo) => dispatch(cancelTable({ tableNo }))}
                 />
               ))}
             </div>

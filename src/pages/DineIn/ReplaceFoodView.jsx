@@ -12,13 +12,16 @@ export const ReplaceFoodView = ({ tableNo, onClose, onConfirmReplacement }) => {
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [replacementProduct, setReplacementProduct] = useState(null);
 
-  const [orderItems, setOrderItems] = useState(() => selectedTable?.orderData?.orderItems || []);
+  const [draftOrderItems, setDraftOrderItems] = useState(() => selectedTable?.orderData?.draftOrderItems || []);
+  const [sentKotItems, setSentKotItems] = useState(() => selectedTable?.orderData?.sentKotItems || []);
 
   useEffect(() => {
-    setOrderItems(selectedTable?.orderData?.orderItems || []);
+    setDraftOrderItems(selectedTable?.orderData?.draftOrderItems || []);
+    setSentKotItems(selectedTable?.orderData?.sentKotItems || []);
   }, [selectedTable]);
 
-  const subtotal = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const combinedItems = [...sentKotItems, ...draftOrderItems];
+  const subtotal = combinedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
@@ -43,7 +46,7 @@ export const ReplaceFoodView = ({ tableNo, onClose, onConfirmReplacement }) => {
           </p>
         </div>
         <MenuContent 
-          orderItems={orderItems}
+          orderItems={combinedItems}
           isReplaceMode={true}
           replacementSelectedProductId={replacementProduct?.itemNo}
           onProductClick={setReplacementProduct}
@@ -53,7 +56,8 @@ export const ReplaceFoodView = ({ tableNo, onClose, onConfirmReplacement }) => {
 
       <OrderSummarySidebar
         mode="replace-food"
-        orderItems={orderItems}
+        sentKotItems={sentKotItems}
+        draftOrderItems={draftOrderItems}
         customerName={selectedTable?.customerName}
         tableNo={tableNo}
         subtotal={subtotal}

@@ -46,6 +46,7 @@ export const TableCard = ({
   onMergeTable,
   onCancelFood,
   onReplaceFood,
+  onCancelTable,
   onResumeOrder,
   isSelected,
   minimalView
@@ -74,6 +75,8 @@ export const TableCard = ({
       onCancelFood && onCancelFood(tableNo);
     } else if (action === 'Replace Food') {
       onReplaceFood && onReplaceFood(tableNo);
+    } else if (action === 'Cancel Table') {
+      onCancelTable && onCancelTable(tableNo);
     }
     // Other actions...
   };
@@ -91,7 +94,7 @@ export const TableCard = ({
         
         {showMenu && (
           <div className="absolute top-[32px] left-0 w-[140px] bg-white rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] py-2 border border-[#eaeaef] flex flex-col gap-1">
-            {['Change table', 'Merge table'/* , 'Cancel Food', 'Replace Food' */].map(opt => (
+            {['Change table', 'Merge table'/* , 'Cancel Food', 'Replace Food' */,'Cancel Table'].map(opt => (
               <button 
                 key={opt} 
                 onClick={(e) => { e.stopPropagation(); handleAction(opt); }} 

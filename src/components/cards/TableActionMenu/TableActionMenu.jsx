@@ -6,6 +6,7 @@ export const TableActionMenu = ({ onSelect, onClose }) => {
     { label: 'Merge Table', action: 'merge-table' },
     // { label: 'Cancel Food', action: 'cancel-food' },
     // { label: 'Replace Food', action: 'replace-food' },
+        { label: 'Cancel Table', action: 'cancel-table' },
   ];
 
   return (

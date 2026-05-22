@@ -10,10 +10,12 @@ export const CancelFoodView = ({ tableNo, onClose, onConfirmCancellation }) => {
   const [selectedReason, setSelectedReason] = useState("");
   const [remarks, setRemarks] = useState("");
   
-  const [orderItems, setOrderItems] = useState(() => selectedTable?.orderData?.orderItems || []);
+  const [draftOrderItems, setDraftOrderItems] = useState(() => selectedTable?.orderData?.draftOrderItems || []);
+  const [sentKotItems, setSentKotItems] = useState(() => selectedTable?.orderData?.sentKotItems || []);
 
   useEffect(() => {
-    setOrderItems(selectedTable?.orderData?.orderItems || []);
+    setDraftOrderItems(selectedTable?.orderData?.draftOrderItems || []);
+    setSentKotItems(selectedTable?.orderData?.sentKotItems || []);
   }, [selectedTable]);
 
   const reasons = [
@@ -23,12 +25,13 @@ export const CancelFoodView = ({ tableNo, onClose, onConfirmCancellation }) => {
     "Customer request", "Other"
   ];
 
-  const subtotal = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const combinedItems = [...sentKotItems, ...draftOrderItems];
+  const subtotal = combinedItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
   const handleConfirm = () => {
-    onConfirmCancellation && onConfirmCancellation(tableNo, { reason: selectedReason, remarks, orderItems });
+    onConfirmCancellation && onConfirmCancellation(tableNo, { reason: selectedReason, remarks, sentKotItems, draftOrderItems });
     onClose();
   };
 
@@ -73,7 +76,8 @@ export const CancelFoodView = ({ tableNo, onClose, onConfirmCancellation }) => {
       {/* Right Side: Order Panel */}
       <OrderSummarySidebar
         mode="cancel-food"
-        orderItems={orderItems}
+        sentKotItems={sentKotItems}
+        draftOrderItems={draftOrderItems}
         customerName={selectedTable?.customerName}
         tableNo={tableNo}
         subtotal={subtotal}

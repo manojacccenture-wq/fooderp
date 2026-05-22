@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 // OrderItem internal component or imported
-const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, showDelete, isSelected, onSelect, onSplit, onReplace, replaceModeSelection }) => {
+const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, showDelete, isSelected, onSelect, onSplit, onReplace, replaceModeSelection, showQuantityControls = true }) => {
   return (
     <div 
       onClick={onSelect}
@@ -17,19 +17,25 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <span className="text-[14px] leading-[22px] text-[#32324d] font-semibold">{title}</span>
-        <div className="flex items-center gap-2 mt-1">
-          {onDecrease && !replaceModeSelection ? (
-            <button onClick={(e) => { e.stopPropagation(); onDecrease(); }} className="w-6 h-6 rounded-[12.5px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe0d3] transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
-          ) : null}
-          <span className="text-[14px] font-semibold text-[#666687] min-w-[9px] text-center">{quantity} {replaceModeSelection && 'Quantity'}</span>
-          {onIncrease && !replaceModeSelection ? (
-            <button onClick={(e) => { e.stopPropagation(); onIncrease(); }} className="w-7 h-7 rounded-[14px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe0d3] transition-colors">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
-          ) : null}
-        </div>
+        {showQuantityControls ? (
+          <div className="flex items-center gap-2 mt-1">
+            {onDecrease && !replaceModeSelection ? (
+              <button onClick={(e) => { e.stopPropagation(); onDecrease(); }} className="w-6 h-6 rounded-[12.5px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe0d3] transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+            ) : null}
+            <span className="text-[14px] font-semibold text-[#666687] min-w-[9px] text-center">{quantity} {replaceModeSelection && 'Quantity'}</span>
+            {onIncrease && !replaceModeSelection ? (
+              <button onClick={(e) => { e.stopPropagation(); onIncrease(); }} className="w-7 h-7 rounded-[14px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe0d3] transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </button>
+            ) : null}
+          </div>
+        ) : (
+          <div className="flex items-center mt-1">
+            <span className="text-[14px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
+          </div>
+        )}
       </div>
       
       {/* Action Icons Top Right */}
@@ -84,7 +90,8 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
 
 export const OrderSummarySidebar = ({
   mode = 'menu', // 'menu' | 'cancel-food' | 'replace-food'
-  orderItems,
+  sentKotItems = [],
+  draftOrderItems = [],
   customerName,
   tableNo,
   subtotal,
@@ -128,19 +135,20 @@ export const OrderSummarySidebar = ({
       </div>
 
       <div className="px-4 mt-4 flex flex-col gap-4 overflow-y-auto max-h-[350px] custom-scrollbar">
-        {orderItems.map((item) => (
+        {sentKotItems.length > 0 && sentKotItems.map((item) => (
           <OrderItem
-            key={item.id}
+            key={`sent-${item.id}`}
             image={item.image}
             title={item.title}
             price={item.price}
             quantity={item.quantity}
-            onIncrease={onIncrease ? () => onIncrease(item.id) : undefined}
-            onDecrease={onDecrease ? () => onDecrease(item.id) : undefined}
-            onRemove={onRemove ? () => onRemove(item.id) : undefined}
+            onIncrease={undefined}
+            onDecrease={undefined}
+            onRemove={undefined}
             onSplit={onSplit ? () => onSplit(item) : undefined}
             onReplace={onReplace ? () => onReplace(item) : undefined}
-            showDelete={mode === 'menu' || mode === 'cancel-food'}
+            showDelete={false}
+            showQuantityControls={false}
             
             // Standard selection
             isSelected={mode === 'menu' && selectedOrderItemId === item.id || mode === 'replace-food' && selectedReplaceItemId === item.id}
@@ -148,14 +156,44 @@ export const OrderSummarySidebar = ({
             replaceModeSelection={mode === 'replace-food'}
           />
         ))}
-        {orderItems.length === 0 && (
+
+        {draftOrderItems.length > 0 && (
+          <>
+            {sentKotItems.length > 0 && (
+              <h3 className="text-[18px] font-bold text-[#666687] mt-2 mb-0">New Orders</h3>
+            )}
+            {draftOrderItems.map((item) => (
+              <OrderItem
+                key={`curr-${item.id}`}
+                image={item.image}
+                title={item.title}
+                price={item.price}
+                quantity={item.quantity}
+                onIncrease={onIncrease ? () => onIncrease(item.id) : undefined}
+                onDecrease={onDecrease ? () => onDecrease(item.id) : undefined}
+                onRemove={onRemove ? () => onRemove(item.id) : undefined}
+                onSplit={onSplit ? () => onSplit(item) : undefined}
+                onReplace={undefined}
+                showDelete={mode === 'menu' || mode === 'cancel-food'}
+                showQuantityControls={true}
+                
+                // Standard selection
+                isSelected={mode === 'menu' && selectedOrderItemId === item.id || mode === 'replace-food' && selectedReplaceItemId === item.id}
+                onSelect={mode === 'menu' && onSelectOrderItem ? () => onSelectOrderItem(item.id) : mode === 'replace-food' && onSelectReplaceItem ? () => onSelectReplaceItem(item.id) : undefined}
+                replaceModeSelection={mode === 'replace-food'}
+              />
+            ))}
+          </>
+        )}
+
+        {sentKotItems.length === 0 && draftOrderItems.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 opacity-60">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8e8ea9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3">
               <circle cx="9" cy="21" r="1"></circle>
               <circle cx="20" cy="21" r="1"></circle>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
-            <span className="text-[14px] font-bold text-[#8e8ea9]">Please select a product</span>
+            <span className="text-[14px] font-bold text-[#8e8ea9]">Please select a item</span>
           </div>
         )}
       </div>

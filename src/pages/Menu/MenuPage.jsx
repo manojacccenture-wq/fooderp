@@ -8,7 +8,7 @@ import { ApplyDiscountModal } from '../../components/orders/ApplyDiscountModal/A
 import { MenuContent } from '../../components/menu/MenuContent';
 
 const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
-  onSelect, itemRef }) => {
+  onSelect, itemRef, showQuantityControls = true }) => {
   return (
     <div
       ref={itemRef}
@@ -25,15 +25,21 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <span className="text-[14px] leading-[22px] text-[#32324d] font-semibold">{title}</span>
-        <div className="flex items-center gap-2 mt-1">
-          <button onClick={onDecrease} className="w-6 h-6 rounded-[12.5px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
-          <span className="text-[14px] font-semibold text-[#666687] min-w-[9px] text-center">{quantity}</span>
-          <button onClick={onIncrease} className="w-7 h-7 rounded-[14px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
-        </div>
+        {showQuantityControls ? (
+          <div className="flex items-center gap-2 mt-1">
+            <button onClick={onDecrease} className="w-6 h-6 rounded-[12.5px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <span className="text-[14px] font-semibold text-[#666687] min-w-[9px] text-center">{quantity}</span>
+            <button onClick={onIncrease} className="w-7 h-7 rounded-[14px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center mt-1">
+            <span className="text-[14px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
+          </div>
+        )}
       </div>
       <div className="absolute right-3 top-3 flex gap-[6px]">
         {onSplit && (
@@ -94,7 +100,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [phone, setPhone] = useState('');
 
   // States lifted to MenuPage
-  const [orderItems, setOrderItems] = useState([]);
+  const [draftOrderItems, setDraftOrderItems] = useState([]);
+  const [sentKotItems, setSentKotItems] = useState([]);
   const [heldItems, setHeldItems] = useState([]);
 
   // View states
@@ -121,6 +128,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   const currentTableObj = useMemo(() => allTables.find(t => t.tableNo === selectedTable), [allTables, selectedTable]);
   const displayCustomerName = currentTableObj?.customerName || 'Walk-in Customer';
+  const isExistingSessionMode = currentTableObj?.status === 'occupied' || currentTableObj?.status === 'reserved';
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -138,10 +146,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     allTablesRef.current = allTables;
   }, [allTables]);
 
-  const currentOrderDataRef = useRef({ orderItems, heldItems, kotStatus });
+  const currentOrderDataRef = useRef({ draftOrderItems, sentKotItems, heldItems, kotStatus });
   useEffect(() => {
-    currentOrderDataRef.current = { orderItems, heldItems, kotStatus };
-  }, [orderItems, heldItems, kotStatus]);
+    currentOrderDataRef.current = { draftOrderItems, sentKotItems, heldItems, kotStatus };
+  }, [draftOrderItems, sentKotItems, heldItems, kotStatus]);
 
   useEffect(() => {
     const tableToSave = selectedTable;
@@ -149,10 +157,17 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     const newTableObj = allTablesRef.current.find(t => t.tableNo === selectedTable);
     // If the table already has orderData, restore it ONLY if the current cart is empty.
     // This ensures table selection NEVER modifies existing selected products.
-    if (newTableObj && newTableObj.orderData && newTableObj.orderData.orderItems?.length > 0) {
-      setOrderItems(prev => prev.length === 0 ? (newTableObj.orderData.orderItems || []) : prev);
-      setHeldItems(prev => prev.length === 0 ? (newTableObj.orderData.heldItems || []) : prev);
-      setKotStatus(prev => prev === 'idle' ? (newTableObj.orderData.kotStatus || 'idle') : prev);
+    if (newTableObj && newTableObj.orderData) {
+      const { draftOrderItems: savedDraft = [], sentKotItems: savedSent = [], heldItems: savedHeld = [], kotStatus: savedKot = 'idle' } = newTableObj.orderData;
+      // Also check if they had the old 'orderItems' array for backwards compatibility
+      const oldOrderItems = newTableObj.orderData.orderItems || [];
+      
+      if (savedDraft.length > 0 || savedSent.length > 0 || oldOrderItems.length > 0) {
+        setDraftOrderItems(prev => prev.length === 0 && sentKotItems.length === 0 ? (savedDraft.length ? savedDraft : oldOrderItems) : prev);
+        setSentKotItems(prev => prev.length === 0 && draftOrderItems.length === 0 ? savedSent : prev);
+        setHeldItems(prev => prev.length === 0 ? savedHeld : prev);
+        setKotStatus(prev => prev === 'idle' ? savedKot : prev);
+      }
     } else {
       // DO NOT clear existing cart items when assigning a table!
       // This preserves existing selected products and attaches them to the new table.
@@ -175,10 +190,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   // Order Handlers
   const handleIncrease = (id) => {
-    setOrderItems(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
+    setDraftOrderItems(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
   };
   const handleDecrease = (id) => {
-    setOrderItems((prev) => {
+    setDraftOrderItems((prev) => {
       const existing = prev.find((item) => item.id === id);
 
       if (!existing) return prev;
@@ -198,7 +213,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     });
   };
   const handleRemove = (id) => {
-    setOrderItems(prev => prev.filter(item => item.id !== id));
+    setDraftOrderItems(prev => prev.filter(item => item.id !== id));
   };
   const handleSplitClick = (item) => {
     setSelectedItemForAction(item);
@@ -210,11 +225,19 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   };
 
   const handleConfirmSplit = ({ item, kitchenQty, heldQty }) => {
-    if (kitchenQty > 0) {
-      setOrderItems(prev => prev.map(i => i.id === item.id ? { ...i, quantity: kitchenQty } : i));
-    } else {
-      setOrderItems(prev => prev.filter(i => i.id !== item.id));
-    }
+    // If splitting from draft order items
+    setDraftOrderItems(prev => {
+      if (!prev.find(i => i.id === item.id)) return prev;
+      if (kitchenQty > 0) return prev.map(i => i.id === item.id ? { ...i, quantity: kitchenQty } : i);
+      return prev.filter(i => i.id !== item.id);
+    });
+    // If splitting from sent kot items
+    setSentKotItems(prev => {
+      if (!prev.find(i => i.id === item.id)) return prev;
+      if (kitchenQty > 0) return prev.map(i => i.id === item.id ? { ...i, quantity: kitchenQty } : i);
+      return prev.filter(i => i.id !== item.id);
+    });
+
     if (heldQty > 0) {
       setHeldItems(prev => {
         const existing = prev.find(i => i.id === item.id);
@@ -246,17 +269,29 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       }));
     }
 
+    // Move draft items to sent Kot items
+    setSentKotItems(prevSent => {
+      const newSent = [...prevSent];
+      draftOrderItems.forEach(draftItem => {
+        const existing = newSent.find(item => item.title === draftItem.title);
+        if (existing) {
+          existing.quantity += draftItem.quantity;
+        } else {
+          newSent.push({ ...draftItem });
+        }
+      });
+      return newSent;
+    });
+    setDraftOrderItems([]); // clear drafts
+
     setKotStatus('success_anim');
     setTimeout(() => {
-      setKotStatus('sent');
+      setKotStatus('idle'); // Just reset to idle so they can add more items immediately if needed, or keep it sent.
     }, 2000);
   };
 
-
-
-
   const handleProductCardClick = (product) => {
-    setOrderItems((prev) => {
+    setDraftOrderItems((prev) => {
       const existingItem = prev.find(
         (item) => item.title === product.title
       );
@@ -283,12 +318,16 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         },
       ];
     });
+    // When a new product is added, reset KOT status to idle so they can send again
+    setKotStatus('idle');
   };
   // Calculations
 
 
 
-  const subtotal = orderItems.reduce(
+  const combinedItems = [...sentKotItems, ...draftOrderItems];
+
+  const subtotal = combinedItems.reduce(
     (acc, item) => acc + Number(item.price) * item.quantity,
     0
   );
@@ -325,22 +364,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   // Render components
   const renderMenuContent = (isReplaceMode = false) => (
     <MenuContent
-      orderItems={orderItems}
+      orderItems={combinedItems} // Pass combined items so quantity badge displays correctly across draft and sent
       isReplaceMode={isReplaceMode}
       replacementSelectedProductId={selectedItemForAction?.itemNo}
       onProductClick={(p) => {
         if (isReplaceMode && selectedItemForAction) {
-          setOrderItems(prev =>
-            prev.map(i =>
-              i.id === selectedItemForAction.id
-                ? {
-                  ...p,
-                  id: i.id,
-                  quantity: i.quantity,
-                }
-                : i
-            )
-          );
+          // Replace mode modifies BOTH sent and draft items for simplicity,
+          // though usually it's acting on sent.
+          setSentKotItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
+          setDraftOrderItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
           setCenterView('menu');
           return;
         }
@@ -348,29 +380,19 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       }}
       onProductEnter={(p) => {
         if (isReplaceMode && selectedItemForAction) {
-          setOrderItems(prev =>
-            prev.map(i =>
-              i.id === selectedItemForAction.id
-                ? {
-                  ...p,
-                  id: i.id,
-                  quantity: i.quantity,
-                }
-                : i
-            )
-          );
+          setSentKotItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
+          setDraftOrderItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
           setCenterView('menu');
           return;
         }
         handleProductCardClick(p);
       }}
       onProductDecrease={(p) => {
-        setOrderItems(prev => {
+        // Decrease should only operate on draft items via product card clicks if possible.
+        setDraftOrderItems(prev => {
           const existingItem = prev.find(item => item.title === p.title);
           if (!existingItem) return prev;
-          if (existingItem.quantity === 1) {
-            return prev.filter(item => item.title !== p.title);
-          }
+          if (existingItem.quantity === 1) return prev.filter(item => item.title !== p.title);
           return prev.map(item => item.title === p.title ? { ...item, quantity: item.quantity - 1 } : item);
         });
       }}
@@ -457,7 +479,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                   <span className="text-[12px] text-[#4a4a6a]">Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}</span>
                 </div>
                 <div className="flex gap-[10px]">
-                  <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
+                  <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setDraftOrderItems([]); setSentKotItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
                   <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
                 </div>
               </div>
@@ -480,32 +502,57 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
               ) : (
                 <>
                   <div className="px-4 mt-4 flex flex-col gap-4">
-                    {orderItems.map((item) => (
+                    {sentKotItems.length > 0 && sentKotItems.map((item) => (
                       <OrderItem
-                        key={`curr-${item.id}`}
+                        key={`sent-${item.id}`}
                         image={item.image}
                         title={item.title}
                         price={item.price}
                         quantity={item.quantity}
-                        onIncrease={() => handleIncrease(item.id)}
-                        onDecrease={() => handleDecrease(item.id)}
-                        onRemove={() => handleRemove(item.id)}
                         onSplit={() => handleSplitClick(item)}
-                        onReplace={kotStatus === 'sent' ? () => handleReplaceClick(item) : undefined}
-                        showDelete={kotStatus === 'idle'}
+                        onReplace={() => handleReplaceClick(item)}
+                        showDelete={false}
+                        showQuantityControls={false}
                         isSelected={selectedOrderItem === item.id}
                         onSelect={() => setSelectedOrderItem(item.id)}
                         itemRef={(el) => (itemRefs.current[item.id] = el)}
                       />
                     ))}
-                    {orderItems.length === 0 && (
+
+                    {draftOrderItems.length > 0 && (
+                      <>
+                        {sentKotItems.length > 0 && (
+                          <h3 className="text-[18px] font-bold text-[#666687] mt-2 mb-0">New Orders</h3>
+                        )}
+                        {draftOrderItems.map((item) => (
+                          <OrderItem
+                            key={`curr-${item.id}`}
+                            image={item.image}
+                            title={item.title}
+                            price={item.price}
+                            quantity={item.quantity}
+                            onIncrease={() => handleIncrease(item.id)}
+                            onDecrease={() => handleDecrease(item.id)}
+                            onRemove={() => handleRemove(item.id)}
+                            onSplit={() => handleSplitClick(item)}
+                            showDelete={true}
+                            showQuantityControls={true}
+                            isSelected={selectedOrderItem === item.id}
+                            onSelect={() => setSelectedOrderItem(item.id)}
+                            itemRef={(el) => (itemRefs.current[item.id] = el)}
+                          />
+                        ))}
+                      </>
+                    )}
+
+                    {combinedItems.length === 0 && (
                       <div className="flex flex-col items-center justify-center py-8 opacity-60">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8e8ea9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3">
                           <circle cx="9" cy="21" r="1"></circle>
                           <circle cx="20" cy="21" r="1"></circle>
                           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                         </svg>
-                        <span className="text-[14px] font-bold text-[#8e8ea9]">Please select a product</span>
+                        <span className="text-[14px] font-bold text-[#8e8ea9]">Please select a item</span>
                       </div>
                     )}
                   </div>
@@ -540,7 +587,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                     </div>
                   ) : (
                     <>
-                      {kotStatus !== 'sent' && orderItems.length > 0 && (
+                      {kotStatus !== 'sent' && combinedItems.length > 0 && !isExistingSessionMode && (
                         <>
                           <div className="px-4 mt-6">
                             <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
@@ -563,7 +610,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
                             {orderType === 'dine_in' && (
                               <div className="grid grid-cols-4 gap-[16px] mt-6">
-                                {allTables.slice(0, 8).map((table) => {
+                                {allTables.map((table) => {
                                   const num = table.tableNo;
                                   const isAvailable = table.status === 'available';
                                   let borderColor = isAvailable ? '#b4efc6' : '#e23744';
@@ -839,28 +886,28 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           )}
 
           {/* Bottom Button Fixed */}
-          {orderItems.length > 0 && (
+          {combinedItems.length > 0 && (
           <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
             {rightView === 'order' ? (
               orderType === 'take_away' ? (
                 <button 
                   className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
                   onClick={handlePrintBilling}
-                  disabled={orderItems.length === 0}
+                  disabled={combinedItems.length === 0}
                 >
                   Print Billing
                 </button>
-              ) : kotStatus === 'sent' ? (
-                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setRightView('checkout')}>
-                  Complete Order
-                </button>
-              ) : kotStatus === 'idle' ? (
+              ) : kotStatus === 'success_anim' ? null : draftOrderItems.length > 0 ? (
                 <button 
                   className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
                   onClick={handleSendKOT}
-                  disabled={(orderType === 'dine_in' && !selectedTable) || orderItems.length === 0}
+                  disabled={(orderType === 'dine_in' && !selectedTable)}
                 >
                   Send to KOT
+                </button>
+              ) : sentKotItems.length > 0 ? (
+                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setRightView('checkout')}>
+                  Complete Order
                 </button>
               ) : null
             ) : rightView === 'checkout' && (
