@@ -534,7 +534,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                         quantity={item.quantity}
                         onSplit={() => handleSplitClick(item)}
                         onReplace={() => handleReplaceClick(item)}
-                        onAddInstruction={() => handleOpenInstructions(item)}
+                        onAddInstruction={undefined}
                         specialInstructions={item.specialInstructions}
                         showDelete={false}
                         showQuantityControls={false}
@@ -704,7 +704,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                                 className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]"
                               />
                             )}
-                            <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] resize-none"></textarea>
+                            {/* <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] resize-none"></textarea> */}
                           </div>
                         </>
                       )}

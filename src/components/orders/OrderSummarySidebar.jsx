@@ -155,7 +155,7 @@ export const OrderSummarySidebar = ({
             onRemove={undefined}
             onSplit={onSplit ? () => onSplit(item) : undefined}
             onReplace={onReplace ? () => onReplace(item) : undefined}
-            onAddInstruction={onAddInstruction ? () => onAddInstruction(item) : undefined}
+            onAddInstruction={undefined}
             specialInstructions={item.specialInstructions}
             showDelete={false}
             showQuantityControls={false}

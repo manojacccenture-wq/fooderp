@@ -83,10 +83,10 @@ export const OrderPanel = () => {
           defaultValue="9629917347"
           className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]"
         />
-        <textarea
+        {/* <textarea
           placeholder="Special Instructions...."
           className="w-full h-[120px] border border-[var(--color-neutral-150)] rounded-2xl p-4 text-label-placeholder text-[var(--color-neutral-500)] outline-none resize-none"
-        ></textarea>
+        ></textarea> */}
       </div>
 
       <div className="px-4 mt-8 flex flex-col gap-3 pb-8">
