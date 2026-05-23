@@ -126,6 +126,18 @@ export const OrderSummarySidebar = ({
 
   const displayCustomerName = customerName || "Walk-in";
 
+  // Group sentKotItems by kotRound
+  const sentKotRounds = sentKotItems.reduce((acc, item) => {
+    const round = item.kotRound || 1;
+    if (!acc[round]) {
+      acc[round] = { round, time: item.kotTime, items: [] };
+    }
+    acc[round].items.push(item);
+    return acc;
+  }, {});
+  
+  const roundsArray = Object.values(sentKotRounds).sort((a, b) => a.round - b.round);
+
   return (
     <div className="w-[354px] bg-white border-l border-[#f3f5f9] flex flex-col shrink-0 min-h-[calc(100vh-160px)] h-full">
       <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
@@ -143,28 +155,38 @@ export const OrderSummarySidebar = ({
       </div>
 
       <div className="px-4 mt-4 flex flex-col gap-4 overflow-y-auto max-h-[350px] custom-scrollbar">
-        {sentKotItems.length > 0 && sentKotItems.map((item) => (
-          <OrderItem
-            key={`sent-${item.id}`}
-            image={item.image}
-            title={item.title}
-            price={item.price}
-            quantity={item.quantity}
-            onIncrease={undefined}
-            onDecrease={undefined}
-            onRemove={undefined}
-            onSplit={onSplit ? () => onSplit(item) : undefined}
-            onReplace={onReplace ? () => onReplace(item) : undefined}
-            onAddInstruction={undefined}
-            specialInstructions={item.specialInstructions}
-            showDelete={false}
-            showQuantityControls={false}
-            
-            // Standard selection
-            isSelected={mode === 'menu' && selectedOrderItemId === item.id || mode === 'replace-food' && selectedReplaceItemId === item.id}
-            onSelect={mode === 'menu' && onSelectOrderItem ? () => onSelectOrderItem(item.id) : mode === 'replace-food' && onSelectReplaceItem ? () => onSelectReplaceItem(item.id) : undefined}
-            replaceModeSelection={mode === 'replace-food'}
-          />
+        {roundsArray.length > 0 && roundsArray.map((roundObj) => (
+          <div key={`round-${roundObj.round}`} className="bg-white rounded-[16px] border border-[#eaeaef] overflow-hidden shadow-sm flex flex-col shrink-0">
+            <div className="bg-[#f3f5f9] px-4 py-[10px] flex justify-between items-center border-b border-[#eaeaef]">
+              <span className="text-[13px] font-extrabold text-[#4a4a6a]">KOT Round {roundObj.round}</span>
+              <span className="text-[12px] font-semibold text-[#8e8ea9]">{roundObj.time || 'Pending'}</span>
+            </div>
+            <div className="p-3 flex flex-col gap-3">
+              {roundObj.items.map((item) => (
+                <OrderItem
+                  key={`sent-${item.id}`}
+                  image={item.image}
+                  title={item.title}
+                  price={item.price}
+                  quantity={item.quantity}
+                  onIncrease={undefined}
+                  onDecrease={undefined}
+                  onRemove={undefined}
+                  onSplit={onSplit ? () => onSplit(item) : undefined}
+                  onReplace={onReplace ? () => onReplace(item) : undefined}
+                  onAddInstruction={undefined}
+                  specialInstructions={item.specialInstructions}
+                  showDelete={false}
+                  showQuantityControls={false}
+                  
+                  // Standard selection
+                  isSelected={mode === 'menu' && selectedOrderItemId === item.id || mode === 'replace-food' && selectedReplaceItemId === item.id}
+                  onSelect={mode === 'menu' && onSelectOrderItem ? () => onSelectOrderItem(item.id) : mode === 'replace-food' && onSelectReplaceItem ? () => onSelectReplaceItem(item.id) : undefined}
+                  replaceModeSelection={mode === 'replace-food'}
+                />
+              ))}
+            </div>
+          </div>
         ))}
 
         {draftOrderItems.length > 0 && (

@@ -341,16 +341,16 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
     // Move draft items to sent Kot items
     setSentKotItems(prevSent => {
-      const newSent = [...prevSent];
-      draftOrderItems.forEach(draftItem => {
-        const existing = newSent.find(item => item.title === draftItem.title && areInstructionsEqual(item.specialInstructions, draftItem.specialInstructions));
-        if (existing) {
-          existing.quantity += draftItem.quantity;
-        } else {
-          newSent.push({ ...draftItem });
-        }
-      });
-      return newSent;
+      const nextRound = Math.max(0, ...prevSent.map(i => i.kotRound || 0)) + 1;
+      const kotTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      const newItems = draftOrderItems.map(draftItem => ({
+        ...draftItem,
+        kotRound: nextRound,
+        kotTime: kotTime
+      }));
+      
+      return [...prevSent, ...newItems];
     });
     setDraftOrderItems([]); // clear drafts
 
@@ -573,24 +573,46 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
               ) : (
                 <>
                   <div className="px-4 mt-4 flex flex-col gap-4">
-                    {sentKotItems.length > 0 && sentKotItems.map((item) => (
-                      <OrderItem
-                        key={`sent-${item.id}`}
-                        image={item.image}
-                        title={item.title}
-                        price={item.price}
-                        quantity={item.quantity}
-                        onSplit={() => handleSplitClick(item)}
-                        onReplace={() => handleReplaceClick(item)}
-                        onAddInstruction={undefined}
-                        specialInstructions={item.specialInstructions}
-                        showDelete={false}
-                        showQuantityControls={false}
-                        isSelected={selectedOrderItem === item.id}
-                        onSelect={() => setSelectedOrderItem(item.id)}
-                        itemRef={(el) => (itemRefs.current[item.id] = el)}
-                      />
-                    ))}
+                    {(() => {
+                      const sentKotRounds = sentKotItems.reduce((acc, item) => {
+                        const round = item.kotRound || 1;
+                        if (!acc[round]) {
+                          acc[round] = { round, time: item.kotTime, items: [] };
+                        }
+                        acc[round].items.push(item);
+                        return acc;
+                      }, {});
+                      const roundsArray = Object.values(sentKotRounds).sort((a, b) => a.round - b.round);
+                      
+                      return roundsArray.map((roundObj) => (
+                        <div key={`round-${roundObj.round}`} className="bg-white rounded-[16px] border border-[#eaeaef] overflow-hidden shadow-sm flex flex-col shrink-0">
+                          <div className="bg-[#f3f5f9] px-4 py-[10px] flex justify-between items-center border-b border-[#eaeaef]">
+                            <span className="text-[13px] font-extrabold text-[#4a4a6a]">KOT Round {roundObj.round}</span>
+                            <span className="text-[12px] font-semibold text-[#8e8ea9]">{roundObj.time || 'Pending'}</span>
+                          </div>
+                          <div className="p-3 flex flex-col gap-3">
+                            {roundObj.items.map((item) => (
+                              <OrderItem
+                                key={`sent-${item.id}`}
+                                image={item.image}
+                                title={item.title}
+                                price={item.price}
+                                quantity={item.quantity}
+                                onSplit={() => handleSplitClick(item)}
+                                onReplace={() => handleReplaceClick(item)}
+                                onAddInstruction={undefined}
+                                specialInstructions={item.specialInstructions}
+                                showDelete={false}
+                                showQuantityControls={false}
+                                isSelected={selectedOrderItem === item.id}
+                                onSelect={() => setSelectedOrderItem(item.id)}
+                                itemRef={(el) => (itemRefs.current[item.id] = el)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
 
                     {draftOrderItems.length > 0 && (
                       <>
