@@ -8,6 +8,13 @@ import { ApplyDiscountModal } from '../../components/orders/ApplyDiscountModal/A
 import { MenuContent } from '../../components/menu/MenuContent';
 import { SpecialInstructionTags } from '../../components/orders/SpecialInstructionTags';
 import { SpecialInstructionsModal } from '../../components/orders/SpecialInstructionsModal';
+import { QuantitySelectorModal } from '../../components/orders/QuantitySelectorModal';
+
+const areInstructionsEqual = (inst1, inst2) => {
+  if (!inst1 && !inst2) return true;
+  if (!inst1 || !inst2) return false;
+  return JSON.stringify(inst1) === JSON.stringify(inst2);
+};
 
 const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
   onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction }) => {
@@ -131,6 +138,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [discountAmount, setDiscountAmount] = useState(0);
 
   const [isSpecialInstructionsModalOpen, setIsSpecialInstructionsModalOpen] = useState(false);
+  const [isQuantitySelectorOpen, setIsQuantitySelectorOpen] = useState(false);
+  const [quantityToApply, setQuantityToApply] = useState(1);
   const [itemForInstructions, setItemForInstructions] = useState(null);
 
 
@@ -237,12 +246,51 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   const handleOpenInstructions = (item) => {
     setItemForInstructions(item);
+    if (item.quantity > 1) {
+      setIsQuantitySelectorOpen(true);
+    } else {
+      setQuantityToApply(1);
+      setIsSpecialInstructionsModalOpen(true);
+    }
+  };
+
+  const handleQuantityConfirm = (qty) => {
+    setQuantityToApply(qty);
+    setIsQuantitySelectorOpen(false);
     setIsSpecialInstructionsModalOpen(true);
   };
 
-  const handleSaveInstructions = (itemId, instructions) => {
-    setDraftOrderItems(prev => prev.map(item => item.id === itemId ? { ...item, specialInstructions: instructions } : item));
-    setSentKotItems(prev => prev.map(item => item.id === itemId ? { ...item, specialInstructions: instructions } : item));
+  const handleSaveInstructions = (itemId, instructions, targetQty) => {
+    const updateList = (list) => {
+      const itemIndex = list.findIndex(i => i.id === itemId);
+      if (itemIndex === -1) return list;
+      
+      const item = list[itemIndex];
+      const newList = [...list];
+      
+      if (targetQty === item.quantity) {
+        newList[itemIndex] = { ...item, specialInstructions: instructions };
+      } else if (targetQty < item.quantity) {
+        newList[itemIndex] = { ...item, quantity: item.quantity - targetQty };
+        const splitItem = { ...item, id: Date.now() + Math.random(), quantity: targetQty, specialInstructions: instructions };
+        newList.splice(itemIndex + 1, 0, splitItem);
+      }
+      
+      const mergedList = [];
+      newList.forEach(curr => {
+        const existing = mergedList.find(m => m.title === curr.title && areInstructionsEqual(m.specialInstructions, curr.specialInstructions));
+        if (existing) {
+          existing.quantity += curr.quantity;
+        } else {
+          mergedList.push({ ...curr });
+        }
+      });
+      
+      return mergedList;
+    };
+
+    setDraftOrderItems(prev => updateList(prev));
+    setSentKotItems(prev => updateList(prev));
     setIsSpecialInstructionsModalOpen(false);
   };
 
@@ -295,7 +343,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setSentKotItems(prevSent => {
       const newSent = [...prevSent];
       draftOrderItems.forEach(draftItem => {
-        const existing = newSent.find(item => item.title === draftItem.title);
+        const existing = newSent.find(item => item.title === draftItem.title && areInstructionsEqual(item.specialInstructions, draftItem.specialInstructions));
         if (existing) {
           existing.quantity += draftItem.quantity;
         } else {
@@ -315,12 +363,12 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const handleProductCardClick = (product) => {
     setDraftOrderItems((prev) => {
       const existingItem = prev.find(
-        (item) => item.title === product.title
+        (item) => item.title === product.title && areInstructionsEqual(item.specialInstructions, product.specialInstructions)
       );
 
       if (existingItem) {
         return prev.map((item) =>
-          item.title === product.title
+          item.id === existingItem.id
             ? {
               ...item,
               quantity: item.quantity + 1,
@@ -977,8 +1025,17 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       <SpecialInstructionsModal
         isOpen={isSpecialInstructionsModalOpen}
         item={itemForInstructions}
+        targetQuantity={quantityToApply}
         onClose={() => setIsSpecialInstructionsModalOpen(false)}
         onSave={handleSaveInstructions}
+      />
+
+      <QuantitySelectorModal
+        isOpen={isQuantitySelectorOpen}
+        itemName={itemForInstructions?.title}
+        maxQuantity={itemForInstructions?.quantity || 1}
+        onClose={() => setIsQuantitySelectorOpen(false)}
+        onConfirm={handleQuantityConfirm}
       />
 
     </div>

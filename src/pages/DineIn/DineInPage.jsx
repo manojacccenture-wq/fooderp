@@ -5,6 +5,7 @@ import { StartOrderModal } from './StartOrderModal';
 import { TableSelectionView } from './TableSelectionView';
 import { CancelFoodView } from './CancelFoodView';
 import { ReplaceFoodView } from './ReplaceFoodView';
+import { CancelTableModal } from '../../components/dinein/CancelTableModal';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { 
   selectAllTables, 
@@ -103,7 +104,7 @@ export const DineInPage = () => {
                   onMergeTable={(tableNo) => dispatch(setActionTarget({ type: 'merge', tableNo }))}
                   onCancelFood={(tableNo) => dispatch(setActionTarget({ type: 'cancel-food', tableNo }))}
                   onReplaceFood={(tableNo) => dispatch(setActionTarget({ type: 'replace-food', tableNo }))}
-                  onCancelTable={(tableNo) => dispatch(cancelTable({ tableNo }))}
+                  onCancelTable={(tableNo) => dispatch(setActionTarget({ type: 'cancel-table', tableNo }))}
                 />
               ))}
             </div>
@@ -116,6 +117,16 @@ export const DineInPage = () => {
         onClose={() => dispatch(setSelectedTableForOrder(null))} 
         tableNo={selectedTableForOrder} 
         onSubmit={handleStartOrderSubmit}
+      />
+
+      <CancelTableModal
+        isOpen={actionTarget?.type === 'cancel-table'}
+        onClose={() => dispatch(setActionTarget(null))}
+        onConfirm={(reason, remarks) => {
+          dispatch(cancelTable({ tableNo: actionTarget.tableNo, reason, remarks }));
+          dispatch(cancelOrder());
+          dispatch(setActionTarget(null));
+        }}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 
-export const SpecialInstructionsModal = ({ isOpen, item, onClose, onSave }) => {
+export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose, onSave }) => {
   const [selections, setSelections] = useState({});
   const [additionalNote, setAdditionalNote] = useState('');
 
@@ -52,7 +52,7 @@ export const SpecialInstructionsModal = ({ isOpen, item, onClose, onSave }) => {
       ...selections,
       additionalNote
     };
-    onSave(item.id, specialInstructions);
+    onSave(item.id, specialInstructions, targetQuantity);
   };
 
   // Count active selections for the button text (excluding note)
@@ -76,6 +76,17 @@ export const SpecialInstructionsModal = ({ isOpen, item, onClose, onSave }) => {
             </svg>
           </button>
           <h2 className="text-[18px] font-bold text-[#32324d]">Special Instructions</h2>
+        </div>
+
+        {/* Item Context Card */}
+        <div className="mx-6 mt-6 bg-[#f3f5f9] rounded-[16px] p-4 flex items-center gap-4">
+          <div className="w-[60px] h-[60px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)]">
+            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[16px] font-bold text-[#32324d]">{item.title}</span>
+            <span className="text-[14px] font-semibold text-[#ffb01d]">Quantity: {targetQuantity || item.quantity}</span>
+          </div>
         </div>
 
         {/* Content */}

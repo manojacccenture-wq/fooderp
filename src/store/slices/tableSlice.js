@@ -109,7 +109,7 @@ const tableSlice = createSlice({
       }
     },
     cancelTable: (state, action) => {
-      const { tableNo } = action.payload;
+      const { tableNo, reason, remarks } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
         table.status = 'available';
@@ -118,6 +118,11 @@ const tableSlice = createSlice({
         table.reservedGuests = 0;
         table.duration = '';
         table.orderData = undefined;
+        table.cancellationData = {
+          reason: reason || null,
+          remarks: remarks || '',
+          cancelledAt: Date.now()
+        };
       }
     }
   },
