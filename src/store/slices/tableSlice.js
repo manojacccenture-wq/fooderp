@@ -124,6 +124,18 @@ const tableSlice = createSlice({
           cancelledAt: Date.now()
         };
       }
+    },
+    completeTableOrder: (state, action) => {
+      const { tableNo } = action.payload;
+      const table = state.tables.find(t => t.tableNo === tableNo);
+      if (table) {
+        table.status = 'available';
+        table.customerName = '';
+        table.guests = 0;
+        table.reservedGuests = 0;
+        table.duration = '';
+        table.orderData = undefined;
+      }
     }
   },
 });
@@ -138,7 +150,8 @@ export const {
   confirmCancellation,
   confirmReplacement,
   updateTableOrder,
-  cancelTable
+  cancelTable,
+  completeTableOrder
 } = tableSlice.actions;
 
 export const selectAllTables = (state) => state.table.tables;

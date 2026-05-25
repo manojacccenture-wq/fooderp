@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { selectAllTables, startOrderForTable, updateTableOrder } from '../../store/slices/tableSlice';
+import { selectAllTables, startOrderForTable, updateTableOrder, completeTableOrder } from '../../store/slices/tableSlice';
 import { SplitOrderModal } from '../../components/orders/SplitOrderModal/SplitOrderModal';
 import { ApplyDiscountModal } from '../../components/orders/ApplyDiscountModal/ApplyDiscountModal';
+import { UpiPaymentModal } from '../../components/payment/UpiPaymentModal';
 import { MenuContent } from '../../components/menu/MenuContent';
 import { SpecialInstructionTags } from '../../components/orders/SpecialInstructionTags';
 import { SpecialInstructionsModal } from '../../components/orders/SpecialInstructionsModal';
@@ -99,6 +100,7 @@ const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRe
 
 export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const allTables = useAppSelector(selectAllTables);
   const isDineInFlow = !!location.state?.tableNo;
@@ -135,6 +137,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   // Modals & Discount
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+  const [isUpiModalOpen, setIsUpiModalOpen] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
 
   const [isSpecialInstructionsModalOpen, setIsSpecialInstructionsModalOpen] = useState(false);
@@ -360,6 +363,40 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     }, 2000);
   };
 
+  const handleAddToOrder = (product) => {
+    setDraftOrderItems((prev) => {
+      const existingItem = prev.find((item) => item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined));
+      if (existingItem) {
+        return prev.map((item) =>
+          item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined)
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1, specialInstructions: undefined }];
+    });
+  };
+
+  const resetCompleteBillingSession = () => {
+    if (selectedTable) {
+      dispatch(completeTableOrder({ tableNo: selectedTable }));
+    }
+    setDraftOrderItems([]);
+    setSentKotItems([]);
+    setOrderItems([]);
+    setRightView('order');
+    setKotStatus('idle');
+    setDiscountAmount(0);
+    setPaymentMode('Cash');
+    setSplitMode('full');
+    
+    if (orderType === 'dine_in') {
+      navigate('/dashboard/dine-in');
+    } else {
+      navigate('/dashboard/menu');
+    }
+  };
+
   const handleProductCardClick = (product) => {
     setDraftOrderItems((prev) => {
       const existingItem = prev.find(
@@ -397,6 +434,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
 
   const combinedItems = [...sentKotItems, ...draftOrderItems];
+
+  const shouldShowOrderControls = sentKotItems.length === 0 && rightView !== 'checkout';
 
   const subtotal = combinedItems.reduce(
     (acc, item) => acc + Number(item.price) * item.quantity,
@@ -684,7 +723,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                     </div>
                   ) : (
                     <>
-                      {kotStatus !== 'sent' && combinedItems.length > 0 && !isExistingSessionMode && (
+                      {shouldShowOrderControls && kotStatus !== 'sent' && combinedItems.length > 0 && !isExistingSessionMode && (
                         <>
                           <div className="px-4 mt-6">
                             <h3 className="text-[16px] font-bold text-[#32324d] mb-4">Order Type :</h3>
@@ -1013,12 +1052,23 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                   <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
                     Mark as Due
                   </button>
+                ) : paymentMode === 'Upi' ? (
+                  <>
+                    <button className="w-full bg-[#dcdce4] text-[#32324d] py-[14px] rounded-[16px] font-bold text-[16px]" onClick={() => setIsDiscountModalOpen(true)}>
+                      Apply Discount
+                    </button>
+                    <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setIsUpiModalOpen(true)}>
+                      Generate UPI QR & Pay
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button className="w-full bg-[#dcdce4] text-[#32324d] py-[14px] rounded-[16px] font-bold text-[16px]" onClick={() => setIsDiscountModalOpen(true)}>
                       Apply Discount
                     </button>
-                    <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
+                    <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { 
+                      resetCompleteBillingSession();
+                    }}>
                       Mark as paid
                     </button>
                   </>
@@ -1058,6 +1108,20 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         maxQuantity={itemForInstructions?.quantity || 1}
         onClose={() => setIsQuantitySelectorOpen(false)}
         onConfirm={handleQuantityConfirm}
+      />
+
+      <UpiPaymentModal
+        isOpen={isUpiModalOpen}
+        onClose={() => setIsUpiModalOpen(false)}
+        onConfirm={() => {
+          setIsUpiModalOpen(false);
+          resetCompleteBillingSession();
+        }}
+        amount={payableAmount}
+        orderId={Date.now().toString().slice(-6)}
+        tableNo={selectedTable}
+        items={sentKotItems}
+        date={new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
       />
 
     </div>
