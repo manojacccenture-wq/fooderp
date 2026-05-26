@@ -38,3 +38,35 @@ code {
   background: var(--code-bg);
   color: var(--text-h);
 }
+
+/* ============================================
+   PRINT STYLES (THERMAL RECEIPT)
+   ============================================ */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Ensure the printable receipt and all its children are visible */
+  #printable-receipt, 
+  #printable-receipt * {
+    visibility: visible;
+  }
+
+  /* Position the receipt at the top left of the page */
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    margin: 0;
+    padding: 0;
+    display: block !important;
+  }
+
+  /* Hide print headers/footers (browser specific) */
+  @page {
+    margin: 0;
+    size: 80mm auto; /* Thermal paper width */
+  }
+}

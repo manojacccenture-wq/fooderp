@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { startOrderSchema } from '../../validations/customer.validation';
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M19 12H5" stroke="#32324D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -22,11 +24,10 @@ const ClockIcon = () => (
 );
 
 export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
-  const [name, setName] = useState('');
-  const [guests, setGuests] = useState('');
-  const [reserve, setReserve] = useState('');
-  const [time, setTime] = useState('');
-  const [mobile, setMobile] = useState('');
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    resolver: zodResolver(startOrderSchema),
+    defaultValues: { name: '', guests: '', reserve: '', time: '', mobile: '' }
+  });
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -34,21 +35,16 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
     };
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      // Reset state when opened
-      setName('');
-      setGuests('');
-      setReserve('');
-      setTime('');
-      setMobile('');
+      reset();
     }
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, reset]);
 
   if (!isOpen) return null;
 
-  const handleStartOrder = () => {
+  const handleStartOrder = (data) => {
     if (onSubmit) {
-      onSubmit({ name, guests, reserve, time, mobile });
+      onSubmit(data);
     }
   };
 
@@ -81,9 +77,9 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
               type="text" 
               placeholder="Name" 
               className={inputClass}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              {...register('name')}
             />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
           </div>
           
           <div>
@@ -91,16 +87,16 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
               type="text" 
               placeholder="Guests" 
               className={inputClass}
-              value={guests}
-              onChange={(e) => setGuests(e.target.value)}
+              {...register('guests')}
             />
+            {errors.guests && <p className="text-red-500 text-xs mt-1">{errors.guests.message}</p>}
           </div>
 
           <div className="relative">
             <select 
               className={`${inputClass} appearance-none cursor-pointer`}
-              value={reserve}
-              onChange={(e) => setReserve(e.target.value)}
+              {...register('reserve')}
+              defaultValue=""
             >
               <option value="" disabled hidden>Reserve</option>
               <option value="yes">Yes</option>
@@ -109,6 +105,7 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
               <ChevronDownIcon />
             </div>
+            {errors.reserve && <p className="text-red-500 text-xs mt-1 absolute -bottom-5">{errors.reserve.message}</p>}
           </div>
 
           <div className="relative">
@@ -119,12 +116,12 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
               type="text" 
               placeholder="12:30" 
               className={`${inputClass} pl-12 pr-12`}
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
+              {...register('time')}
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#8e8ea9] text-[14px] font-semibold">
               AM
             </div>
+            {errors.time && <p className="text-red-500 text-xs mt-1 absolute -bottom-5">{errors.time.message}</p>}
           </div>
 
           <div>
@@ -132,16 +129,15 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
               type="tel" 
               placeholder="Mobile No" 
               className={inputClass}
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
+              {...register('mobile')}
             />
+            {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile.message}</p>}
           </div>
         </div>
 
-        {/* Action Button */}
         <div className="mt-8">
           <button 
-            onClick={handleStartOrder}
+            onClick={handleSubmit(handleStartOrder)}
             className="w-full h-[54px] bg-[#ffb01d] rounded-[16px] flex items-center justify-center text-white text-[16px] font-bold hover:bg-[#ffb01d]/90 transition-colors"
           >
             Start Order

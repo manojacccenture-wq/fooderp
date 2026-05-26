@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { cancelTableSchema } from '../../validations/cancellation.validation';
 
 const reasons = [
   "Customer left",
@@ -12,21 +15,24 @@ const reasons = [
 ];
 
 export const CancelTableModal = ({ isOpen, onClose, onConfirm }) => {
-  const [selectedReason, setSelectedReason] = useState("");
-  const [remarks, setRemarks] = useState("");
+  const { register, handleSubmit, setValue, watch, formState: { errors }, reset } = useForm({
+    resolver: zodResolver(cancelTableSchema),
+    defaultValues: { reason: "", remarks: "" }
+  });
+
+  const selectedReason = watch('reason');
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedReason("");
-      setRemarks("");
+      reset({ reason: "", remarks: "" });
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
 
   if (!isOpen) return null;
 
-  const handleConfirm = () => {
-    if (onConfirm && selectedReason) {
-      onConfirm(selectedReason, remarks);
+  const handleConfirm = (data) => {
+    if (onConfirm) {
+      onConfirm(data.reason, data.remarks);
     }
   };
 
@@ -43,29 +49,33 @@ export const CancelTableModal = ({ isOpen, onClose, onConfirm }) => {
           <p className="text-[14px] font-semibold text-[#8e8ea9]">Please select reason for table cancellation</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-[10px] mb-6">
-          {reasons.map((reason) => (
-            <button
-              key={reason}
-              onClick={() => setSelectedReason(reason)}
-              className={`h-[42px] text-[12px] font-bold rounded-[12px] transition-all active:scale-[0.98] ${
-                selectedReason === reason 
-                  ? "bg-[#ffb01d] text-white shadow-md" 
-                  : "bg-[#f3f5f9] text-[#4a4a6a] hover:bg-[#eaeaef]"
-              }`}
-            >
-              {reason}
-            </button>
-          ))}
+        <div className="mb-6">
+          <div className="grid grid-cols-2 gap-[10px]">
+            {reasons.map((reason) => (
+              <button
+                type="button"
+                key={reason}
+                onClick={() => setValue('reason', reason, { shouldValidate: true })}
+                className={`h-[42px] text-[12px] font-bold rounded-[12px] transition-all active:scale-[0.98] ${
+                  selectedReason === reason 
+                    ? "bg-[#ffb01d] text-white shadow-md" 
+                    : "bg-[#f3f5f9] text-[#4a4a6a] hover:bg-[#eaeaef]"
+                }`}
+              >
+                {reason}
+              </button>
+            ))}
+          </div>
+          {errors.reason && <p className="text-red-500 text-xs mt-2">{errors.reason.message}</p>}
         </div>
 
         <div className="mb-8">
           <textarea
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
+            {...register('remarks')}
             placeholder="Additional remarks"
             className="w-full h-[100px] border border-[var(--color-neutral-150)] rounded-[16px] p-4 text-[14px] font-semibold text-[#32324d] outline-none resize-none placeholder-[#8e8ea9] focus:border-[#ffb01d] transition-colors"
           />
+          {errors.remarks && <p className="text-red-500 text-xs mt-1">{errors.remarks.message}</p>}
         </div>
 
         <div className="flex gap-4">
@@ -76,9 +86,8 @@ export const CancelTableModal = ({ isOpen, onClose, onConfirm }) => {
             Cancel
           </button>
           <button 
-            onClick={handleConfirm}
-            disabled={!selectedReason}
-            className="flex-1 h-[54px] bg-[#ffb01d] text-white font-bold rounded-[16px] text-[16px] hover:bg-[#ffb01d]/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleSubmit(handleConfirm)}
+            className="flex-1 h-[54px] bg-[#ffb01d] text-white font-bold rounded-[16px] text-[16px] hover:bg-[#ffb01d]/90 transition-all active:scale-[0.98]"
           >
             Confirm Cancellation
           </button>

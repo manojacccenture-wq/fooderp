@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { menuOrderSchema } from '../../validations/order.validation';
+import { paymentCheckoutSchema } from '../../validations/payment.validation';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { selectAllTables, startOrderForTable, updateTableOrder, completeTableOrder } from '../../store/slices/tableSlice';
@@ -10,7 +14,8 @@ import { MenuContent } from '../../components/menu/MenuContent';
 import { SpecialInstructionTags } from '../../components/orders/SpecialInstructionTags';
 import { SpecialInstructionsModal } from '../../components/orders/SpecialInstructionsModal';
 import { QuantitySelectorModal } from '../../components/orders/QuantitySelectorModal';
-
+import { ReceiptPrintTemplate } from '../../components/orders/ReceiptPrintTemplate';
+import { generateWhatsAppMessage, generateEmailTemplate } from '../../utils/receiptFormatter';
 const areInstructionsEqual = (inst1, inst2) => {
   if (!inst1 && !inst2) return true;
   if (!inst1 || !inst2) return false;
@@ -111,10 +116,40 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   const paymentInputRef = useRef(null);
 
-  const [customerPaidAmount, setCustomerPaidAmount] = useState(600);
+  const { register: registerOrder, watch: watchOrder, handleSubmit: handleOrderSubmit, formState: { errors: orderErrors }, setValue: setOrderValue } = useForm({
+    resolver: zodResolver(menuOrderSchema),
+    defaultValues: { phone: '', guestCount: 4 }
+  });
 
-  const [guestCount, setGuestCount] = useState(4);
-  const [phone, setPhone] = useState('');
+  const { register: registerPayment, watch: watchPayment, handleSubmit: handlePaymentSubmit, formState: { errors: paymentErrors }, setValue: setPaymentValue } = useForm({
+    resolver: zodResolver(paymentCheckoutSchema),
+    defaultValues: {
+      customerPaidAmount: 600,
+      customTip: '',
+      dueCustomerName: '',
+      dueMobileNumber: '',
+      dueGivenAmount: 0,
+      dueAmount: 0,
+      dueDate: '',
+      dueReason: ''
+    }
+  });
+
+  const phone = watchOrder('phone') || '';
+  const guestCount = watchOrder('guestCount') || 4;
+  const customerPaidAmount = watchPayment('customerPaidAmount') || 0;
+  const customTip = watchPayment('customTip') || '';
+
+  const setCustomerPaidAmount = (val) => {
+    if (typeof val === 'function') {
+      const prev = watchPayment('customerPaidAmount') || 0;
+      setPaymentValue('customerPaidAmount', val(prev), { shouldValidate: true });
+    } else {
+      setPaymentValue('customerPaidAmount', val, { shouldValidate: true });
+    }
+  };
+
+  const setCustomTip = (val) => setPaymentValue('customTip', val, { shouldValidate: true });
 
   // States lifted to MenuPage
   const [draftOrderItems, setDraftOrderItems] = useState([]);
@@ -132,7 +167,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
   const [splitMode, setSplitMode] = useState('full');
   const [selectedTip, setSelectedTip] = useState(0);
-  const [customTip, setCustomTip] = useState('');
 
   // Modals & Discount
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
@@ -156,13 +190,13 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (currentTableObj) {
-      if (currentTableObj.guests) setGuestCount(currentTableObj.guests);
-      if (currentTableObj.mobile) setPhone(currentTableObj.mobile);
+      if (currentTableObj.guests) setOrderValue('guestCount', currentTableObj.guests, { shouldValidate: true });
+      if (currentTableObj.mobile) setOrderValue('phone', currentTableObj.mobile, { shouldValidate: true });
     } else {
-      setGuestCount(4);
-      setPhone('');
+      setOrderValue('guestCount', 4, { shouldValidate: true });
+      setOrderValue('phone', '', { shouldValidate: true });
     }
-  }, [currentTableObj]);
+  }, [currentTableObj, setOrderValue]);
 
   const allTablesRef = useRef(allTables);
   useEffect(() => {
@@ -471,6 +505,31 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     (acc, item) => acc + Number(item.price) * item.quantity,
     0
   );
+  const getOrderData = () => ({
+    orderId: Date.now().toString().slice(-6),
+    tableNo: selectedTable,
+    amount: payableAmount,
+    subtotal,
+    tax,
+    discount: discountAmount,
+    items: sentKotItems,
+    paymentMode,
+    date: new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }),
+    upiString: paymentMode === 'Upi' ? `upi://pay?pa=9031006009-1@okbizaxis&pn=AnnasKitchen&am=${payableAmount}&tr=${Date.now().toString().slice(-6)}` : ''
+  });
+
+  const handleQuickPrint = () => {
+    window.print();
+  };
+
+  const handleQuickWhatsApp = () => {
+    window.open(generateWhatsAppMessage(getOrderData()), '_blank');
+  };
+
+  const handleQuickEmail = () => {
+    window.open(generateEmailTemplate(getOrderData()));
+  };
+
   // Render components
   const renderMenuContent = (isReplaceMode = false) => (
     <MenuContent
@@ -803,15 +862,20 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                           )}
 
                           <div className="px-4 mt-6 flex flex-col gap-[16px]">
-                            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder='Phone Number' className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]" />
+                            <div>
+                              <input type="text" {...registerOrder('phone')} placeholder='Phone Number' className={clsx("w-full h-[54px] border rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none", orderErrors.phone ? "border-red-500 focus:border-red-500" : "border-[#eaeaef] focus:border-[#ff7b2c]")} />
+                              {orderErrors.phone && <p className="text-red-500 text-xs mt-1">{orderErrors.phone.message}</p>}
+                            </div>
                             {orderType === 'dine_in' && (
-                              <input
-                                type="number"
-                                value={guestCount}
-                                onChange={(e) => setGuestCount(Number(e.target.value))}
-                                placeholder="Guests"
-                                className="w-full h-[54px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px]"
-                              />
+                              <div>
+                                <input
+                                  type="number"
+                                  {...registerOrder('guestCount')}
+                                  placeholder="Guests"
+                                  className={clsx("w-full h-[54px] border rounded-[16px] px-4 text-[#8e8ea9] font-semibold text-[14px] outline-none", orderErrors.guestCount ? "border-red-500 focus:border-red-500" : "border-[#eaeaef] focus:border-[#ff7b2c]")}
+                                />
+                                {orderErrors.guestCount && <p className="text-red-500 text-xs mt-1">{orderErrors.guestCount.message}</p>}
+                              </div>
                             )}
                             {/* <textarea placeholder="Special Instructions...." className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] p-4 text-[#8e8ea9] font-semibold text-[14px] resize-none"></textarea> */}
                           </div>
@@ -942,13 +1006,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                       No tip
                     </button>
                   </div>
-                  <input
-                    type="number"
-                    value={customTip}
-                    onChange={(e) => setCustomTip(e.target.value)}
-                    placeholder="Custom tip amount-"
-                    className="w-full h-[40px] border border-[#ffb01d] rounded-[16px] px-4 text-[12px] font-semibold outline-none"
-                  />
+                  <div>
+                    <input
+                      type="number"
+                      {...registerPayment('customTip')}
+                      placeholder="Custom tip amount-"
+                      className={clsx("w-full h-[40px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none", paymentErrors.customTip ? "border-red-500" : "border-[#ffb01d]")}
+                    />
+                    {paymentErrors.customTip && <p className="text-red-500 text-xs mt-1">{paymentErrors.customTip.message}</p>}
+                  </div>
                 </div>
 
                 <div className="mt-6 mb-6">
@@ -967,25 +1033,41 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
                   {paymentMode === 'Due' ? (
                     <div className="flex flex-col gap-3 mb-6">
-                      <input type="text" placeholder="Customer name" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                      <input type="text" placeholder="Mobile Number" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                      <input type="text" placeholder="Customer given amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                      <input type="text" placeholder="Due amount" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                      <input type="date" placeholder="Due date" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
-                      <textarea placeholder="Reason for discount" className="w-full h-[80px] border border-[#eaeaef] rounded-[16px] p-4 text-[12px] font-semibold outline-none resize-none text-[#32324d] placeholder:text-[#8e8ea9]"></textarea>
+                      <div>
+                        <input type="text" {...registerPayment('dueCustomerName')} placeholder="Customer name" className={clsx("w-full h-[48px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]", paymentErrors.dueCustomerName ? "border-red-500" : "border-[#eaeaef]")} />
+                        {paymentErrors.dueCustomerName && <p className="text-red-500 text-xs mt-1">{paymentErrors.dueCustomerName.message}</p>}
+                      </div>
+                      <div>
+                        <input type="text" {...registerPayment('dueMobileNumber')} placeholder="Mobile Number" className={clsx("w-full h-[48px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]", paymentErrors.dueMobileNumber ? "border-red-500" : "border-[#eaeaef]")} />
+                        {paymentErrors.dueMobileNumber && <p className="text-red-500 text-xs mt-1">{paymentErrors.dueMobileNumber.message}</p>}
+                      </div>
+                      <div>
+                        <input type="number" {...registerPayment('dueGivenAmount')} placeholder="Customer given amount" className={clsx("w-full h-[48px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]", paymentErrors.dueGivenAmount ? "border-red-500" : "border-[#eaeaef]")} />
+                        {paymentErrors.dueGivenAmount && <p className="text-red-500 text-xs mt-1">{paymentErrors.dueGivenAmount.message}</p>}
+                      </div>
+                      <div>
+                        <input type="number" {...registerPayment('dueAmount')} placeholder="Due amount" className={clsx("w-full h-[48px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]", paymentErrors.dueAmount ? "border-red-500" : "border-[#eaeaef]")} />
+                        {paymentErrors.dueAmount && <p className="text-red-500 text-xs mt-1">{paymentErrors.dueAmount.message}</p>}
+                      </div>
+                      <div>
+                        <input type="date" {...registerPayment('dueDate')} placeholder="Due date" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" />
+                      </div>
+                      <div>
+                        <textarea {...registerPayment('dueReason')} placeholder="Reason for discount" className="w-full h-[80px] border border-[#eaeaef] rounded-[16px] p-4 text-[12px] font-semibold outline-none resize-none text-[#32324d] placeholder:text-[#8e8ea9]"></textarea>
+                      </div>
                     </div>
                   ) : (
                     <>
-                      <input
-                        ref={paymentInputRef}
-                        type="number"
-                        value={customerPaidAmount}
-                        onChange={(e) =>
-                          setCustomerPaidAmount(Number(e.target.value) || 0)
-                        }
-                        className="w-full h-[40px] border border-[#ffb01d] focus:border-[#ff7b2c] focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] outline-none mb-3 transition-all duration-200"
-                      />
-                      <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4">
+                      <div>
+                        <input
+                          ref={paymentInputRef}
+                          type="number"
+                          {...registerPayment('customerPaidAmount')}
+                          className={clsx("w-full h-[40px] border focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] mb-1 transition-all duration-200", paymentErrors.customerPaidAmount ? "border-red-500 focus:border-red-500" : "border-[#ffb01d] focus:border-[#ff7b2c]")}
+                        />
+                        {paymentErrors.customerPaidAmount && <p className="text-red-500 text-xs mb-3 ml-2">{paymentErrors.customerPaidAmount.message}</p>}
+                      </div>
+                      <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4 mt-2">
                         <span className="text-[12px] font-bold text-[#24a44b]">
                           ₹{changeToReturn.toFixed(2)} change to return
                         </span>
@@ -1036,7 +1118,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
               ) : kotStatus === 'success_anim' ? null : draftOrderItems.length > 0 ? (
                 <button 
                   className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
-                  onClick={handleSendKOT}
+                  onClick={handleOrderSubmit(handleSendKOT)}
                   disabled={(orderType === 'dine_in' && !selectedTable)}
                 >
                   Send to KOT
@@ -1049,7 +1131,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
             ) : rightView === 'checkout' && (
               <div className="flex flex-col gap-3">
                 {paymentMode === 'Due' ? (
-                  <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); }}>
+                  <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handlePaymentSubmit(() => { setOrderItems([]); setRightView('order'); setKotStatus('idle'); setDiscountAmount(0); setPaymentMode('Cash'); })}>
                     Mark as Due
                   </button>
                 ) : paymentMode === 'Upi' ? (
@@ -1060,15 +1142,26 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                     <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setIsUpiModalOpen(true)}>
                       Generate UPI QR & Pay
                     </button>
+                    <div className="flex gap-2 w-full mt-2">
+                      <button className="flex-1 border border-[#eaeaef] bg-white text-[#4a4a6a] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#f3f5f9] transition-all" onClick={handleQuickPrint}>
+                        Print
+                      </button>
+                      <button className="flex-1 border border-[#eaeaef] bg-white text-[#24a44b] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#b4efc6]/20 transition-all" onClick={handleQuickWhatsApp}>
+                        WhatsApp
+                      </button>
+                      <button className="flex-1 border border-[#eaeaef] bg-white text-[#6b4eff] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#d4cbfc]/30 transition-all" onClick={handleQuickEmail}>
+                        Email
+                      </button>
+                    </div>
                   </>
                 ) : (
                   <>
                     <button className="w-full bg-[#dcdce4] text-[#32324d] py-[14px] rounded-[16px] font-bold text-[16px]" onClick={() => setIsDiscountModalOpen(true)}>
                       Apply Discount
                     </button>
-                    <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { 
+                    <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={handlePaymentSubmit(() => { 
                       resetCompleteBillingSession();
-                    }}>
+                    })}>
                       Mark as paid
                     </button>
                   </>
@@ -1078,6 +1171,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           </div>
           )}
         </div>
+
+      <ReceiptPrintTemplate {...getOrderData()} />
 
       <SplitOrderModal
         isOpen={isSplitModalOpen}

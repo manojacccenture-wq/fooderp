@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { specialInstructionsSchema } from '../../validations/common.validation';
 
 export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose, onSave }) => {
   const [selections, setSelections] = useState({});
-  const [additionalNote, setAdditionalNote] = useState('');
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    resolver: zodResolver(specialInstructionsSchema),
+    defaultValues: { additionalNote: '' }
+  });
 
   // Initialize state when modal opens or item changes
   useEffect(() => {
@@ -14,9 +21,9 @@ export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose
       const { additionalNote: note, ...rest } = instructions;
       
       setSelections(rest);
-      setAdditionalNote(note || '');
+      reset({ additionalNote: note || '' });
     }
-  }, [isOpen, item]);
+  }, [isOpen, item, reset]);
 
   if (!isOpen || !item) return null;
 
@@ -47,10 +54,10 @@ export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose
     });
   };
 
-  const handleSave = () => {
+  const handleSave = (data) => {
     const specialInstructions = {
       ...selections,
-      additionalNote
+      additionalNote: data.additionalNote
     };
     onSave(item.id, specialInstructions, targetQuantity);
   };
@@ -125,11 +132,11 @@ export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose
           {/* Additional Instructions Textarea (Always available) */}
           <div className="flex flex-col mt-2">
             <textarea
-              value={additionalNote}
-              onChange={(e) => setAdditionalNote(e.target.value)}
+              {...register('additionalNote')}
               placeholder="Additional Instructions"
               className="w-full h-[120px] border border-[#eaeaef] focus:border-[#ffb01d] rounded-[16px] p-4 text-[14px] font-semibold text-[#32324d] outline-none resize-none placeholder:text-[#8e8ea9]"
             ></textarea>
+            {errors.additionalNote && <p className="text-red-500 text-xs mt-1">{errors.additionalNote.message}</p>}
           </div>
 
         </div>
@@ -137,7 +144,7 @@ export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose
         {/* Footer */}
         <div className="p-6 pt-0 mt-auto shrink-0 flex flex-col items-center">
           <button
-            onClick={handleSave}
+            onClick={handleSubmit(handleSave)}
             className="w-full bg-[#ffb01d] text-white py-4 rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(255,176,29,0.3)] transition-transform active:scale-[0.98]"
           >
             Confirm Instructions {selectionCount > 0 ? `(${selectionCount})` : ''}

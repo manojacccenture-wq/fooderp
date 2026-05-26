@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { generateWhatsAppMessage, generateEmailTemplate } from '../../utils/receiptFormatter';
 
 export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, tableNo, items = [], date }) => {
   const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle' | 'success'
@@ -7,7 +8,7 @@ export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, t
 
   // Real API for QR generation.
   // UPI format: upi://pay?pa=restaurant@upi&pn=Restaurant&am=100.00
-  const upiId = "restaurant@upi";
+  const upiId = "9031006009-1@okbizaxis";
   const upiString = `upi://pay?pa=${upiId}&pn=AnnasKitchen&am=${amount}&tr=${orderId}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}&margin=10`;
 
@@ -32,14 +33,13 @@ export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, t
   };
 
   const handleWhatsAppShare = () => {
-    const text = `*Bill Details - Annas Kitchen*\nOrder: #${orderId}\nTable: ${tableNo}\nAmount: ₹${amount.toFixed(2)}\n\n*Items:*\n${items.map(i => `${i.title} x${i.quantity}`).join('\n')}\n\nPay via UPI: ${upiString}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const url = generateWhatsAppMessage({ orderId, tableNo, amount, items, upiString });
+    window.open(url, '_blank');
   };
 
   const handleEmailShare = () => {
-    const subject = `Bill Details - Order #${orderId}`;
-    const body = `Bill Details - Annas Kitchen\n\nOrder: #${orderId}\nTable: ${tableNo}\nAmount: ₹${amount.toFixed(2)}\n\nItems:\n${items.map(i => `${i.title} x${i.quantity}`).join('\n')}\n\nPay via UPI: ${upiString}`;
-    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    const url = generateEmailTemplate({ orderId, tableNo, amount, items, upiString });
+    window.open(url);
   };
 
   const handleConfirm = () => {
