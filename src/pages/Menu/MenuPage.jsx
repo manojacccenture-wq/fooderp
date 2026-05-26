@@ -16,6 +16,8 @@ import { SpecialInstructionsModal } from '../../components/orders/SpecialInstruc
 import { QuantitySelectorModal } from '../../components/orders/QuantitySelectorModal';
 import { ReceiptPrintTemplate } from '../../components/orders/ReceiptPrintTemplate';
 import { generateWhatsAppMessage, generateEmailTemplate } from '../../utils/receiptFormatter';
+import { PrinterSelectionModal } from '../../components/orders/PrinterSelectionModal';
+import { connectPrinter, printReceipt } from '../../services/printService';
 const areInstructionsEqual = (inst1, inst2) => {
   if (!inst1 && !inst2) return true;
   if (!inst1 || !inst2) return false;
@@ -172,6 +174,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
   const [isUpiModalOpen, setIsUpiModalOpen] = useState(false);
+  const [isPrinterModalOpen, setIsPrinterModalOpen] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
 
   const [isSpecialInstructionsModalOpen, setIsSpecialInstructionsModalOpen] = useState(false);
@@ -518,8 +521,40 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     upiString: paymentMode === 'Upi' ? `upi://pay?pa=9031006009-1@okbizaxis&pn=AnnasKitchen&am=${payableAmount}&tr=${Date.now().toString().slice(-6)}` : ''
   });
 
+  const executeSilentPrint = async () => {
+    try {
+      const connected = await connectPrinter();
+      if (!connected) {
+        alert("QZ Tray not connected.\nPlease install/start QZ Tray for direct printing.");
+        window.print();
+        return;
+      }
+      
+      const savedPrinter = localStorage.getItem('preferred_printer');
+      if (!savedPrinter) {
+        setIsPrinterModalOpen(true);
+        return;
+      }
+
+      const printSection = document.getElementById('printable-receipt');
+      if (!printSection) {
+        window.print();
+        return;
+      }
+
+      const result = await printReceipt(savedPrinter, printSection.outerHTML);
+      if (!result.success) {
+        alert("Print failed: " + result.error + "\nFalling back to browser print.");
+        window.print();
+      }
+    } catch (err) {
+      alert("Error printing: " + err.message);
+      window.print();
+    }
+  };
+
   const handleQuickPrint = () => {
-    window.print();
+    executeSilentPrint();
   };
 
   const handleQuickWhatsApp = () => {
@@ -1217,6 +1252,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         tableNo={selectedTable}
         items={sentKotItems}
         date={new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+      />
+
+      <PrinterSelectionModal
+        isOpen={isPrinterModalOpen}
+        onClose={() => setIsPrinterModalOpen(false)}
+        onSelect={(printer) => {
+          setIsPrinterModalOpen(false);
+          executeSilentPrint();
+        }}
       />
 
     </div>
