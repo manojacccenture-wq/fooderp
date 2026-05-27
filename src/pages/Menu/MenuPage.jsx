@@ -19,6 +19,7 @@ import { shareToEmail } from '../../utils/shareReceipt';
 import { shareReceiptToCustomer } from '../../utils/whatsappShare';
 import { PrinterSelectionModal } from '../../components/orders/PrinterSelectionModal';
 import { connectPrinter, printReceiptElement } from '../../services/printService';
+import { getOrderStatusStyles, getCurrentOrderStatus, determineTableStatus, ORDER_STATUS_COLORS } from '../../utils/orderStatus';
 const areInstructionsEqual = (inst1, inst2) => {
   if (!inst1 && !inst2) return true;
   if (!inst1 || !inst2) return false;
@@ -160,8 +161,9 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [heldItems, setHeldItems] = useState([]);
 
   // View states
-  const [kotStatus, setKotStatus] = useState('idle'); // 'idle' | 'success_anim' | 'sent'
+  const [kotStatus, setKotStatus] = useState('idle'); // 'idle' | 'success_anim' | 'sent' | 'kot_sent' | 'preparing' | 'ready'
   const [rightView, setRightView] = useState('order'); // 'order' | 'checkout'
+  const [paymentStatus, setPaymentStatus] = useState('pending'); // 'pending' | 'success'
   const [centerView, setCenterView] = useState('menu'); // 'menu' | 'cancel_item' | 'replace_item'
 
   const [selectedItemForAction, setSelectedItemForAction] = useState(null);
@@ -191,6 +193,18 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const displayCustomerName = currentTableObj?.customerName || 'Walk-in Customer';
   const isExistingSessionMode = currentTableObj?.status === 'occupied' || currentTableObj?.status === 'reserved';
   const isPhoneMissingForDineIn = orderType === 'dine_in' && !phone;
+
+  const globalOrderStatus = getCurrentOrderStatus({
+    paymentStatus,
+    isUpiModalOpen,
+    rightView,
+    paymentMode,
+    kotStatus,
+    draftOrderItemsCount: draftOrderItems.length,
+    sentKotItemsCount: sentKotItems.length,
+    hasSelectedTable: !!selectedTable
+  });
+  const statusStyles = getOrderStatusStyles(globalOrderStatus);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -396,10 +410,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     });
     setDraftOrderItems([]); // clear drafts
 
-    setKotStatus('success_anim');
+    setKotStatus('kot_sent');
+    
+    // Simulate KDS Status changes for visual demonstration
     setTimeout(() => {
-      setKotStatus('idle'); // Just reset to idle so they can add more items immediately if needed, or keep it sent.
+      setKotStatus(prev => prev === 'kot_sent' ? 'preparing' : prev);
     }, 2000);
+    setTimeout(() => {
+      setKotStatus(prev => prev === 'preparing' ? 'ready' : prev);
+    }, 6000);
   };
 
   const handleAddToOrder = (product) => {
@@ -417,23 +436,27 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   };
 
   const resetCompleteBillingSession = () => {
-    if (selectedTable) {
-      dispatch(completeTableOrder({ tableNo: selectedTable }));
-    }
-    setDraftOrderItems([]);
-    setSentKotItems([]);
-    setOrderItems([]);
-    setRightView('order');
-    setKotStatus('idle');
-    setDiscountAmount(0);
-    setPaymentMode('Cash');
-    setSplitMode('full');
-    
-    if (orderType === 'dine_in') {
-      navigate('/dashboard/dine-in');
-    } else {
-      navigate('/dashboard/menu');
-    }
+    setPaymentStatus('success');
+    setTimeout(() => {
+      if (selectedTable) {
+        dispatch(completeTableOrder({ tableNo: selectedTable }));
+      }
+      setDraftOrderItems([]);
+      setSentKotItems([]);
+      setOrderItems([]);
+      setRightView('order');
+      setKotStatus('idle');
+      setPaymentStatus('pending');
+      setDiscountAmount(0);
+      setPaymentMode('Cash');
+      setSplitMode('full');
+      
+      if (orderType === 'dine_in') {
+        navigate('/dashboard/dine-in');
+      } else {
+        navigate('/dashboard/menu');
+      }
+    }, 2500); // 2.5 second delay to show the green success sidebar
   };
 
   const handleProductCardClick = (product) => {
@@ -680,12 +703,23 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
             <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
 
               {/* Header */}
-              <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
+              <div 
+                className="flex items-center justify-between p-3 mt-[2px] mx-[1px]"
+                style={{ backgroundColor: statusStyles.bg, transition: 'all 0.3s ease' }}
+              >
                 <div className="flex flex-col gap-[2px]">
-                  <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
-                  <span className="text-[12px] text-[#4a4a6a]">Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}</span>
+                  <span className="text-[18px] font-semibold leading-[22px]" style={{ color: statusStyles.text }}>Current order</span>
+                  <span className="text-[12px] opacity-80" style={{ color: statusStyles.text }}>
+                    Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}
+                  </span>
                 </div>
-                <div className="flex gap-[10px]">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 border shadow-sm" style={{ borderColor: statusStyles.border }}>
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: statusStyles.text }} />
+                    <span className="text-[10px] font-bold" style={{ color: statusStyles.text }}>
+                      {ORDER_STATUS_COLORS[globalOrderStatus]?.label || 'AVAILABLE'}
+                    </span>
+                  </div>
                   <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setDraftOrderItems([]); setSentKotItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
                   <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
                 </div>
@@ -720,10 +754,20 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                       }, {});
                       const roundsArray = Object.values(sentKotRounds).sort((a, b) => a.round - b.round);
                       
-                      return roundsArray.map((roundObj) => (
-                        <div key={`round-${roundObj.round}`} className="bg-white rounded-[16px] border border-[#eaeaef] overflow-hidden shadow-sm flex flex-col shrink-0">
-                          <div className="bg-[#f3f5f9] px-4 py-[10px] flex justify-between items-center border-b border-[#eaeaef]">
-                            <span className="text-[13px] font-extrabold text-[#4a4a6a]">KOT Round {roundObj.round}</span>
+                      return roundsArray.map((roundObj) => {
+                        // Inherit global order status styles for KOT blocks, fallback if available
+                        const isKOTStatus = ['kot_sent', 'preparing', 'ready'].includes(globalOrderStatus);
+                        const blockStyle = isKOTStatus ? statusStyles : ORDER_STATUS_COLORS.kot_sent;
+                        
+                        return (
+                        <div key={`round-${roundObj.round}`} className="bg-white rounded-[16px] border border-[#eaeaef] overflow-hidden shadow-sm flex flex-col shrink-0 border-l-4" style={{ borderLeftColor: blockStyle.border }}>
+                          <div className="px-4 py-[10px] flex justify-between items-center border-b border-[#eaeaef]" style={{ backgroundColor: blockStyle.bg }}>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[13px] font-extrabold" style={{ color: blockStyle.text }}>KOT Round {roundObj.round}</span>
+                              <div className="px-2 py-[2px] rounded-full bg-white/50 text-[9px] font-bold" style={{ color: blockStyle.text }}>
+                                {ORDER_STATUS_COLORS[globalOrderStatus]?.label || 'KOT SENT'}
+                              </div>
+                            </div>
                             <span className="text-[12px] font-semibold text-[#8e8ea9]">{roundObj.time || 'Pending'}</span>
                           </div>
                           <div className="p-3 flex flex-col gap-3">
@@ -747,7 +791,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                             ))}
                           </div>
                         </div>
-                      ));
+                        );
+                      });
                     })()}
 
                     {draftOrderItems.length > 0 && (
@@ -756,9 +801,9 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                           <h3 className="text-[18px] font-bold text-[#666687] mt-2 mb-0">New Orders</h3>
                         )}
                         {draftOrderItems.map((item) => (
-                          <OrderItem
-                            key={`curr-${item.id}`}
-                            image={item.image}
+                          <div key={`curr-${item.id}`} className="border-l-4 rounded-[16px] overflow-hidden shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" style={{ borderLeftColor: ORDER_STATUS_COLORS.draft.border }}>
+                            <OrderItem
+                              image={item.image}
                             title={item.title}
                             price={item.price}
                             quantity={item.quantity}
@@ -774,6 +819,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                             onSelect={() => setSelectedOrderItem(item.id)}
                             itemRef={(el) => (itemRefs.current[item.id] = el)}
                           />
+                          </div>
                         ))}
                       </>
                     )}
@@ -845,11 +891,9 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                               <div className="grid grid-cols-4 gap-[16px] mt-6">
                                 {allTables.map((table) => {
                                   const num = table.tableNo;
+                                  const tableStatus = determineTableStatus(table);
+                                  const tableStyle = getOrderStatusStyles(tableStatus);
                                   const isAvailable = table.status === 'available';
-                                  let borderColor = isAvailable ? '#b4efc6' : '#e23744';
-                                  let textColor = isAvailable ? '#24a44b' : '#e23744';
-                                  if (selectedTable === num) { borderColor = '#faa300'; textColor = '#faa300'; }
-                                  
                                   const isDisabled = isDineInFlow ? (num !== selectedTable) : !isAvailable;
 
                                   return (
@@ -857,14 +901,19 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                                       key={num}
                                       disabled={isDisabled}
                                       onClick={() => !isDisabled && setSelectedTable(num)}
-                                      className="h-[54px] border rounded-[16px] flex items-center justify-center font-bold text-[14px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      className="relative rounded-[16px] p-3 flex flex-col items-center justify-center gap-1 min-h-[80px] bg-white border-2 hover:shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                                       style={{
-                                        borderColor: selectedTable === num ? '#faa300' : borderColor,
-                                        color: selectedTable === num ? '#faa300' : textColor,
-                                        backgroundColor: selectedTable === num ? '#fff7e8' : 'transparent',
+                                        borderColor: selectedTable === num ? '#faa300' : tableStyle.border,
+                                        backgroundColor: selectedTable === num ? '#fff7e8' : tableStyle.bg,
                                       }}
                                     >
-                                      {num}
+                                      <span className="text-[20px] font-bold" style={{ color: selectedTable === num ? '#faa300' : tableStyle.text }}>{num}</span>
+                                      <span className="text-[10px] font-bold opacity-80" style={{ color: selectedTable === num ? '#faa300' : tableStyle.text }}>
+                                        {ORDER_STATUS_COLORS[tableStatus]?.label || 'AVAILABLE'}
+                                      </span>
+                                      {table.orderData?.sentKotItems?.length > 0 && (
+                                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: tableStyle.border }}></div>
+                                      )}
                                     </button>
                                   );
                                 })}
@@ -928,12 +977,21 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
           {rightView === 'checkout' && (
             <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
-              <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
+              <div 
+                className="flex items-center justify-between p-3 mt-[2px] mx-[1px]"
+                style={{ backgroundColor: statusStyles.bg, transition: 'all 0.3s ease' }}
+              >
                 <div className="flex flex-col gap-[2px]">
-                  <span className="text-[18px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
-                  <span className="text-[12px] text-[#4a4a6a]">Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}</span>
+                  <span className="text-[18px] font-semibold leading-[22px]" style={{ color: statusStyles.text }}>Current order</span>
+                  <span className="text-[12px] opacity-80" style={{ color: statusStyles.text }}>Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}</span>
                 </div>
-                <div className="flex gap-[10px]">
+                <div className="flex gap-[10px] items-center">
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 border shadow-sm mr-2" style={{ borderColor: statusStyles.border }}>
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: statusStyles.text }} />
+                    <span className="text-[10px] font-bold" style={{ color: statusStyles.text }}>
+                      {ORDER_STATUS_COLORS[globalOrderStatus]?.label || 'BILLING'}
+                    </span>
+                  </div>
                   <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setRightView('order'); setKotStatus('idle'); }}>Cancel order</button>
                   <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
                 </div>
