@@ -70,3 +70,29 @@ code {
     size: 80mm auto; /* Thermal paper width */
   }
 }
+
+/* ============================================
+   CUSTOM SCROLLBAR (POS STYLE)
+   ============================================ */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #fbbf24;
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #fbbf24 transparent;
+}

@@ -1,20 +1,20 @@
 export const ORDER_STATUS_COLORS = {
   available: {
-    bg: "#F3F4F6",
-    border: "#D1D5DB",
-    text: "#4B5563",
+    bg: "#ffffff",
+    border: "#bbf7d0", // Light green border
+    text: "#16a34a",   // Dark green text
     label: "AVAILABLE"
   },
   draft: {
-    bg: "#FFF7E8",
-    border: "#F59E0B",
-    text: "#B45309",
+    bg: "#ffffff",
+    border: "#f59e0b",
+    text: "#f59e0b",
     label: "DRAFT"
   },
   kot_sent: {
-    bg: "#EFF6FF",
-    border: "#3B82F6",
-    text: "#1D4ED8",
+    bg: "#ffffff",
+    border: "#ef4444", // Red border
+    text: "#ef4444",   // Red text
     label: "KOT SENT"
   },
   preparing: {

@@ -38,12 +38,23 @@ export const printReceiptElement = async (printerName, element) => {
     // Give React and any images (like QR code) a tiny bit of time to fully render
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    const canvas = await html2canvas(element, {
+    // Clone element to ensure it's rendered correctly by html2canvas without viewport clipping
+    const clone = element.cloneNode(true);
+    clone.style.position = 'fixed';
+    clone.style.top = '0px';
+    clone.style.left = '0px';
+    clone.style.zIndex = '-9999';
+    document.body.appendChild(clone);
+
+    const canvas = await html2canvas(clone, {
       scale: 3,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff'
     });
+
+    // Remove clone after capture
+    document.body.removeChild(clone);
 
     const imgData = canvas.toDataURL('image/jpeg', 1.0);
 
