@@ -2,23 +2,45 @@
  * Centralized utility for formatting receipt data.
  */
 
-export const generateReceiptText = ({ orderId, tableNo, amount, items = [], upiString = '' }) => {
-  let text = `*Bill Details - Annas Kitchen*\n`;
-  text += `Order: #${orderId || 'N/A'}\n`;
+export const generateReceiptText = ({
+  orderId,
+  tableNo,
+  amount,
+  items = [],
+  upiString = '',
+}) => {
+  const formattedAmount = Number(amount || 0).toFixed(2);
+
+  let text = `*ANNAS KITCHEN*\n`;
+  text += `━━━━━━━━━━━━━━\n\n`;
+
+  text += `*Order:* #${orderId || 'N/A'}\n`;
+
   if (tableNo) {
-    text += `Table: ${tableNo}\n`;
+    text += `*Table:* ${tableNo}\n`;
   }
-  text += `Amount: ₹${Number(amount || 0).toFixed(2)}\n\n`;
-  text += `*Items:*\n`;
+
+  text += `*Amount:* ₹${formattedAmount}\n\n`;
+
+  text += `*Items Ordered*\n`;
+
   if (items.length > 0) {
-    text += items.map(i => `${i.title} x${i.quantity}`).join('\n');
+    text += items
+      .map((item, index) => {
+        return `${index + 1}. ${item.title} × ${item.quantity}`;
+      })
+      .join('\n');
   } else {
-    text += `No items\n`;
+    text += `No items`;
   }
-  
+
   if (upiString) {
-    text += `\n\nPay via UPI: ${upiString}`;
+    text += `\n\n━━━━━━━━━━━━━━\n`;
+    text += `*Pay via UPI*\n`;
+    text += `${upiString}`;
   }
+
+  text += `\n\nThank you for dining with us!`;
 
   return text;
 };
@@ -30,7 +52,9 @@ export const generateWhatsAppMessage = (orderData) => {
 
 export const generateEmailTemplate = (orderData) => {
   const subject = `Bill Details - Order #${orderData.orderId || 'N/A'}`;
-  // For email we might not want the asterisks used for WhatsApp bolding
-  let body = generateReceiptText(orderData).replace(/\*/g, '');
+
+  // Remove WhatsApp markdown formatting for email
+  const body = generateReceiptText(orderData).replace(/\*/g, '');
+
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 };

@@ -18,7 +18,7 @@ import { ReceiptPrintTemplate } from '../../components/orders/ReceiptPrintTempla
 import { shareToEmail } from '../../utils/shareReceipt';
 import { shareReceiptToCustomer } from '../../utils/whatsappShare';
 import { PrinterSelectionModal } from '../../components/orders/PrinterSelectionModal';
-import { connectPrinter, printReceipt } from '../../services/printService';
+import { connectPrinter, printReceiptElement } from '../../services/printService';
 const areInstructionsEqual = (inst1, inst2) => {
   if (!inst1 && !inst2) return true;
   if (!inst1 || !inst2) return false;
@@ -538,13 +538,13 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         return;
       }
 
-      const printSection = document.getElementById('printable-receipt');
+      const printSection = document.getElementById('receipt-print-content');
       if (!printSection) {
         window.print();
         return;
       }
 
-      const result = await printReceipt(savedPrinter, printSection.outerHTML);
+      const result = await printReceiptElement(savedPrinter, printSection);
       if (!result.success) {
         alert("Print failed: " + result.error + "\nFalling back to browser print.");
         window.print();

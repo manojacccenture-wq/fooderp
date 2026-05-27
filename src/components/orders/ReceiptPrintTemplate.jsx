@@ -22,8 +22,8 @@ export const ReceiptPrintTemplate = ({
   const qrUrl = getQrUrl(upiString);
 
   return (
-    <div id="printable-receipt" className="print-only" style={{ display: 'none' }}>
-      <div className="receipt-container" style={{ width: '80mm', backgroundColor: '#fff', color: '#000', fontFamily: 'monospace', padding: '10px', margin: '0 auto', fontSize: '12px', lineHeight: '1.4' }}>
+    <div id="printable-receipt" className="print-only" style={{ position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -10 }}>
+      <div id="receipt-print-content" className="receipt-container" style={{ width: '300px', backgroundColor: '#ffffff', color: '#000', fontFamily: 'monospace', padding: '10px', margin: '0', fontSize: '12px', lineHeight: '1.4' }}>
         
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '15px' }}>
