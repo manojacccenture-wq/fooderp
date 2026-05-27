@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { generateWhatsAppMessage, generateEmailTemplate } from '../../utils/receiptFormatter';
+import { shareToEmail, getQrUrl, generateQrBlob, downloadQr } from '../../utils/shareReceipt';
+import { shareReceiptToCustomer } from '../../utils/whatsappShare';
 
-export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, tableNo, items = [], date }) => {
+export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, tableNo, items = [], date, customerPhone }) => {
   const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle' | 'success'
 
   if (!isOpen) return null;
@@ -10,19 +11,12 @@ export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, t
   // UPI format: upi://pay?pa=restaurant@upi&pn=Restaurant&am=100.00
   const upiId = "9031006009-1@okbizaxis";
   const upiString = `upi://pay?pa=${upiId}&pn=AnnasKitchen&am=${amount}&tr=${orderId}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}&margin=10`;
+  const qrUrl = getQrUrl(upiString);
 
   const handleDownloadQR = async () => {
     try {
-      const response = await fetch(qrUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `QR_Order_${orderId}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const blob = await generateQrBlob(upiString);
+      if (blob) downloadQr(blob, `QR_Order_${orderId}.png`);
     } catch (e) {
       console.error(e);
     }
@@ -32,14 +26,12 @@ export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, t
     navigator.clipboard.writeText(upiId);
   };
 
-  const handleWhatsAppShare = () => {
-    const url = generateWhatsAppMessage({ orderId, tableNo, amount, items, upiString });
-    window.open(url, '_blank');
+  const handleWhatsAppShare = async () => {
+    await shareReceiptToCustomer({ orderId, tableNo, amount, items, upiString }, customerPhone);
   };
 
-  const handleEmailShare = () => {
-    const url = generateEmailTemplate({ orderId, tableNo, amount, items, upiString });
-    window.open(url);
+  const handleEmailShare = async () => {
+    await shareToEmail({ orderId, tableNo, amount, items, upiString });
   };
 
   const handleConfirm = () => {

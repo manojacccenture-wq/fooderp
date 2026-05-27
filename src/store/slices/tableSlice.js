@@ -46,6 +46,7 @@ const tableSlice = createSlice({
         table.customerName = formData.name || table.customerName;
         table.guests = formData.guests || table.guests;
         table.duration = formData.time || table.duration;
+        table.customerPhone = formData.mobile || table.customerPhone || "";
       }
     },
     confirmSelection: (state, action) => {
@@ -61,12 +62,14 @@ const tableSlice = createSlice({
             newTable.guests = oldTable.guests;
             newTable.reservedGuests = oldTable.reservedGuests;
             newTable.duration = oldTable.duration;
+            newTable.customerPhone = oldTable.customerPhone;
           }
           oldTable.status = 'available';
           oldTable.customerName = '';
           oldTable.guests = 0;
           oldTable.reservedGuests = 0;
           oldTable.duration = '';
+          oldTable.customerPhone = '';
         }
       } else if (actionType === 'merge') {
         const targetTables = selectedTables;
@@ -78,6 +81,7 @@ const tableSlice = createSlice({
               t.customerName = oldTable.customerName + " (Merged)";
               t.guests = oldTable.guests;
               t.duration = oldTable.duration;
+              t.customerPhone = oldTable.customerPhone;
             }
           });
         }
@@ -92,6 +96,7 @@ const tableSlice = createSlice({
         table.guests = 0;
         table.reservedGuests = 0;
         table.duration = '';
+        table.customerPhone = '';
       }
     },
     confirmReplacement: (state, action) => {
@@ -117,6 +122,7 @@ const tableSlice = createSlice({
         table.guests = 0;
         table.reservedGuests = 0;
         table.duration = '';
+        table.customerPhone = '';
         table.orderData = undefined;
         table.cancellationData = {
           reason: reason || null,
@@ -134,6 +140,7 @@ const tableSlice = createSlice({
         table.guests = 0;
         table.reservedGuests = 0;
         table.duration = '';
+        table.customerPhone = '';
         table.orderData = undefined;
       }
     }

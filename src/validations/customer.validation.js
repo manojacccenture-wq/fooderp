@@ -5,5 +5,9 @@ export const startOrderSchema = z.object({
   guests: z.coerce.number().min(1, "Guest count required"),
   reserve: z.enum(["yes", "no"], { errorMap: () => ({ message: "Reservation selection required" }) }),
   time: z.string().min(1, "Time is required"),
-  mobile: z.string().regex(/^[0-9]{10}$/, "Enter valid 10 digit phone number")
+  mobile: z.string()
+    .trim()
+    .min(10, "Phone number must be 10 digits")
+    .max(10, "Phone number must be 10 digits")
+    .regex(/^[0-9]+$/, "Only numbers allowed")
 });

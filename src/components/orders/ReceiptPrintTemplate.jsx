@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { getQrUrl } from '../../utils/shareReceipt';
+
 /**
  * Isolated print component for thermal receipts (80mm width).
  * This component should only be visible during @media print.
@@ -17,9 +19,7 @@ export const ReceiptPrintTemplate = ({
   upiString = ''
 }) => {
   // Generate QR code URL if UPI
-  const qrUrl = upiString 
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiString)}&margin=0`
-    : null;
+  const qrUrl = getQrUrl(upiString);
 
   return (
     <div id="printable-receipt" className="print-only" style={{ display: 'none' }}>

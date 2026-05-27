@@ -15,7 +15,8 @@ import { SpecialInstructionTags } from '../../components/orders/SpecialInstructi
 import { SpecialInstructionsModal } from '../../components/orders/SpecialInstructionsModal';
 import { QuantitySelectorModal } from '../../components/orders/QuantitySelectorModal';
 import { ReceiptPrintTemplate } from '../../components/orders/ReceiptPrintTemplate';
-import { generateWhatsAppMessage, generateEmailTemplate } from '../../utils/receiptFormatter';
+import { shareToEmail } from '../../utils/shareReceipt';
+import { shareReceiptToCustomer } from '../../utils/whatsappShare';
 import { PrinterSelectionModal } from '../../components/orders/PrinterSelectionModal';
 import { connectPrinter, printReceipt } from '../../services/printService';
 const areInstructionsEqual = (inst1, inst2) => {
@@ -189,12 +190,13 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const currentTableObj = useMemo(() => allTables.find(t => t.tableNo === selectedTable), [allTables, selectedTable]);
   const displayCustomerName = currentTableObj?.customerName || 'Walk-in Customer';
   const isExistingSessionMode = currentTableObj?.status === 'occupied' || currentTableObj?.status === 'reserved';
+  const isPhoneMissingForDineIn = orderType === 'dine_in' && !phone;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (currentTableObj) {
       if (currentTableObj.guests) setOrderValue('guestCount', currentTableObj.guests, { shouldValidate: true });
-      if (currentTableObj.mobile) setOrderValue('phone', currentTableObj.mobile, { shouldValidate: true });
+      if (currentTableObj.customerPhone) setOrderValue('phone', currentTableObj.customerPhone, { shouldValidate: true });
     } else {
       setOrderValue('guestCount', 4, { shouldValidate: true });
       setOrderValue('phone', '', { shouldValidate: true });
@@ -375,7 +377,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     if (orderType === 'dine_in' && !isDineInFlow && selectedTable) {
       dispatch(startOrderForTable({ 
         tableNo: selectedTable, 
-        formData: { name: 'Walk-in Customer', guests: guestCount, time: '' } 
+        formData: { name: 'Walk-in Customer', guests: guestCount, time: '', mobile: phone } 
       }));
     }
 
@@ -557,12 +559,13 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     executeSilentPrint();
   };
 
-  const handleQuickWhatsApp = () => {
-    window.open(generateWhatsAppMessage(getOrderData()), '_blank');
+  const handleQuickWhatsApp = async () => {
+    // If the cashier entered a new phone in the form but hasn't submitted yet, use that local `phone` state
+    await shareReceiptToCustomer(getOrderData(), phone || currentTableObj?.customerPhone);
   };
 
-  const handleQuickEmail = () => {
-    window.open(generateEmailTemplate(getOrderData()));
+  const handleQuickEmail = async () => {
+    await shareToEmail(getOrderData());
   };
 
   // Render components
@@ -1140,7 +1143,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
           {/* Bottom Button Fixed */}
           {combinedItems.length > 0 && (
-          <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
+            <div className="px-4 pt-4 pb-8 shrink-0 bg-white sticky bottom-0 z-10">
             {rightView === 'order' ? (
               orderType === 'take_away' ? (
                 <button 
@@ -1154,12 +1157,16 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                 <button 
                   className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
                   onClick={handleOrderSubmit(handleSendKOT)}
-                  disabled={(orderType === 'dine_in' && !selectedTable)}
+                  disabled={(orderType === 'dine_in' && !selectedTable) || isPhoneMissingForDineIn}
                 >
                   Send to KOT
                 </button>
               ) : sentKotItems.length > 0 ? (
-                <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setRightView('checkout')}>
+                <button 
+                  className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
+                  onClick={() => setRightView('checkout')}
+                  disabled={isPhoneMissingForDineIn}
+                >
                   Complete Order
                 </button>
               ) : null
@@ -1181,7 +1188,11 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
                       <button className="flex-1 border border-[#eaeaef] bg-white text-[#4a4a6a] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#f3f5f9] transition-all" onClick={handleQuickPrint}>
                         Print
                       </button>
-                      <button className="flex-1 border border-[#eaeaef] bg-white text-[#24a44b] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#b4efc6]/20 transition-all" onClick={handleQuickWhatsApp}>
+                      <button 
+                        className="flex-1 border border-[#eaeaef] bg-white text-[#24a44b] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#b4efc6]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                        onClick={handleQuickWhatsApp}
+                        disabled={isPhoneMissingForDineIn}
+                      >
                         WhatsApp
                       </button>
                       <button className="flex-1 border border-[#eaeaef] bg-white text-[#6b4eff] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#d4cbfc]/30 transition-all" onClick={handleQuickEmail}>
@@ -1252,6 +1263,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         tableNo={selectedTable}
         items={sentKotItems}
         date={new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+        customerPhone={phone || currentTableObj?.customerPhone}
       />
 
       <PrinterSelectionModal
