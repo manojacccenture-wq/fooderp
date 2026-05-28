@@ -148,8 +148,8 @@ export const MenuContent = ({
   }, [activeKeyboardSection, keyboardSelectedIndex, visibleProducts]);
 
   return (
-    <div className="flex flex-col w-full h-[100vh] max-w-full overflow-hidden">
-      <div className="flex items-center gap-[14px] mb-[14px] shrink-0">
+    <div className="flex flex-col w-full h-[100vh] max-w-full overflow-hidden px-4 pt-4">
+      <div className="flex items-center gap-[10px] mb-[10px] shrink-0">
         <div className={clsx(
           "flex-1 h-[54px] bg-white border rounded-[16px] flex items-center px-4 py-3 transition-colors",
           isSearchFocused ? "border-[#ffb01d]" : "border-[#eaeaef]"
@@ -179,7 +179,7 @@ export const MenuContent = ({
         </div>
         
         
-        <div className="flex gap-[14px]">
+        <div className="flex gap-[10px]">
           <button 
             onClick={onOpenHelperModal}
             className="h-[54px] w-[54px] border rounded-[16px] flex items-center justify-center transition-colors text-[20px] shrink-0 bg-white text-[#ffb01d] border-[#eaeaef] hover:bg-[#fff7e8] hover:border-[#ffb01d]/50"
@@ -205,7 +205,7 @@ export const MenuContent = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-[14px] mb-[14px] shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar pb-2">
+      <div className="flex items-center gap-[10px] mb-[10px] shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar pb-2">
         {CATEGORIES.map((cat, index) => (
           <button
             key={index}
@@ -227,8 +227,8 @@ export const MenuContent = ({
         className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 pb-6 scroll-smooth"
       >
         <div 
-          className="grid gap-[14px] pb-[100px] items-stretch"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}
+          className="grid gap-[10px] pb-[100px] items-stretch"
+          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}
         >
           {visibleProducts.length > 0 ? (
             visibleProducts.map((p, index) => {

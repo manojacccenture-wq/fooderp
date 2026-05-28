@@ -38,70 +38,70 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
         }
       }}
       className={clsx(
-        "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer transition-all duration-200",
+        "bg-white border rounded-[12px] p-2 flex gap-2.5 items-center shadow-sm relative cursor-pointer transition-all duration-200",
         isSelected
           ? "border-2 border-[#6366f1] shadow-[0_0_0_4px_rgba(99,102,241,0.18)] scale-[1.01] bg-[#f8faff] z-10"
           : "border-[#eaeaef]",
         isAnimating && "animate-order-flash"
       )}
     >
-      <div className="w-[50px] h-[50px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)]">
-        <img src={image} alt={title} className="w-full h-full object-cover" />
+      <div className="w-[42px] h-[42px] shrink-0 drop-shadow-[0px_0px_2px_rgba(255,255,255,0.7)]">
+        <img src={image} alt={title} className="w-full h-full object-cover rounded-[6px]" />
       </div>
-      <div className="flex-1 flex flex-col gap-1">
-        <span className="text-[14px] leading-[22px] text-[#32324d] font-semibold">{title}</span>
+      <div className="flex-1 flex flex-col gap-0.5">
+        <span className="text-[13px] leading-[1.2] text-[#32324d] font-medium pr-16 line-clamp-2">{title}</span>
         {showQuantityControls ? (
           fulfillment ? (
-            <div className="flex flex-col gap-1 mt-1">
+            <div className="flex flex-col gap-0.5 mt-[2px]">
               {/* Dine-In Counter */}
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-bold text-[#6366f1] w-[45px]">Serve</span>
-                <button onClick={(e) => { e.stopPropagation(); onDecrease('dine_in'); }} className="w-6 h-6 rounded-[8px] bg-[#f8faff] flex items-center justify-center text-[#6366f1] cursor-pointer hover:bg-[#eef2ff] transition-colors border border-[#6366f1]/20">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-[#6366f1] w-[36px]">Serve</span>
+                <button onClick={(e) => { e.stopPropagation(); onDecrease('dine_in'); }} className="w-5 h-5 rounded-[6px] bg-[#f8faff] flex items-center justify-center text-[#6366f1] cursor-pointer hover:bg-[#eef2ff] transition-colors border border-[#6366f1]/20">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
-                <span className="text-[13px] font-bold text-[#32324d] min-w-[12px] text-center">{fulfillment.dine_in || 0}</span>
-                <button onClick={(e) => { e.stopPropagation(); onIncrease('dine_in'); }} className="w-6 h-6 rounded-[8px] bg-[#f8faff] flex items-center justify-center text-[#6366f1] cursor-pointer hover:bg-[#eef2ff] transition-colors border border-[#6366f1]/20">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span className="text-[12px] font-bold text-[#32324d] min-w-[12px] text-center leading-none">{fulfillment.dine_in || 0}</span>
+                <button onClick={(e) => { e.stopPropagation(); onIncrease('dine_in'); }} className="w-5 h-5 rounded-[6px] bg-[#f8faff] flex items-center justify-center text-[#6366f1] cursor-pointer hover:bg-[#eef2ff] transition-colors border border-[#6366f1]/20">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
               </div>
               {/* Takeaway Counter */}
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-bold text-[#d88c00] w-[45px]">Pack</span>
-                <button onClick={(e) => { e.stopPropagation(); onDecrease('take_away'); }} className="w-6 h-6 rounded-[8px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-[#d88c00] w-[36px]">Pack</span>
+                <button onClick={(e) => { e.stopPropagation(); onDecrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
-                <span className="text-[13px] font-bold text-[#32324d] min-w-[12px] text-center">{fulfillment.take_away || 0}</span>
-                <button onClick={(e) => { e.stopPropagation(); onIncrease('take_away'); }} className="w-6 h-6 rounded-[8px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span className="text-[12px] font-bold text-[#32324d] min-w-[12px] text-center leading-none">{fulfillment.take_away || 0}</span>
+                <button onClick={(e) => { e.stopPropagation(); onIncrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2 mt-1 relative">
-              <button onClick={(e) => { e.stopPropagation(); onDecrease(); }} className="w-6 h-6 rounded-[12.5px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe3d1] transition-colors">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <div className="flex items-center gap-2 mt-[2px] relative">
+              <button onClick={(e) => { e.stopPropagation(); onDecrease(); }} className="w-5 h-5 rounded-[6px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe3d1] transition-colors">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               </button>
               <div className="relative">
-                <span className={clsx("text-[14px] font-semibold text-[#666687] min-w-[9px] text-center block transition-transform duration-200", isAnimating && "scale-125 text-[#ff7b2c]")}>{quantity}</span>
+                <span className={clsx("text-[13px] font-semibold text-[#666687] min-w-[9px] text-center block transition-transform duration-200", isAnimating && "scale-125 text-[#ff7b2c]")}>{quantity}</span>
                 {animIndicator && (
-                  <span className={clsx("absolute -top-6 left-1/2 -translate-x-1/2 text-[12px] font-bold pointer-events-none animate-float-fade", animIndicator === '+1' ? 'text-[#24a44b]' : 'text-[#e23744]')}>
+                  <span className={clsx("absolute -top-5 left-1/2 -translate-x-1/2 text-[11px] font-bold pointer-events-none animate-float-fade", animIndicator === '+1' ? 'text-[#24a44b]' : 'text-[#e23744]')}>
                     {animIndicator}
                   </span>
                 )}
               </div>
-              <button onClick={(e) => { e.stopPropagation(); onIncrease(); }} className="w-7 h-7 rounded-[14px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe3d1] transition-colors">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <button onClick={(e) => { e.stopPropagation(); onIncrease(); }} className="w-5 h-5 rounded-[6px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe3d1] transition-colors">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               </button>
             </div>
           )
         ) : (
-          <div className="flex items-center mt-1">
-            <span className="text-[14px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
+          <div className="flex items-center mt-[2px]">
+            <span className="text-[13px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
           </div>
         )}
         <SpecialInstructionTags instructions={specialInstructions} />
       </div>
-      <div className="absolute right-3 top-3 flex gap-[6px]">
+      <div className="absolute right-2 top-2 flex gap-1">
         {onAddInstruction && (
           <div 
             onClick={(e) => { e.stopPropagation(); onAddInstruction(); }} 
@@ -173,19 +173,12 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
             tabIndex={0}
             className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#e23744] focus:outline-none focus:ring-2 focus:ring-[#e23744] focus:ring-offset-1 rounded-sm"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M8.33325 9.16602V14.166" stroke="#666687" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M11.6667 9.16602V14.166" stroke="#666687" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M15.8334 5V16.6667C15.8334 17.1087 15.6578 17.5326 15.3453 17.8452C15.0327 18.1577 14.6088 18.3333 14.1667 18.3333H5.83341C5.39139 18.3333 4.96746 18.1577 4.6549 17.8452C4.34234 17.5326 4.16675 17.1087 4.16675 16.6667V5" stroke="#666687" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2.5 5H17.5" stroke="#666687" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M6.66675 4.99935V3.33268C6.66675 2.89065 6.84234 2.46673 7.1549 2.15417C7.46746 1.84161 7.89139 1.66602 8.33341 1.66602H11.6667C12.1088 1.66602 12.5327 1.84161 12.8453 2.15417C13.1578 2.46673 13.3334 2.89065 13.3334 3.33268V4.99935" stroke="#666687" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8.333 9.166v5m3.334-5v5m4.166-13.333v11.666c0 .442-.176.866-.488 1.178-.312.312-.736.488-1.178.488H5.833c-.442 0-.866-.176-1.178-.488-.312-.312-.488-.736-.488-1.178V5m11.667 0H2.5"/></svg>
           </div>
         )}
       </div>
-      <div className="absolute right-3 bottom-3 flex items-end gap-[2px]">
-        <span className="text-[12px] font-bold text-[#ffb080] pb-[1px]">₹</span>
-        <span className="text-[16px] font-extrabold text-[#ff7b2c]">{(Number(price) * quantity).toFixed(2)}</span>
+      <div className="absolute right-2 bottom-2 font-extrabold text-[#ff7b2c] text-[13px]">
+        ₹{(Number(price) * quantity).toFixed(2)}
       </div>
     </div>
   );

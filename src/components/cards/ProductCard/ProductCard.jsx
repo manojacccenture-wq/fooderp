@@ -2,38 +2,34 @@ import React from 'react';
 
 export const ProductCard = ({ image, itemNo, title, price, isVeg, quantity, isKeyboardSelected }) => {
   return (
-    <div className={`bg-white h-[179px] w-full relative rounded-[16px] flex-shrink-0 transition-all duration-200 ${isKeyboardSelected ? 'border-2 border-[#f59e0b] shadow-[0_0_0_4px_rgba(245,158,11,0.18)] scale-[1.01] z-10' : quantity > 0 ? 'border border-[#faa300] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]' : 'shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)]'}`}>
-      <div className="absolute left-[7px] top-[8px] h-[24px] flex items-center justify-center px-2 py-2 rounded-full z-10">
-        <span className="text-card-detail-sm text-[var(--color-neutral-500)]">
-          Item No : {itemNo}
-        </span>
-      </div>
+    <div className={`bg-white h-[100px] w-full relative rounded-[12px] p-[8px] flex flex-col justify-between transition-all duration-200 ${isKeyboardSelected ? 'border-2 border-[#f59e0b] shadow-[0_0_0_4px_rgba(245,158,11,0.18)] scale-[1.01] z-10' : quantity > 0 ? 'border border-[#faa300] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]' : 'shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)]'}`}>
       
-      <div className="absolute top-[47px] left-1/2 -translate-x-1/2 w-[59px] h-[59px] drop-shadow-[0px_0px_4.72px_rgba(255,255,255,0.7)] pointer-events-none">
-        <img src={image} alt={title} className="w-full h-full object-cover" />
+      {/* Top Row: Image & Meta */}
+      <div className="flex justify-between items-start w-full gap-2">
+        <div className="w-[40px] h-[40px] shrink-0 drop-shadow-sm rounded-[8px] overflow-hidden bg-[#f3f5f9]">
+          <img src={image} alt={title} className="w-full h-full object-cover" />
+        </div>
+        <div className="flex-1 flex flex-col items-end min-w-0">
+          <span className="text-[10px] text-[#8e8ea9] font-bold leading-none">#{itemNo}</span>
+          <div className={`mt-1.5 px-1.5 py-[2px] rounded border ${isVeg ? 'bg-[#b4efc6]/20 border-[#24a44b]/30 text-[#24a44b]' : 'bg-[#ffe2e5]/30 border-[#e23744]/30 text-[#e23744]'} text-[9px] font-bold tracking-wider leading-none`}>
+            {isVeg ? 'VEG' : 'NVEG'}
+          </div>
+        </div>
       </div>
 
-      <div className="absolute left-[11px] top-[116px] right-[11px] flex flex-col gap-1 items-start">
-        <div className="w-full">
-          <span className="text-card-detail-sm text-[var(--color-neutral-800)] truncate block">{title}</span>
-        </div>
-        <div className="flex gap-[2px] items-start">
-          <small className="text-[var(--color-tertiary-3)] pb-[5px]">₹</small>
-          <span className="text-price-sm text-[var(--color-tertiary-1)]">{price}</span>
+      {/* Bottom Row: Title & Price */}
+      <div className="flex flex-col w-full mt-auto">
+        <span className="text-[12px] font-medium text-[#32324d] leading-[1.2] line-clamp-2">{title}</span>
+        <div className="flex items-center justify-between mt-[2px]">
+          <span className="text-[13px] font-extrabold text-[#ff7b2c]">₹{price}</span>
+          {quantity > 0 && (
+            <div className="min-w-[20px] h-[20px] px-[4px] bg-[#e23744] rounded-full flex items-center justify-center shadow-sm">
+              <span className="text-white text-[11px] font-bold leading-none">{quantity}</span>
+            </div>
+          )}
         </div>
       </div>
-
-      <div className={`absolute right-[12px] top-[145px] h-[24px] flex items-center justify-center px-2 py-2 rounded-full ${isVeg ? 'bg-[var(--color-success-200)]' : 'bg-[var(--color-danger-200)]'}`}>
-        <span className={`text-caption-3 ${isVeg ? 'text-[var(--color-success-500)]' : 'text-[var(--color-danger-500)]'}`}>
-          {isVeg ? 'Veg' : 'Non Veg'}
-        </span>
-      </div>
-
-      {quantity > 0 && (
-        <div className="absolute -right-[5px] top-[8px] min-w-[24px] h-[24px] px-[5px] bg-[var(--color-danger-500)] rounded-full flex items-center justify-center">
-          <span className="text-white text-caption-2 text-center leading-none">{quantity}</span>
-        </div>
-      )}
     </div>
   );
 };
+
