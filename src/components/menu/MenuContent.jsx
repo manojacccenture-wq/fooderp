@@ -131,6 +131,22 @@ export const MenuContent = ({
     }
   }, [keyboardSelectedIndex]);
 
+  // Focus Restoration Layer for Menu Grid
+  useEffect(() => {
+    if (activeKeyboardSection === 'menu') {
+      const timer = setTimeout(() => {
+        const targetRef = productRefs.current[keyboardSelectedIndex];
+        if (targetRef && typeof targetRef.focus === 'function') {
+          // Do not steal focus if user is actively typing in the search bar
+          if (document.activeElement !== searchRef.current && !targetRef.contains(document.activeElement)) {
+            targetRef.focus({ preventScroll: true });
+          }
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeKeyboardSection, keyboardSelectedIndex, visibleProducts]);
+
   return (
     <div className="flex flex-col w-full h-[100vh] max-w-full overflow-hidden">
       <div className="flex items-center gap-[14px] mb-[14px] shrink-0">
@@ -229,6 +245,11 @@ export const MenuContent = ({
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
+                      e.stopPropagation();
+                      if (e.nativeEvent) {
+                        e.nativeEvent.stopPropagation();
+                        e.nativeEvent.stopImmediatePropagation();
+                      }
                       if (onProductClick) onProductClick(p);
                     }
                   }}

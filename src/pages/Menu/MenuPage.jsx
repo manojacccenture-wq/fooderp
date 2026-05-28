@@ -181,18 +181,22 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   // 7. Focus Restoration Layer
   useEffect(() => {
-    if (activeKeyboardSection === 'order' && selectedOrderItem) {
+    if (activeKeyboardSection === 'order') {
       const timer = setTimeout(() => {
-        if (!document.activeElement || document.activeElement === document.body) {
-          const targetRef = itemRefs.current[selectedOrderItem];
+        const currentItemId = selectedOrderItem || (combinedItems.length > 0 ? combinedItems[0].id : null);
+        if (currentItemId) {
+          const targetRef = itemRefs.current[currentItemId];
           if (targetRef && typeof targetRef.focus === 'function') {
-            targetRef.focus({ preventScroll: true });
+            // Check if current focus is already inside the targeted item, or if user is in an input
+            if (!targetRef.contains(document.activeElement) && document.activeElement?.tagName !== 'INPUT') {
+              targetRef.focus({ preventScroll: true });
+            }
           }
         }
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [activeKeyboardSection, selectedOrderItem, draftOrderItems, sentKotItems, heldItems]);
+  }, [activeKeyboardSection, selectedOrderItem, draftOrderItems, sentKotItems, heldItems, combinedItems]);
 
   // Render Logic
   const renderMenuContent = (isReplaceMode = false) => (

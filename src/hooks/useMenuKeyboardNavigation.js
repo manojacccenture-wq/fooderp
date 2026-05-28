@@ -40,7 +40,15 @@ export const useMenuKeyboardNavigation = ({
       if (isHelperModalOpen) return;
       if (KEYBOARD_ACTIONS.SWITCH_SECTION.match(e)) {
         e.preventDefault();
-        setActiveKeyboardSection(prev => prev === 'menu' ? 'order' : 'menu');
+        setActiveKeyboardSection(prev => {
+          if (prev === 'menu') {
+            if (!selectedOrderItem && combinedItems && combinedItems.length > 0) {
+              setSelectedOrderItem(combinedItems[0].id);
+            }
+            return 'order';
+          }
+          return 'menu';
+        });
         return;
       }
       
