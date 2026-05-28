@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { SpecialInstructionTags } from '../../../components/orders/SpecialInstructionTags';
 
 export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
-  onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction }) => {
+  onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction, fulfillmentType, onToggleFulfillmentType }) => {
   
   const [isAnimating, setIsAnimating] = useState(false);
   const [animIndicator, setAnimIndicator] = useState(null);
@@ -30,9 +30,9 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
       ref={itemRef}
       onClick={onSelect}
       className={clsx(
-        "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer transition-all duration-300",
+        "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer transition-all duration-200",
         isSelected
-          ? "border-2 border-[#fbbf24] shadow-[0_0_0_4px_rgba(251,191,36,0.15)] bg-[#fffbf0]"
+          ? "border-2 border-[#6366f1] shadow-[0_0_0_4px_rgba(99,102,241,0.18)] scale-[1.01] bg-[#f8faff] z-10"
           : "border-[#eaeaef]",
         isAnimating && "animate-order-flash"
       )}
@@ -65,6 +65,18 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
           </div>
         )}
         <SpecialInstructionTags instructions={specialInstructions} />
+        {fulfillmentType && (
+          <div 
+            onClick={(e) => { e.stopPropagation(); if(onToggleFulfillmentType) onToggleFulfillmentType(); }}
+            className={clsx(
+              "inline-flex items-center gap-1 px-2 py-[2px] rounded-[6px] text-[10px] font-bold mt-1 w-max transition-colors cursor-pointer",
+              fulfillmentType === 'take_away' ? "bg-[#ffb01d]/10 text-[#d88c00] hover:bg-[#ffb01d]/20" : "bg-[#6366f1]/10 text-[#6366f1] hover:bg-[#6366f1]/20"
+            )}
+            title="Click to toggle Dine-In / Parcel"
+          >
+            {fulfillmentType === 'take_away' ? '📦 Parcel' : '🍽️ Dine-In'}
+          </div>
+        )}
       </div>
       <div className="absolute right-3 top-3 flex gap-[6px]">
         {onAddInstruction && (

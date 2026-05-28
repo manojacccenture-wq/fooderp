@@ -6,6 +6,12 @@ export const areInstructionsEqual = (inst1, inst2) => {
   return JSON.stringify(inst1) === JSON.stringify(inst2);
 };
 
+export const areItemsEqual = (item1, item2) => {
+  return item1.title === item2.title && 
+         areInstructionsEqual(item1.specialInstructions, item2.specialInstructions) &&
+         (item1.fulfillmentType || 'dine_in') === (item2.fulfillmentType || 'dine_in');
+};
+
 export const useMenuOrders = (setKotStatus) => {
   const [draftOrderItems, setDraftOrderItems] = useState([]);
   const [sentKotItems, setSentKotItems] = useState([]);
@@ -84,7 +90,7 @@ export const useMenuOrders = (setKotStatus) => {
       
       const mergedList = [];
       newList.forEach(curr => {
-        const existing = mergedList.find(m => m.title === curr.title && areInstructionsEqual(m.specialInstructions, curr.specialInstructions));
+        const existing = mergedList.find(m => areItemsEqual(m, curr));
         if (existing) {
           existing.quantity += curr.quantity;
         } else {
@@ -127,7 +133,7 @@ export const useMenuOrders = (setKotStatus) => {
     const newId = Date.now();
     setDraftOrderItems((prev) => {
       const existingItem = prev.find(
-        (item) => item.title === product.title && areInstructionsEqual(item.specialInstructions, product.specialInstructions)
+        (item) => areItemsEqual(item, { ...product, specialInstructions: product.specialInstructions, fulfillmentType: 'dine_in' })
       );
 
       const idToSelect = existingItem ? existingItem.id : newId;
@@ -149,6 +155,7 @@ export const useMenuOrders = (setKotStatus) => {
           title: product.title,
           price: Number(product.price),
           quantity: 1,
+          fulfillmentType: 'dine_in',
           specialInstructionGroups: product.specialInstructionGroups || [],
         },
       ];
@@ -159,20 +166,29 @@ export const useMenuOrders = (setKotStatus) => {
 
   const handleAddToOrder = (product) => {
     setDraftOrderItems((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined));
+      const existingItem = prev.find((item) => item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined) && (item.fulfillmentType || 'dine_in') === (product.fulfillmentType || 'dine_in'));
       
       const idToSelect = existingItem ? existingItem.id : product.id;
       setTimeout(() => setSelectedOrderItem(idToSelect), 0);
 
       if (existingItem) {
         return prev.map((item) =>
-          item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined)
+          item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined) && (item.fulfillmentType || 'dine_in') === (product.fulfillmentType || 'dine_in')
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prev, { ...product, quantity: 1, specialInstructions: undefined }];
+      return [...prev, { ...product, quantity: 1, specialInstructions: undefined, fulfillmentType: product.fulfillmentType || 'dine_in' }];
     });
+  };
+
+  const handleToggleFulfillmentType = (id) => {
+    setDraftOrderItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, fulfillmentType: item.fulfillmentType === 'take_away' ? 'dine_in' : 'take_away' };
+      }
+      return item;
+    }));
   };
 
   const combinedItems = [...sentKotItems, ...draftOrderItems];
@@ -195,6 +211,6 @@ export const useMenuOrders = (setKotStatus) => {
     handleIncrease, handleDecrease, handleRemove,
     handleSplitClick, handleReplaceClick, handleOpenInstructions,
     handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit,
-    handleProductCardClick, handleAddToOrder
+    handleProductCardClick, handleAddToOrder, handleToggleFulfillmentType
   };
 };

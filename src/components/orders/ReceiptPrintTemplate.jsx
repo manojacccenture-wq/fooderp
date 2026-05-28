@@ -64,20 +64,39 @@ export const ReceiptPrintTemplate = ({
               </tr>
             </thead>
             <tbody>
-              {items.map((item, idx) => (
-                <tr key={idx}>
-                  <td style={{ paddingTop: '4px', verticalAlign: 'top' }}>
-                    {item.title}
-                    {item.specialInstructions && (
-                      <div style={{ fontSize: '10px', fontStyle: 'italic', marginLeft: '5px' }}>
-                        - {JSON.stringify(item.specialInstructions)}
-                      </div>
+              {(() => {
+                const dineInItems = items.filter(i => (i.fulfillmentType || 'dine_in') === 'dine_in');
+                const takeawayItems = items.filter(i => i.fulfillmentType === 'take_away');
+                
+                const renderItemRow = (item, idx) => (
+                  <tr key={idx}>
+                    <td style={{ paddingTop: '4px', verticalAlign: 'top' }}>
+                      {item.title}
+                      {item.specialInstructions && (
+                        <div style={{ fontSize: '10px', fontStyle: 'italic', marginLeft: '5px' }}>
+                          - {JSON.stringify(item.specialInstructions)}
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ paddingTop: '4px', textAlign: 'center', verticalAlign: 'top' }}>{item.quantity}</td>
+                    <td style={{ paddingTop: '4px', textAlign: 'right', verticalAlign: 'top' }}>{(item.price * item.quantity).toFixed(2)}</td>
+                  </tr>
+                );
+
+                return (
+                  <>
+                    {dineInItems.length > 0 && takeawayItems.length > 0 && (
+                      <tr><td colSpan="3" style={{ textAlign: 'center', fontWeight: 'bold', paddingTop: '8px', paddingBottom: '4px', borderBottom: '1px dashed #ccc' }}>--- DINE-IN ---</td></tr>
                     )}
-                  </td>
-                  <td style={{ paddingTop: '4px', textAlign: 'center', verticalAlign: 'top' }}>{item.quantity}</td>
-                  <td style={{ paddingTop: '4px', textAlign: 'right', verticalAlign: 'top' }}>{(item.price * item.quantity).toFixed(2)}</td>
-                </tr>
-              ))}
+                    {dineInItems.map(renderItemRow)}
+                    
+                    {takeawayItems.length > 0 && (
+                      <tr><td colSpan="3" style={{ textAlign: 'center', fontWeight: 'bold', paddingTop: '12px', paddingBottom: '4px', borderBottom: '1px dashed #ccc' }}>--- PARCEL ---</td></tr>
+                    )}
+                    {takeawayItems.map((item, idx) => renderItemRow(item, `takeaway-${idx}`))}
+                  </>
+                );
+              })()}
             </tbody>
           </table>
         </div>

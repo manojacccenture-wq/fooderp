@@ -74,7 +74,10 @@ export const OrderSidebar = ({
   handleQuickWhatsApp,
   handleQuickEmail,
   resetCompleteBillingSession,
-  isPhoneMissingForDineIn
+  isPhoneMissingForDineIn,
+  activeKeyboardSection,
+  setActiveKeyboardSection,
+  handleToggleFulfillmentType
 }) => {
   return (
     <div className="w-full h-full max-h-screen bg-white flex flex-col relative shrink-0">
@@ -135,6 +138,9 @@ export const OrderSidebar = ({
                 handleDecrease={handleDecrease}
                 handleRemove={handleRemove}
                 handleOpenInstructions={handleOpenInstructions}
+                activeKeyboardSection={activeKeyboardSection}
+                setActiveKeyboardSection={setActiveKeyboardSection}
+                handleToggleFulfillmentType={handleToggleFulfillmentType}
               />
 
               {isSplitView ? (

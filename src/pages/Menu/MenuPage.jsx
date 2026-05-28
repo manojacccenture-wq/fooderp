@@ -14,6 +14,7 @@ import { QuantitySelectorModal } from '../../components/orders/QuantitySelectorM
 import { PrinterSelectionModal } from '../../components/orders/PrinterSelectionModal';
 import { ReceiptPrintTemplate } from '../../components/orders/ReceiptPrintTemplate';
 import { OrderSidebar } from './components/Sidebar/OrderSidebar';
+import { ShortcutHelperModal } from './components/ShortcutHelperModal';
 
 // Hooks
 import { useMenuOrders } from './hooks/useMenuOrders';
@@ -37,6 +38,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const paymentInputRef = useRef(null);
   
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [activeKeyboardSection, setActiveKeyboardSection] = useState('menu'); // 'menu' | 'order'
+  const [isHelperModalOpen, setIsHelperModalOpen] = useState(false);
 
   // 1. Menu Orders Hook
   const {
@@ -55,7 +58,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     handleIncrease, handleDecrease, handleRemove,
     handleSplitClick, handleReplaceClick, handleOpenInstructions,
     handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit,
-    handleProductCardClick
+    handleProductCardClick, handleToggleFulfillmentType
   } = useMenuOrders();
 
   // 2. Table Flow Hook
@@ -184,6 +187,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       replacementSelectedProductId={selectedItemForAction?.itemNo}
       isFocusMode={isFocusMode}
       onToggleFocusMode={() => setIsFocusMode(prev => !prev)}
+      onOpenHelperModal={() => setIsHelperModalOpen(true)}
+      activeKeyboardSection={activeKeyboardSection}
+      setActiveKeyboardSection={setActiveKeyboardSection}
+      isHelperModalOpen={isHelperModalOpen}
       onProductClick={(p) => {
         setIsFocusMode(false);
         if (isReplaceMode && selectedItemForAction) {
@@ -213,6 +220,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         });
       }}
       selectedOrderItem={selectedOrderItem}
+      onClearSelected={() => setSelectedOrderItem(null)}
       onIncreaseSelected={handleIncrease}
       onDecreaseSelected={handleDecrease}
     />
@@ -297,8 +305,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
         <OrderSidebar
           rightView={rightView}
-        setRightView={setRightView}
-        statusStyles={statusStyles}
+          setRightView={setRightView}
+          statusStyles={statusStyles}
+          activeKeyboardSection={activeKeyboardSection}
+          setActiveKeyboardSection={setActiveKeyboardSection}
         displayCustomerName={displayCustomerName}
         selectedTable={selectedTable}
         globalOrderStatus={globalOrderStatus}
@@ -363,6 +373,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         handleQuickEmail={handleQuickEmail}
         resetCompleteBillingSession={resetCompleteBillingSession}
         isPhoneMissingForDineIn={isPhoneMissingForDineIn}
+        handleToggleFulfillmentType={handleToggleFulfillmentType}
       />
       </div>
 
@@ -418,6 +429,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           setIsPrinterModalOpen(false);
           executeSilentPrint();
         }}
+      />
+      <ShortcutHelperModal
+        isOpen={isHelperModalOpen}
+        onClose={() => setIsHelperModalOpen(false)}
       />
     </div>
   );

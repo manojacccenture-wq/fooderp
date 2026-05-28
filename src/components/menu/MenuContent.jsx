@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { ProductCard } from '../cards/ProductCard/ProductCard';
 import { useMenuKeyboardNavigation } from '../../hooks/useMenuKeyboardNavigation';
 import { CATEGORIES, MENU_PRODUCTS } from '../../data/menuProducts';
+import { KEYBOARD_ACTIONS } from '../../config/keyboardShortcutsConfig';
 
 export const MenuContent = ({
   orderItems = [],
@@ -10,12 +11,17 @@ export const MenuContent = ({
   onProductDecrease,
   onProductClick,
   selectedOrderItem,
+  onClearSelected,
   onIncreaseSelected,
   onDecreaseSelected,
   isReplaceMode = false,
   replacementSelectedProductId = null,
   isFocusMode,
-  onToggleFocusMode
+  onToggleFocusMode,
+  onOpenHelperModal,
+  activeKeyboardSection,
+  setActiveKeyboardSection,
+  isHelperModalOpen
 }) => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState("All Dishes");
@@ -50,15 +56,21 @@ export const MenuContent = ({
     searchRef,
     setActiveCategory,
     selectedOrderItem,
+    onClearSelected,
     onIncreaseSelected,
-    onDecreaseSelected
+    onDecreaseSelected,
+    activeKeyboardSection,
+    setActiveKeyboardSection,
+    isHelperModalOpen
   });
 
-  const handleSearchEnter = (e) => {
-    if (e.key === 'Enter') {
+  const handleSearchKeyDown = (e) => {
+    if (KEYBOARD_ACTIONS.ADD_ITEM.match(e) && e.key === 'Enter') {
       if (search.trim() !== '' && filteredProducts.length === 1) {
         onProductEnter(filteredProducts[0]);
       }
+    } else if (KEYBOARD_ACTIONS.EXIT_SEARCH.match(e)) {
+      searchRef.current?.blur();
     }
   };
 
@@ -131,7 +143,7 @@ export const MenuContent = ({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={handleSearchEnter}
+            onKeyDown={handleSearchKeyDown}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
             placeholder="Search by Item No or Product Name"
@@ -147,16 +159,31 @@ export const MenuContent = ({
           </div>
         </div>
         
-        <button 
-          onClick={onToggleFocusMode}
-          className={clsx(
-            "h-[54px] w-[54px] border rounded-[16px] flex items-center justify-center transition-colors text-[24px] shrink-0",
-            isFocusMode ? "bg-[#ffb01d] text-white border-[#ffb01d]" : "bg-white text-[#666687] border-[#eaeaef] hover:bg-gray-50"
-          )}
-          title={isFocusMode ? "Exit Focus Mode" : "Enter Focus Mode"}
-        >
-          ⛶
-        </button>
+        
+        <div className="flex gap-[14px]">
+          <button 
+            onClick={onOpenHelperModal}
+            className="h-[54px] w-[54px] border rounded-[16px] flex items-center justify-center transition-colors text-[20px] shrink-0 bg-white text-[#ffb01d] border-[#eaeaef] hover:bg-[#fff7e8] hover:border-[#ffb01d]/50"
+            title="Keyboard Shortcuts"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
+
+          <button 
+            onClick={onToggleFocusMode}
+            className={clsx(
+              "h-[54px] w-[54px] border rounded-[16px] flex items-center justify-center transition-colors text-[24px] shrink-0",
+              isFocusMode ? "bg-[#ffb01d] text-white border-[#ffb01d]" : "bg-white text-[#666687] border-[#eaeaef] hover:bg-gray-50"
+            )}
+            title={isFocusMode ? "Exit Focus Mode" : "Enter Focus Mode"}
+          >
+            ⛶
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-[14px] mb-[14px] shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar pb-2">
@@ -199,7 +226,7 @@ export const MenuContent = ({
                 >
                   <ProductCard
                     {...p}
-                    isKeyboardSelected={keyboardSelectedIndex === index}
+                    isKeyboardSelected={keyboardSelectedIndex === index && activeKeyboardSection === 'menu'}
                     quantity={
                       isReplaceMode
                         ? 0

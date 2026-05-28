@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ProductCard = ({ image, itemNo, title, price, isVeg, quantity, isKeyboardSelected }) => {
   return (
-    <div className={`bg-white h-[179px] w-full relative rounded-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] flex-shrink-0 ${(quantity > 0 || isKeyboardSelected) ? 'border border-[#faa300]' : ''}`}>
+    <div className={`bg-white h-[179px] w-full relative rounded-[16px] flex-shrink-0 transition-all duration-200 ${isKeyboardSelected ? 'border-2 border-[#f59e0b] shadow-[0_0_0_4px_rgba(245,158,11,0.18)] scale-[1.01] z-10' : quantity > 0 ? 'border border-[#faa300] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]' : 'shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)]'}`}>
       <div className="absolute left-[7px] top-[8px] h-[24px] flex items-center justify-center px-2 py-2 rounded-full z-10">
         <span className="text-card-detail-sm text-[var(--color-neutral-500)]">
           Item No : {itemNo}

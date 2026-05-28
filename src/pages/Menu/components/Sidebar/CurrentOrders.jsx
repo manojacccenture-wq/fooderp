@@ -16,7 +16,10 @@ export const CurrentOrders = ({
   handleDecrease,
   handleRemove,
   handleOpenInstructions,
-  setSelectedOrderItem
+  setSelectedOrderItem,
+  activeKeyboardSection,
+  setActiveKeyboardSection,
+  handleToggleFulfillmentType
 }) => {
   return (
     <div className="px-4 mt-4 flex flex-col gap-4">
@@ -36,7 +39,7 @@ export const CurrentOrders = ({
           const blockStyle = isKOTStatus ? statusStyles : ORDER_STATUS_COLORS.kot_sent;
           
           return (
-            <div key={`round-${roundObj.round}`} className="bg-white rounded-[16px] border border-[#eaeaef] overflow-hidden shadow-sm flex flex-col shrink-0 border-l-4" style={{ borderLeftColor: blockStyle.border }}>
+            <div key={`round-${roundObj.round}`} className="bg-white rounded-[16px] border border-[#eaeaef] overflow-hidden shadow-sm flex flex-col shrink-0 " >
               <div className="px-4 py-[10px] flex justify-between items-center border-b border-[#eaeaef]" style={{ backgroundColor: blockStyle.bg }}>
                 <div className="flex items-center gap-2">
                   <span className="text-[13px] font-extrabold" style={{ color: blockStyle.text }}>KOT Round {roundObj.round}</span>
@@ -60,8 +63,10 @@ export const CurrentOrders = ({
                     specialInstructions={item.specialInstructions}
                     showDelete={false}
                     showQuantityControls={false}
-                    isSelected={selectedOrderItem === item.id}
-                    onSelect={() => setSelectedOrderItem(item.id)}
+                    fulfillmentType={item.fulfillmentType}
+                    onToggleFulfillmentType={undefined}
+                    isSelected={selectedOrderItem === item.id && activeKeyboardSection === 'order'}
+                    onSelect={() => { setSelectedOrderItem(item.id); setActiveKeyboardSection('order'); }}
                     itemRef={(el) => { if(itemRefs && itemRefs.current) itemRefs.current[item.id] = el; }}
                   />
                 ))}
@@ -91,8 +96,10 @@ export const CurrentOrders = ({
                 specialInstructions={item.specialInstructions}
                 showDelete={true}
                 showQuantityControls={true}
-                isSelected={selectedOrderItem === item.id}
-                onSelect={() => setSelectedOrderItem(item.id)}
+                fulfillmentType={item.fulfillmentType}
+                onToggleFulfillmentType={() => handleToggleFulfillmentType && handleToggleFulfillmentType(item.id)}
+                isSelected={selectedOrderItem === item.id && activeKeyboardSection === 'order'}
+                onSelect={() => { setSelectedOrderItem(item.id); setActiveKeyboardSection('order'); }}
                 itemRef={(el) => { if(itemRefs && itemRefs.current) itemRefs.current[item.id] = el; }}
               />
             </div>
