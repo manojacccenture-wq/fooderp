@@ -21,7 +21,8 @@ export const MenuContent = ({
   onOpenHelperModal,
   activeKeyboardSection,
   setActiveKeyboardSection,
-  isHelperModalOpen
+  isHelperModalOpen,
+  setSelectedOrderItem
 }) => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState("All Dishes");
@@ -56,6 +57,8 @@ export const MenuContent = ({
     searchRef,
     setActiveCategory,
     selectedOrderItem,
+    setSelectedOrderItem,
+    combinedItems: orderItems,
     onClearSelected,
     onIncreaseSelected,
     onDecreaseSelected,
@@ -219,9 +222,20 @@ export const MenuContent = ({
                 <div key={index}
                   ref={(el) => (productRefs.current[index] = el)}
                   onClick={() => onProductClick && onProductClick(p)}
+                  onFocus={() => {
+                    setActiveKeyboardSection('menu');
+                    if (setKeyboardSelectedIndex) setKeyboardSelectedIndex(index);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (onProductClick) onProductClick(p);
+                    }
+                  }}
+                  tabIndex={0}
                   className={clsx(
-                    "cursor-pointer transition-all h-full",
-                    isActiveReplaceTarget ? "ring-2 ring-[#ffb01d] rounded-[16px] transform scale-[1.02]" : ""
+                    "cursor-pointer transition-all h-full outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:ring-offset-2 rounded-[16px]",
+                    isActiveReplaceTarget ? "ring-2 ring-[#ffb01d] transform scale-[1.02]" : ""
                   )}
                 >
                   <ProductCard

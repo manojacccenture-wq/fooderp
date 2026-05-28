@@ -18,14 +18,15 @@ export const KEYBOARD_ACTIONS = {
     id: 'navigate_order',
     description: 'Navigate current order',
     displayKeys: ['↑', '↓'],
-    // Using the same keys as the modify quantities technically, but we will document it simply
+    matchUp: (e) => e.key === 'ArrowUp',
+    matchDown: (e) => e.key === 'ArrowDown',
   },
   MODIFY_QUANTITY: {
     id: 'modify_qty',
     description: 'Increase / Decrease quantity',
     displayKeys: ['+', '-'],
-    matchIncrease: (e) => e.key === 'ArrowUp' || e.key === '+' || e.key === '=',
-    matchDecrease: (e) => e.key === 'ArrowDown' || e.key === '-'
+    matchIncrease: (e) => e.key === '+' || e.key === '=',
+    matchDecrease: (e) => e.key === '-' || e.key === '_'
   },
   ADD_ITEM: {
     id: 'add_item',

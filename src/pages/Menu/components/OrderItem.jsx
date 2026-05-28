@@ -29,6 +29,14 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
     <div
       ref={itemRef}
       onClick={onSelect}
+      onFocus={onSelect}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (onSelect) onSelect();
+        }
+      }}
       className={clsx(
         "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer transition-all duration-200",
         isSelected
@@ -95,12 +103,34 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
       </div>
       <div className="absolute right-3 top-3 flex gap-[6px]">
         {onAddInstruction && (
-          <div onClick={(e) => { e.stopPropagation(); onAddInstruction(); }} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#6b4eff] transition-colors">
+          <div 
+            onClick={(e) => { e.stopPropagation(); onAddInstruction(); }} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddInstruction();
+              }
+            }}
+            tabIndex={0}
+            className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#6b4eff] transition-colors focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-1 rounded-sm"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sticky-note"><path d="M21 9a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"/><path d="M15 3v5a1 1 0 0 0 1 1h5"/></svg>
           </div>
         )}
         {onSplit && (
-          <div onClick={onSplit} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#666687]">
+          <div 
+            onClick={(e) => { e.stopPropagation(); onSplit(); }} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                onSplit();
+              }
+            }}
+            tabIndex={0}
+            className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#666687] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-1 rounded-sm"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M13.3333 2.5H17.4999V6.66667" stroke="#666687" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M6.66667 2.5H2.5V6.66667" stroke="#666687" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -110,7 +140,18 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
           </div>
         )}
         {onReplace && (
-          <div onClick={onReplace} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#ffb01d]">
+          <div 
+            onClick={(e) => { e.stopPropagation(); onReplace(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                onReplace();
+              }
+            }}
+            tabIndex={0}
+            className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#ffb01d] focus:outline-none focus:ring-2 focus:ring-[#ffb01d] focus:ring-offset-1 rounded-sm"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M2.5 10C2.5 8.01088 3.29018 6.10322 4.6967 4.6967C6.10322 3.29018 8.01088 2.5 10 2.5C12.0967 2.50789 14.1092 3.32602 15.6167 4.78333L17.5 6.66667" stroke="#666687" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M17.4999 2.5V6.66667H13.3333" stroke="#666687" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -120,7 +161,18 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
           </div>
         )}
         {showDelete && onRemove && (
-          <div onClick={onRemove} className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#e23744]">
+          <div 
+            onClick={(e) => { e.stopPropagation(); onRemove(); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemove();
+              }
+            }}
+            tabIndex={0}
+            className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#e23744] focus:outline-none focus:ring-2 focus:ring-[#e23744] focus:ring-offset-1 rounded-sm"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M8.33325 9.16602V14.166" stroke="#666687" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M11.6667 9.16602V14.166" stroke="#666687" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round" />

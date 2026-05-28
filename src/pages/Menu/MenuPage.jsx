@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -179,6 +179,21 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     }
   };
 
+  // 7. Focus Restoration Layer
+  useEffect(() => {
+    if (activeKeyboardSection === 'order' && selectedOrderItem) {
+      const timer = setTimeout(() => {
+        if (!document.activeElement || document.activeElement === document.body) {
+          const targetRef = itemRefs.current[selectedOrderItem];
+          if (targetRef && typeof targetRef.focus === 'function') {
+            targetRef.focus({ preventScroll: true });
+          }
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeKeyboardSection, selectedOrderItem, draftOrderItems, sentKotItems, heldItems]);
+
   // Render Logic
   const renderMenuContent = (isReplaceMode = false) => (
     <MenuContent
@@ -220,6 +235,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         });
       }}
       selectedOrderItem={selectedOrderItem}
+      setSelectedOrderItem={setSelectedOrderItem}
       onClearSelected={() => setSelectedOrderItem(null)}
       onIncreaseSelected={handleIncrease}
       onDecreaseSelected={handleDecrease}

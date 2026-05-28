@@ -8,6 +8,8 @@ export const useMenuKeyboardNavigation = ({
   searchRef,
   setActiveCategory,
   selectedOrderItem,
+  setSelectedOrderItem,
+  combinedItems,
   onClearSelected,
   onIncreaseSelected,
   onDecreaseSelected,
@@ -100,27 +102,42 @@ export const useMenuKeyboardNavigation = ({
     return () => window.removeEventListener('keydown', handleGridKeyDown);
   }, [filteredProducts, onProductEnter, onProductDecrease]);
 
-  // Up/Down arrows for selected order item in the sidebar
+  // Up/Down arrows for navigating order items, +/- for modifying quantity
   useEffect(() => {
     const handleArrowKeys = (e) => {
       if (isHelperModalOpen) return;
       if (activeKeyboardSection !== 'order') return;
-      if (!selectedOrderItem) return; // Note: For future enhancement, we could select the first item if none is selected here.
       
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      if (!combinedItems || combinedItems.length === 0) return;
+
+      const currentIndex = combinedItems.findIndex(i => i.id === selectedOrderItem);
       
-      if (KEYBOARD_ACTIONS.MODIFY_QUANTITY.matchIncrease(e)) {
+      if (KEYBOARD_ACTIONS.NAVIGATE_ORDER?.matchUp?.(e)) {
         e.preventDefault();
-        onIncreaseSelected(selectedOrderItem);
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+        if (combinedItems[prevIndex]) {
+          setSelectedOrderItem(combinedItems[prevIndex].id);
+        }
+      } else if (KEYBOARD_ACTIONS.NAVIGATE_ORDER?.matchDown?.(e)) {
+        e.preventDefault();
+        const nextIndex = (currentIndex !== -1 && currentIndex < combinedItems.length - 1) ? currentIndex + 1 : Math.max(0, combinedItems.length - 1);
+        if (combinedItems[nextIndex]) {
+          setSelectedOrderItem(combinedItems[nextIndex].id);
+        }
+      } else if (KEYBOARD_ACTIONS.MODIFY_QUANTITY.matchIncrease(e)) {
+        e.preventDefault();
+        if (selectedOrderItem) onIncreaseSelected(selectedOrderItem);
       } else if (KEYBOARD_ACTIONS.MODIFY_QUANTITY.matchDecrease(e)) {
         e.preventDefault();
-        onDecreaseSelected(selectedOrderItem);
+        if (selectedOrderItem) onDecreaseSelected(selectedOrderItem);
       }
     };
     window.addEventListener('keydown', handleArrowKeys);
     return () => window.removeEventListener('keydown', handleArrowKeys);
-  }, [selectedOrderItem, onIncreaseSelected, onDecreaseSelected]);
+  }, [selectedOrderItem, combinedItems, onIncreaseSelected, onDecreaseSelected, activeKeyboardSection, isHelperModalOpen, setSelectedOrderItem]);
 
   return {
     keyboardSelectedIndex,
