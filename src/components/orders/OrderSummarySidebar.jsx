@@ -153,6 +153,7 @@ export const OrderSummarySidebar = ({
            </div>
         )}
       </div>
+      
 
       <div className="px-4 mt-4 flex flex-col gap-4 overflow-y-auto max-h-[350px] custom-scrollbar">
         {roundsArray.length > 0 && roundsArray.map((roundObj) => (
