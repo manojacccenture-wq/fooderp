@@ -77,7 +77,7 @@ export const OrderSidebar = ({
   isPhoneMissingForDineIn
 }) => {
   return (
-    <div className="w-[354px] h-full max-h-screen bg-white border-l border-[#f3f5f9] flex flex-col relative shrink-0">
+    <div className="w-full h-full max-h-screen bg-white flex flex-col relative shrink-0">
       {rightView === 'order' && (
         <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
           {/* Header */}
@@ -86,8 +86,8 @@ export const OrderSidebar = ({
             style={{ backgroundColor: statusStyles.bg, transition: 'all 0.3s ease' }}
           >
             <div className="flex flex-col gap-[2px]">
-              <span className="text-[18px] font-semibold leading-[22px]" style={{ color: statusStyles.text }}>Current order</span>
-              <span className="text-[12px] opacity-80" style={{ color: statusStyles.text }}>
+              <span className="text-[80%] font-semibold leading-[22px]" style={{ color: statusStyles.text }}>Current order</span>
+              <span className="text-[80%] opacity-80" style={{ color: statusStyles.text }}>
                 Customer: {displayCustomerName} {selectedTable ? `| Table: ${selectedTable}` : ''}
               </span>
             </div>

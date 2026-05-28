@@ -142,7 +142,7 @@ export const OrderSummarySidebar = ({
     <div className="w-[354px] bg-white border-l border-[#f3f5f9] flex flex-col shrink-0 min-h-[calc(100vh-160px)] h-full">
       <div className="bg-[#fff7e8] flex items-center justify-between p-3 mt-[2px] mx-[1px]">
         <div className="flex flex-col gap-[2px]">
-          <span className="text-[14px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
+          <span className="text-[4px] font-semibold text-[#32324d] leading-[22px]">Current order</span>
           <span className="text-[12px] text-[#4a4a6a]">Customer: {displayCustomerName} {tableNo ? `| Table: ${tableNo}` : ''}</span>
         </div>
         {mode === 'menu' && (

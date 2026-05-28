@@ -96,3 +96,51 @@ code {
   scrollbar-width: thin;
   scrollbar-color: #fbbf24 transparent;
 }
+
+/* ============================================
+   QUANTITY ANIMATIONS
+   ============================================ */
+@keyframes order-flash {
+  0% {
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+    background-color: #fffbf0;
+  }
+  50% {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
+    background-color: #fef3c7;
+  }
+  100% {
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
+    background-color: #fffbf0;
+  }
+}
+
+.animate-order-flash {
+  animation: order-flash 0.8s ease-out forwards;
+}
+
+@keyframes float-fade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -5px) scale(1.2);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -15px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -20px) scale(0.8);
+  }
+}
+
+.animate-float-fade {
+  animation: float-fade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}

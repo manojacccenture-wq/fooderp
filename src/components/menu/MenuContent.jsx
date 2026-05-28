@@ -13,7 +13,9 @@ export const MenuContent = ({
   onIncreaseSelected,
   onDecreaseSelected,
   isReplaceMode = false,
-  replacementSelectedProductId = null
+  replacementSelectedProductId = null,
+  isFocusMode,
+  onToggleFocusMode
 }) => {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState("All Dishes");
@@ -24,12 +26,8 @@ export const MenuContent = ({
   const observerTarget = useRef(null);
   const scrollContainerRef = useRef(null);
 
-  // Memoize filtered products based on exact category matches
   const filteredProducts = useMemo(() => {
     let filtered = MENU_PRODUCTS;
-    if (activeCategory !== "All Dishes") {
-      filtered = filtered.filter(p => p.category === activeCategory);
-    }
     
     if (search.trim()) {
       const searchValue = search.toLowerCase();
@@ -37,7 +35,10 @@ export const MenuContent = ({
         product.title.toLowerCase().includes(searchValue) ||
         product.itemNo.toLowerCase().includes(searchValue)
       );
+    } else if (activeCategory !== "All Dishes") {
+      filtered = filtered.filter(p => p.category === activeCategory);
     }
+    
     return filtered;
   }, [search, activeCategory]);
 
@@ -116,36 +117,49 @@ export const MenuContent = ({
   }, [keyboardSelectedIndex]);
 
   return (
-    <div className="flex flex-col w-full h-full max-w-[769px] overflow-hidden">
-      <div className={clsx(
-        "w-full h-[54px] bg-white border rounded-[16px] flex items-center px-4 py-3 mb-8 transition-colors shrink-0",
-        isSearchFocused ? "border-[#ffb01d]" : "border-[#eaeaef]"
-      )}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8E8EA9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-3 shrink-0">
-          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input
-          ref={searchRef}
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={handleSearchEnter}
-          onFocus={() => setIsSearchFocused(true)}
-          onBlur={() => setIsSearchFocused(false)}
-          placeholder="Search by Item No or Product Name"
-          className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-[14px] text-[#666687] placeholder:text-[#8e8ea9]"
-        />
-        <div className="ml-3 cursor-pointer shrink-0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7B2C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-            <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-            <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+    <div className="flex flex-col w-full h-[100vh] max-w-full overflow-hidden">
+      <div className="flex items-center gap-[14px] mb-[14px] shrink-0">
+        <div className={clsx(
+          "flex-1 h-[54px] bg-white border rounded-[16px] flex items-center px-4 py-3 transition-colors",
+          isSearchFocused ? "border-[#ffb01d]" : "border-[#eaeaef]"
+        )}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8E8EA9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-3 shrink-0">
+            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
+          <input
+            ref={searchRef}
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleSearchEnter}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            placeholder="Search by Item No or Product Name"
+            className="flex-1 bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-[14px] text-[#666687] placeholder:text-[#8e8ea9]"
+          />
+          <div className="ml-3 cursor-pointer shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF7B2C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+              <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
+          </div>
         </div>
+        
+        <button 
+          onClick={onToggleFocusMode}
+          className={clsx(
+            "h-[54px] w-[54px] border rounded-[16px] flex items-center justify-center transition-colors text-[24px] shrink-0",
+            isFocusMode ? "bg-[#ffb01d] text-white border-[#ffb01d]" : "bg-white text-[#666687] border-[#eaeaef] hover:bg-gray-50"
+          )}
+          title={isFocusMode ? "Exit Focus Mode" : "Enter Focus Mode"}
+        >
+          ⛶
+        </button>
       </div>
 
-      <div className="flex gap-2 mb-8 shrink-0 overflow-x-auto custom-scrollbar pb-2">
+      <div className="flex items-center gap-[14px] mb-[14px] shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar pb-2">
         {CATEGORIES.map((cat, index) => (
           <button
             key={index}
@@ -164,10 +178,12 @@ export const MenuContent = ({
 
       <div 
         ref={scrollContainerRef}
-        className="overflow-y-auto custom-scrollbar pr-2 pb-6 scroll-smooth"
-        style={{ height: 'calc(100vh - 260px)' }}
+        className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 pb-6 scroll-smooth"
       >
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pb-[100px]">
+        <div 
+          className="grid gap-[14px] pb-[100px] items-stretch"
+          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}
+        >
           {visibleProducts.length > 0 ? (
             visibleProducts.map((p, index) => {
               const isActiveReplaceTarget = isReplaceMode && replacementSelectedProductId === p.itemNo;

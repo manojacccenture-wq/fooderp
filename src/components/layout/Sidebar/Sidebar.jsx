@@ -30,7 +30,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="w-[251px] h-full min-h-screen bg-[var(--color-neutral-100)] border-r border-[var(--color-border-light)] flex flex-col gap-4 py-6 px-4 fixed left-0 top-0 z-20 overflow-y-auto">
+    <aside className="w-full h-full bg-[var(--color-neutral-100)] border-r border-[var(--color-border-light)] flex flex-col gap-4 py-6 px-4 z-20 overflow-y-auto">
       <div className="flex flex-col justify-end text-center">
         <h1 style={{ color: 'var(--color-tertiary-1)' }}>Annas Kitchen</h1>
       </div>

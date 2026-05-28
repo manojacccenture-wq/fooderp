@@ -50,6 +50,8 @@ export const useMenuKeyboardNavigation = ({
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       
+      if (selectedOrderItem && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) return;
+      
       if (!filteredProducts || filteredProducts.length === 0) return;
 
       if (e.key === 'ArrowRight') {
@@ -90,10 +92,10 @@ export const useMenuKeyboardNavigation = ({
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       
-      if (e.key === 'ArrowUp') {
+      if (e.key === 'ArrowUp' || e.key === '+' || e.key === '=') {
         e.preventDefault();
         onIncreaseSelected(selectedOrderItem);
-      } else if (e.key === 'ArrowDown') {
+      } else if (e.key === 'ArrowDown' || e.key === '-') {
         e.preventDefault();
         onDecreaseSelected(selectedOrderItem);
       }

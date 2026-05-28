@@ -1,18 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import { SpecialInstructionTags } from '../../../components/orders/SpecialInstructionTags';
 
 export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
   onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction }) => {
+  
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animIndicator, setAnimIndicator] = useState(null);
+  const prevQuantity = useRef(quantity);
+
+  useEffect(() => {
+    if (quantity !== prevQuantity.current) {
+      const diff = quantity - prevQuantity.current;
+      if (diff !== 0) {
+        setIsAnimating(true);
+        setAnimIndicator(diff > 0 ? '+1' : '-1');
+        const timer = setTimeout(() => {
+          setIsAnimating(false);
+          setAnimIndicator(null);
+        }, 800);
+        prevQuantity.current = quantity;
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [quantity]);
+
   return (
     <div
       ref={itemRef}
       onClick={onSelect}
       className={clsx(
-        "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer",
+        "bg-white border rounded-2xl p-3 flex gap-3 items-center shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] relative cursor-pointer transition-all duration-300",
         isSelected
-          ? "border-[#faa300]"
-          : "border-[#eaeaef]"
+          ? "border-2 border-[#fbbf24] shadow-[0_0_0_4px_rgba(251,191,36,0.15)] bg-[#fffbf0]"
+          : "border-[#eaeaef]",
+        isAnimating && "animate-order-flash"
       )}
     >
       <div className="w-[50px] h-[50px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)]">
@@ -21,12 +43,19 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
       <div className="flex-1 flex flex-col gap-1">
         <span className="text-[14px] leading-[22px] text-[#32324d] font-semibold">{title}</span>
         {showQuantityControls ? (
-          <div className="flex items-center gap-2 mt-1">
-            <button onClick={onDecrease} className="w-6 h-6 rounded-[12.5px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer">
+          <div className="flex items-center gap-2 mt-1 relative">
+            <button onClick={onDecrease} className="w-6 h-6 rounded-[12.5px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe3d1] transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
-            <span className="text-[14px] font-semibold text-[#666687] min-w-[9px] text-center">{quantity}</span>
-            <button onClick={onIncrease} className="w-7 h-7 rounded-[14px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer">
+            <div className="relative">
+              <span className={clsx("text-[14px] font-semibold text-[#666687] min-w-[9px] text-center block transition-transform duration-200", isAnimating && "scale-125 text-[#ff7b2c]")}>{quantity}</span>
+              {animIndicator && (
+                <span className={clsx("absolute -top-6 left-1/2 -translate-x-1/2 text-[12px] font-bold pointer-events-none animate-float-fade", animIndicator === '+1' ? 'text-[#24a44b]' : 'text-[#e23744]')}>
+                  {animIndicator}
+                </span>
+              )}
+            </div>
+            <button onClick={onIncrease} className="w-7 h-7 rounded-[14px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe3d1] transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </button>
           </div>

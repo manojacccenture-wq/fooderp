@@ -124,10 +124,14 @@ export const useMenuOrders = (setKotStatus) => {
   };
 
   const handleProductCardClick = (product) => {
+    const newId = Date.now();
     setDraftOrderItems((prev) => {
       const existingItem = prev.find(
         (item) => item.title === product.title && areInstructionsEqual(item.specialInstructions, product.specialInstructions)
       );
+
+      const idToSelect = existingItem ? existingItem.id : newId;
+      setTimeout(() => setSelectedOrderItem(idToSelect), 0);
 
       if (existingItem) {
         return prev.map((item) =>
@@ -140,7 +144,7 @@ export const useMenuOrders = (setKotStatus) => {
       return [
         ...prev,
         {
-          id: Date.now(),
+          id: newId,
           image: product.image,
           title: product.title,
           price: Number(product.price),
@@ -156,6 +160,10 @@ export const useMenuOrders = (setKotStatus) => {
   const handleAddToOrder = (product) => {
     setDraftOrderItems((prev) => {
       const existingItem = prev.find((item) => item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined));
+      
+      const idToSelect = existingItem ? existingItem.id : product.id;
+      setTimeout(() => setSelectedOrderItem(idToSelect), 0);
+
       if (existingItem) {
         return prev.map((item) =>
           item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined)

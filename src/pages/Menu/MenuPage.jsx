@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -21,6 +21,7 @@ import { usePaymentFlow } from './hooks/usePaymentFlow';
 import { useKotFlow } from './hooks/useKotFlow';
 import { useTableFlow } from './hooks/useTableFlow';
 import { useReceiptActions } from './hooks/useReceiptActions';
+import { useSidebarResize } from './hooks/useSidebarResize';
 
 // Utils
 import { getOrderStatusStyles } from '../../utils/orderStatus';
@@ -34,6 +35,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   
   const itemRefs = useRef({});
   const paymentInputRef = useRef(null);
+  
+  const [isFocusMode, setIsFocusMode] = useState(false);
 
   // 1. Menu Orders Hook
   const {
@@ -143,6 +146,9 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const isSplitView = heldItems.length > 0;
   const shouldShowOrderControls = sentKotItems.length === 0 && rightView !== 'checkout';
   const statusStyles = getOrderStatusStyles(globalOrderStatus);
+  
+  // 6. Sidebar Resize Hook
+  const { sidebarWidth, isDragging, handleMouseDown } = useSidebarResize(isFocusMode);
 
   // 5. Receipt Actions Hook
   const {
@@ -176,7 +182,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       orderItems={combinedItems}
       isReplaceMode={isReplaceMode}
       replacementSelectedProductId={selectedItemForAction?.itemNo}
+      isFocusMode={isFocusMode}
+      onToggleFocusMode={() => setIsFocusMode(prev => !prev)}
       onProductClick={(p) => {
+        setIsFocusMode(false);
         if (isReplaceMode && selectedItemForAction) {
           setSentKotItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
           setDraftOrderItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
@@ -186,6 +195,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         handleProductCardClick(p);
       }}
       onProductEnter={(p) => {
+        setIsFocusMode(false);
         if (isReplaceMode && selectedItemForAction) {
           setSentKotItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
           setDraftOrderItems(prev => prev.map(i => i.id === selectedItemForAction.id ? { ...p, id: i.id, quantity: i.quantity } : i));
@@ -209,9 +219,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   );
 
   return (
-    <div className="flex w-full h-full relative overflow-hidden">
+    <div 
+      className={clsx(
+        "grid h-full w-full relative overflow-hidden",
+        !isDragging && "transition-[grid-template-columns] duration-300 ease-in-out"
+      )}
+      style={{ gridTemplateColumns: isFocusMode ? "minmax(0, 1fr) 0px" : `minmax(0, 1fr) ${sidebarWidth}px` }}
+    >
       {/* Center Main Panel */}
-      <div className="flex-1 flex flex-col p-8 pl-6 min-h-0 overflow-hidden">
+      <div className="flex flex-col min-h-0 overflow-hidden p-[14px]">
         {centerView === 'menu' && renderMenuContent()}
 
         {(centerView === 'cancel_item' || centerView === 'replace_item') && selectedItemForAction && (
@@ -266,8 +282,21 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       </div>
 
       {/* Right Panel Wrapper */}
-      <OrderSidebar
-        rightView={rightView}
+      <div className="overflow-hidden h-full flex flex-col relative bg-white z-10 shadow-[-4px_0_15px_rgba(0,0,0,0.02)] border-l border-[#eaeaef]" style={{ minWidth: isFocusMode ? 0 : sidebarWidth }}>
+        
+        {/* Resize Handle */}
+        {!isFocusMode && (
+          <div
+            onMouseDown={handleMouseDown}
+            className="absolute left-0 top-0 bottom-0 w-[6px] z-50 cursor-col-resize group hover:bg-[rgba(255,165,0,0.15)] transition-colors flex items-center justify-center -ml-[3px]"
+            style={{ backgroundColor: isDragging ? '#f59e0b' : '' }}
+          >
+            <div className={clsx("w-[2px] h-8 rounded-full", isDragging ? "bg-white" : "bg-[#f59e0b] opacity-0 group-hover:opacity-100")}></div>
+          </div>
+        )}
+
+        <OrderSidebar
+          rightView={rightView}
         setRightView={setRightView}
         statusStyles={statusStyles}
         displayCustomerName={displayCustomerName}
@@ -335,6 +364,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         resetCompleteBillingSession={resetCompleteBillingSession}
         isPhoneMissingForDineIn={isPhoneMissingForDineIn}
       />
+      </div>
 
       {/* Hidden Print Template */}
       <ReceiptPrintTemplate {...getOrderData()} />

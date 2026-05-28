@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ProductCard = ({ image, itemNo, title, price, isVeg, quantity, isKeyboardSelected }) => {
   return (
-    <div className={`bg-white h-[179px] w-[164px] relative rounded-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] flex-shrink-0 ${(quantity > 0 || isKeyboardSelected) ? 'border border-[#faa300]' : ''}`}>
+    <div className={`bg-white h-[179px] w-full relative rounded-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] flex-shrink-0 ${(quantity > 0 || isKeyboardSelected) ? 'border border-[#faa300]' : ''}`}>
       <div className="absolute left-[7px] top-[8px] h-[24px] flex items-center justify-center px-2 py-2 rounded-full z-10">
         <span className="text-card-detail-sm text-[var(--color-neutral-500)]">
           Item No : {itemNo}
@@ -13,7 +13,7 @@ export const ProductCard = ({ image, itemNo, title, price, isVeg, quantity, isKe
         <img src={image} alt={title} className="w-full h-full object-cover" />
       </div>
 
-      <div className="absolute left-[11px] top-[116px] w-[104px] flex flex-col gap-1 items-start">
+      <div className="absolute left-[11px] top-[116px] right-[11px] flex flex-col gap-1 items-start">
         <div className="w-full">
           <span className="text-card-detail-sm text-[var(--color-neutral-800)] truncate block">{title}</span>
         </div>
@@ -23,14 +23,14 @@ export const ProductCard = ({ image, itemNo, title, price, isVeg, quantity, isKe
         </div>
       </div>
 
-      <div className={`absolute left-[96px] top-[145px] h-[24px] flex items-center justify-center px-2 py-2 rounded-full ${isVeg ? 'bg-[var(--color-success-200)]' : 'bg-[var(--color-danger-200)]'}`}>
+      <div className={`absolute right-[12px] top-[145px] h-[24px] flex items-center justify-center px-2 py-2 rounded-full ${isVeg ? 'bg-[var(--color-success-200)]' : 'bg-[var(--color-danger-200)]'}`}>
         <span className={`text-caption-3 ${isVeg ? 'text-[var(--color-success-500)]' : 'text-[var(--color-danger-500)]'}`}>
           {isVeg ? 'Veg' : 'Non Veg'}
         </span>
       </div>
 
       {quantity > 0 && (
-        <div className="absolute left-[145px] top-[8px] min-w-[24px] h-[24px] px-[5px] bg-[var(--color-danger-500)] rounded-full flex items-center justify-center">
+        <div className="absolute -right-[5px] top-[8px] min-w-[24px] h-[24px] px-[5px] bg-[var(--color-danger-500)] rounded-full flex items-center justify-center">
           <span className="text-white text-caption-2 text-center leading-none">{quantity}</span>
         </div>
       )}
