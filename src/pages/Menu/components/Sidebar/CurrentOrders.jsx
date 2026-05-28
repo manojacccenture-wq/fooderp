@@ -18,8 +18,7 @@ export const CurrentOrders = ({
   handleOpenInstructions,
   setSelectedOrderItem,
   activeKeyboardSection,
-  setActiveKeyboardSection,
-  handleToggleFulfillmentType
+  setActiveKeyboardSection
 }) => {
   return (
     <div className="px-4 mt-4 flex flex-col gap-4">
@@ -63,8 +62,7 @@ export const CurrentOrders = ({
                     specialInstructions={item.specialInstructions}
                     showDelete={false}
                     showQuantityControls={false}
-                    fulfillmentType={item.fulfillmentType}
-                    onToggleFulfillmentType={undefined}
+                    fulfillment={item.fulfillment}
                     isSelected={selectedOrderItem === item.id && activeKeyboardSection === 'order'}
                     onSelect={() => { setSelectedOrderItem(item.id); setActiveKeyboardSection('order'); }}
                     itemRef={(el) => { if(itemRefs && itemRefs.current) itemRefs.current[item.id] = el; }}
@@ -88,16 +86,15 @@ export const CurrentOrders = ({
                 title={item.title}
                 price={item.price}
                 quantity={item.quantity}
-                onIncrease={() => handleIncrease(item.id)}
-                onDecrease={() => handleDecrease(item.id)}
+                onIncrease={(type) => handleIncrease(item.id, type)}
+                onDecrease={(type) => handleDecrease(item.id, type)}
                 onRemove={() => handleRemove(item.id)}
                 onSplit={() => handleSplitClick(item)}
                 onAddInstruction={() => handleOpenInstructions(item)}
                 specialInstructions={item.specialInstructions}
                 showDelete={true}
                 showQuantityControls={true}
-                fulfillmentType={item.fulfillmentType}
-                onToggleFulfillmentType={() => handleToggleFulfillmentType && handleToggleFulfillmentType(item.id)}
+                fulfillment={item.fulfillment}
                 isSelected={selectedOrderItem === item.id && activeKeyboardSection === 'order'}
                 onSelect={() => { setSelectedOrderItem(item.id); setActiveKeyboardSection('order'); }}
                 itemRef={(el) => { if(itemRefs && itemRefs.current) itemRefs.current[item.id] = el; }}

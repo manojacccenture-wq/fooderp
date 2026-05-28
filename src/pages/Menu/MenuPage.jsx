@@ -58,7 +58,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     handleIncrease, handleDecrease, handleRemove,
     handleSplitClick, handleReplaceClick, handleOpenInstructions,
     handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit,
-    handleProductCardClick, handleToggleFulfillmentType
+    handleProductCardClick
   } = useMenuOrders();
 
   // 2. Table Flow Hook
@@ -373,7 +373,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         handleQuickEmail={handleQuickEmail}
         resetCompleteBillingSession={resetCompleteBillingSession}
         isPhoneMissingForDineIn={isPhoneMissingForDineIn}
-        handleToggleFulfillmentType={handleToggleFulfillmentType}
       />
       </div>
 

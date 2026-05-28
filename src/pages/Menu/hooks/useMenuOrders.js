@@ -8,8 +8,7 @@ export const areInstructionsEqual = (inst1, inst2) => {
 
 export const areItemsEqual = (item1, item2) => {
   return item1.title === item2.title && 
-         areInstructionsEqual(item1.specialInstructions, item2.specialInstructions) &&
-         (item1.fulfillmentType || 'dine_in') === (item2.fulfillmentType || 'dine_in');
+         areInstructionsEqual(item1.specialInstructions, item2.specialInstructions);
 };
 
 export const useMenuOrders = (setKotStatus) => {
@@ -27,18 +26,44 @@ export const useMenuOrders = (setKotStatus) => {
   const [quantityToApply, setQuantityToApply] = useState(1);
   const [itemForInstructions, setItemForInstructions] = useState(null);
 
-  const handleIncrease = (id) => {
-    setDraftOrderItems(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
+  const handleIncrease = (id, type = 'dine_in') => {
+    setDraftOrderItems(prev => prev.map(item => {
+      if (item.id === id) {
+        const currentFulfillment = item.fulfillment || { dine_in: item.quantity, take_away: 0 };
+        return { 
+          ...item, 
+          quantity: item.quantity + 1,
+          fulfillment: { ...currentFulfillment, [type]: (currentFulfillment[type] || 0) + 1 }
+        };
+      }
+      return item;
+    }));
   };
 
-  const handleDecrease = (id) => {
+  const handleDecrease = (id, type = 'dine_in') => {
     setDraftOrderItems((prev) => {
       const existing = prev.find((item) => item.id === id);
       if (!existing) return prev;
+      
+      const currentFulfillment = existing.fulfillment || { dine_in: existing.quantity, take_away: 0 };
+      
+      // If we are trying to decrease a type that is already 0, do nothing
+      if ((currentFulfillment[type] || 0) <= 0) return prev;
+
       if (existing.quantity === 1) {
         return prev.filter((item) => item.id !== id);
       }
-      return prev.map((item) => item.id === id ? { ...item, quantity: item.quantity - 1 } : item);
+      
+      return prev.map((item) => {
+        if (item.id === id) {
+          return {
+            ...item,
+            quantity: item.quantity - 1,
+            fulfillment: { ...currentFulfillment, [type]: currentFulfillment[type] - 1 }
+          };
+        }
+        return item;
+      });
     });
   };
 
@@ -133,18 +158,24 @@ export const useMenuOrders = (setKotStatus) => {
     const newId = Date.now();
     setDraftOrderItems((prev) => {
       const existingItem = prev.find(
-        (item) => areItemsEqual(item, { ...product, specialInstructions: product.specialInstructions, fulfillmentType: 'dine_in' })
+        (item) => areItemsEqual(item, { ...product, specialInstructions: product.specialInstructions })
       );
 
       const idToSelect = existingItem ? existingItem.id : newId;
       setTimeout(() => setSelectedOrderItem(idToSelect), 0);
 
       if (existingItem) {
-        return prev.map((item) =>
-          item.id === existingItem.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        return prev.map((item) => {
+          if (item.id === existingItem.id) {
+            const currentFulfillment = item.fulfillment || { dine_in: item.quantity, take_away: 0 };
+            return { 
+              ...item, 
+              quantity: item.quantity + 1,
+              fulfillment: { ...currentFulfillment, dine_in: currentFulfillment.dine_in + 1 }
+            };
+          }
+          return item;
+        });
       }
 
       return [
@@ -155,7 +186,7 @@ export const useMenuOrders = (setKotStatus) => {
           title: product.title,
           price: Number(product.price),
           quantity: 1,
-          fulfillmentType: 'dine_in',
+          fulfillment: { dine_in: 1, take_away: 0 },
           specialInstructionGroups: product.specialInstructionGroups || [],
         },
       ];
@@ -166,30 +197,29 @@ export const useMenuOrders = (setKotStatus) => {
 
   const handleAddToOrder = (product) => {
     setDraftOrderItems((prev) => {
-      const existingItem = prev.find((item) => item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined) && (item.fulfillmentType || 'dine_in') === (product.fulfillmentType || 'dine_in'));
+      const existingItem = prev.find((item) => item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined));
       
       const idToSelect = existingItem ? existingItem.id : product.id;
       setTimeout(() => setSelectedOrderItem(idToSelect), 0);
 
       if (existingItem) {
-        return prev.map((item) =>
-          item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined) && (item.fulfillmentType || 'dine_in') === (product.fulfillmentType || 'dine_in')
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        return prev.map((item) => {
+          if (item.id === product.id && areInstructionsEqual(item.specialInstructions, undefined)) {
+            const currentFulfillment = item.fulfillment || { dine_in: item.quantity, take_away: 0 };
+            return {
+              ...item,
+              quantity: item.quantity + 1,
+              fulfillment: { ...currentFulfillment, dine_in: currentFulfillment.dine_in + 1 }
+            };
+          }
+          return item;
+        });
       }
-      return [...prev, { ...product, quantity: 1, specialInstructions: undefined, fulfillmentType: product.fulfillmentType || 'dine_in' }];
+      return [...prev, { ...product, quantity: 1, specialInstructions: undefined, fulfillment: { dine_in: 1, take_away: 0 } }];
     });
   };
 
-  const handleToggleFulfillmentType = (id) => {
-    setDraftOrderItems(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, fulfillmentType: item.fulfillmentType === 'take_away' ? 'dine_in' : 'take_away' };
-      }
-      return item;
-    }));
-  };
+  // Removed handleToggleFulfillmentType as we use Dual Counters
 
   const combinedItems = [...sentKotItems, ...draftOrderItems];
   const subtotal = combinedItems.reduce((acc, item) => acc + Number(item.price) * item.quantity, 0);
@@ -211,6 +241,6 @@ export const useMenuOrders = (setKotStatus) => {
     handleIncrease, handleDecrease, handleRemove,
     handleSplitClick, handleReplaceClick, handleOpenInstructions,
     handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit,
-    handleProductCardClick, handleAddToOrder, handleToggleFulfillmentType
+    handleProductCardClick, handleAddToOrder
   };
 };

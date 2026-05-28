@@ -65,8 +65,25 @@ export const ReceiptPrintTemplate = ({
             </thead>
             <tbody>
               {(() => {
-                const dineInItems = items.filter(i => (i.fulfillmentType || 'dine_in') === 'dine_in');
-                const takeawayItems = items.filter(i => i.fulfillmentType === 'take_away');
+                const dineInItems = [];
+                const takeawayItems = [];
+                
+                items.forEach(item => {
+                  const dineInQty = item.fulfillment?.dine_in || 0;
+                  const takeawayQty = item.fulfillment?.take_away || 0;
+                  
+                  // If there is no fulfillment object, treat it entirely as Dine-In for fallback
+                  if (!item.fulfillment && item.quantity > 0) {
+                    dineInItems.push({ ...item });
+                  } else {
+                    if (dineInQty > 0) {
+                      dineInItems.push({ ...item, quantity: dineInQty });
+                    }
+                    if (takeawayQty > 0) {
+                      takeawayItems.push({ ...item, quantity: takeawayQty });
+                    }
+                  }
+                });
                 
                 const renderItemRow = (item, idx) => (
                   <tr key={idx}>
