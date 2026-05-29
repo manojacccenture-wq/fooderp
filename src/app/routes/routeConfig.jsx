@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { MenuPage } from '../../pages/Menu/MenuPage';
 import { DineInPage } from '../../pages/DineIn/DineInPage';
+import { TakeawayPage } from '../../pages/Takeaway/TakeawayPage';
 import { ItemOnOffPage } from '../../pages/ItemOnOff/ItemOnOffPage';
 import { MoneyManagementPage } from '../../pages/MoneyManagement/MoneyManagementPage';
 import { OrderHistoryPage } from '../../pages/OrderHistory/OrderHistoryPage';
@@ -47,7 +48,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'takeaways',
-        element: <MenuPage initialOrderType="take_away" />,
+        element: <TakeawayPage />,
       }
     ]
   }

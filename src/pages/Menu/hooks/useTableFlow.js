@@ -21,8 +21,9 @@ export const useTableFlow = ({
   const location = useLocation();
   const isDineInFlow = !!location.state?.tableNo;
   const initialTable = location.state?.tableNo || null;
+  const stateOrderType = location.state?.orderType || initialOrderType;
 
-  const [orderType, setOrderType] = useState(initialOrderType); // 'dine_in' | 'take_away'
+  const [orderType, setOrderType] = useState(stateOrderType); // 'dine_in' | 'take_away'
   const [selectedTable, setSelectedTable] = useState(initialTable);
   const [rightView, setRightView] = useState('order'); // 'order' | 'checkout'
 
@@ -86,8 +87,8 @@ export const useTableFlow = ({
   }, [selectedTable, dispatch, setDraftOrderItems, setSentKotItems, setHeldItems, setKotStatus, draftOrderItems.length, sentKotItems.length]);
 
   useEffect(() => {
-    setOrderType(initialOrderType);
-  }, [initialOrderType]);
+    setOrderType(stateOrderType);
+  }, [stateOrderType]);
 
   return {
     orderType, setOrderType,

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { selectAllTables } from '../../store/slices/tableSlice';
+import { selectGlobalOrderCounter, selectCurrentOrderNumber } from '../../store/slices/orderSlice';
 
 // Components
 import { MenuContent } from '../../components/menu/MenuContent';
@@ -34,6 +35,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const allTables = useAppSelector(selectAllTables);
+  const globalOrderCounter = useAppSelector(selectGlobalOrderCounter);
+  const currentOrderNumber = useAppSelector(selectCurrentOrderNumber);
   const isTakeawayPage = location.pathname === '/dashboard/takeaways';
   
   const itemRefs = useRef({});
@@ -109,7 +112,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     isUpiModalOpen: false, // Will sync below
     rightView,
     paymentMode: 'Cash', // Will sync below
-    sentKotItemsLength: sentKotItems.length
+    sentKotItems,
+    sentKotItemsLength: sentKotItems.length,
+    globalOrderCounter,
+    currentOrderNumber
   });
 
   // Reset function to clear all orders

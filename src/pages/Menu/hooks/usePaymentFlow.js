@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { paymentCheckoutSchema } from '../../../validations/payment.validation';
 import { completeTableOrder } from '../../../store/slices/tableSlice';
+import { clearOrderNumber } from '../../../store/slices/orderSlice';
 
 export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus }) => {
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
@@ -54,6 +55,7 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
       setDiscountAmount(0);
       setPaymentMode('Cash');
       setSplitMode('full');
+      dispatch(clearOrderNumber());
       
       if (orderType === 'dine_in') {
         navigate('/dashboard/dine-in');

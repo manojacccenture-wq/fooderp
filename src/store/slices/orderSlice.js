@@ -5,6 +5,8 @@ const initialState = {
   heldItems: [],
   orderType: 'dine_in', // 'dine_in' | 'take_away'
   kotStatus: 'idle', // 'idle' | 'success_anim' | 'sent'
+  globalOrderCounter: 1000, // Starts at 1000, continuous
+  currentOrderNumber: null, // Assigned on checkout/KOT
 };
 
 const orderSlice = createSlice({
@@ -35,8 +37,26 @@ const orderSlice = createSlice({
           title: product.title,
           price: Number(product.price),
           quantity: 1,
+          fulfillmentType: state.orderType === 'take_away' ? 'take_away' : 'dine_in',
+          packedStatus: 'pending',
         });
       }
+    },
+    toggleFulfillmentType: (state, action) => {
+      const id = action.payload;
+      const existing = state.orderItems.find((item) => item.id === id);
+      if (existing) {
+        existing.fulfillmentType = existing.fulfillmentType === 'dine_in' ? 'take_away' : 'dine_in';
+      }
+    },
+    assignOrderNumber: (state) => {
+      if (!state.currentOrderNumber) {
+        state.globalOrderCounter += 1;
+        state.currentOrderNumber = state.globalOrderCounter;
+      }
+    },
+    clearOrderNumber: (state) => {
+      state.currentOrderNumber = null;
     },
     increaseQuantity: (state, action) => {
       const id = action.payload;
@@ -64,6 +84,7 @@ const orderSlice = createSlice({
       state.orderItems = [];
       state.heldItems = [];
       state.kotStatus = 'idle';
+      state.currentOrderNumber = null;
     },
     replaceItem: (state, action) => {
       const { selectedItemId, newProduct } = action.payload;
@@ -108,13 +129,18 @@ export const {
   removeItem,
   cancelOrder,
   replaceItem,
-  confirmSplit
+  confirmSplit,
+  toggleFulfillmentType,
+  assignOrderNumber,
+  clearOrderNumber
 } = orderSlice.actions;
 
 export const selectOrderItems = (state) => state.order.orderItems;
 export const selectHeldItems = (state) => state.order.heldItems;
 export const selectOrderType = (state) => state.order.orderType;
 export const selectKotStatus = (state) => state.order.kotStatus;
+export const selectCurrentOrderNumber = (state) => state.order.currentOrderNumber;
+export const selectGlobalOrderCounter = (state) => state.order.globalOrderCounter;
 
 // Derived Selectors
 export const selectSubtotal = createSelector(
