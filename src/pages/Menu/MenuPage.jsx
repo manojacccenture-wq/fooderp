@@ -338,6 +338,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           activeKeyboardSection={activeKeyboardSection}
           setActiveKeyboardSection={setActiveKeyboardSection}
         displayCustomerName={displayCustomerName}
+        currentOrderNumber={currentOrderNumber}
         selectedTable={selectedTable}
         globalOrderStatus={globalOrderStatus}
         setDraftOrderItems={setDraftOrderItems}

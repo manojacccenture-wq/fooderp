@@ -43,6 +43,14 @@ export const TakeawayCard = ({ takeaway, isSelected, onClick }) => {
           <span className="text-[#8e8ea9]">Time:</span>
           <span className="font-bold text-[#32324d]">{takeaway.time}</span>
         </div>
+        {takeaway.status === 'Completed' && takeaway.completedAt && (
+          <div className="flex justify-between items-center text-[12px] mt-1 pt-1 border-t border-[#eaeaef]">
+            <span className="text-[#24a44b]">Completed:</span>
+            <span className="font-bold text-[#24a44b]">
+              {new Date(takeaway.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

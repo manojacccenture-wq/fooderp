@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { selectActiveTakeaways, updateTakeawayStatus, completeTakeaway } from '../../store/slices/takeawaySlice';
+import { selectActiveTakeaways, selectCompletedTakeaways, updateTakeawayStatus, completeTakeaway } from '../../store/slices/takeawaySlice';
 import { selectActiveKots } from '../../store/slices/kotSlice';
 import { TakeawayCard } from './components/TakeawayCard';
 import { TakeawaySidebar } from './components/TakeawaySidebar';
@@ -10,18 +10,24 @@ export const TakeawayPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const activeTakeaways = useAppSelector(selectActiveTakeaways);
+  const completedTakeaways = useAppSelector(selectCompletedTakeaways);
   const activeKots = useAppSelector(selectActiveKots);
   
   const [selectedToken, setSelectedToken] = useState(null);
+  const [filter, setFilter] = useState('Active'); // 'Active' | 'Completed' | 'All'
+
+  const displayedTakeaways = filter === 'Active' ? activeTakeaways
+    : filter === 'Completed' ? completedTakeaways
+    : [...activeTakeaways, ...completedTakeaways].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   // Auto-select first token if none is selected
   useEffect(() => {
-    if (!selectedToken && activeTakeaways.length > 0) {
-      setSelectedToken(activeTakeaways[0].tokenNumber);
+    if (!selectedToken && displayedTakeaways.length > 0) {
+      setSelectedToken(displayedTakeaways[0].tokenNumber);
     }
-  }, [selectedToken, activeTakeaways]);
+  }, [selectedToken, displayedTakeaways]);
 
-  const selectedTakeaway = activeTakeaways.find(t => t.tokenNumber === selectedToken);
+  const selectedTakeaway = displayedTakeaways.find(t => t.tokenNumber === selectedToken);
   const relatedKots = selectedTakeaway 
     ? activeKots.filter(k => k.orderNumber === selectedTakeaway.orderNumber && k.type === 'take_away')
     : [];
@@ -50,8 +56,8 @@ export const TakeawayPage = () => {
   return (
     <div className="grid h-full w-full relative overflow-hidden bg-[#f8faff]" style={{ gridTemplateColumns: `minmax(0, 1fr) 400px` }}>
       <div className="flex flex-col min-h-0 overflow-hidden p-[14px]">
-        <div className="flex justify-between items-center mb-[14px] shrink-0">
-          <h1 className="text-[20px] font-bold text-[#32324d]">Active Takeaways</h1>
+        <div className="flex justify-between items-center shrink-0">
+          <h1 className="text-[20px] font-bold text-[#32324d]">Takeaways</h1>
           <button 
             onClick={() => navigate('/dashboard/menu', { state: { orderType: 'take_away' } })}
             className="px-6 py-2 bg-[#ffb01d] text-white font-bold rounded-[16px] text-[14px] hover:bg-[#e09b18] transition-colors shadow-sm"
@@ -59,20 +65,40 @@ export const TakeawayPage = () => {
             New Takeaway
           </button>
         </div>
+
+        {/* Filters */}
+        <div className="flex gap-2 mb-[14px] mt-4 shrink-0">
+          {['Active', 'Completed', 'All'].map(tab => (
+            <button
+              key={tab}
+              onClick={() => {
+                setFilter(tab);
+                setSelectedToken(null);
+              }}
+              className={`px-4 py-2 rounded-full text-[13px] font-bold transition-colors ${
+                filter === tab 
+                  ? 'bg-[#32324d] text-white' 
+                  : 'bg-white text-[#666687] border border-[#eaeaef] hover:bg-[#f3f5f9]'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
         
-        {activeTakeaways.length === 0 ? (
+        {displayedTakeaways.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-[#8e8ea9]">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mb-4">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
               <line x1="3" y1="6" x2="21" y2="6"></line>
               <path d="M16 10a4 4 0 0 1-8 0"></path>
             </svg>
-            <p className="text-[18px]">No active parcel orders.</p>
+            <p className="text-[18px]">No {filter.toLowerCase()} parcel orders.</p>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 pb-6 scroll-smooth">
             <div className="grid gap-[10px] items-stretch pb-[100px]" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
-              {activeTakeaways.map((takeaway) => (
+              {displayedTakeaways.map((takeaway) => (
                 <TakeawayCard
                   key={takeaway.id}
                   takeaway={takeaway}

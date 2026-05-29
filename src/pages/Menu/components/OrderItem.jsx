@@ -9,6 +9,15 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
   const [animIndicator, setAnimIndicator] = useState(null);
   const prevQuantity = useRef(quantity);
 
+  const [isPackVisible, setIsPackVisible] = useState(false);
+
+  // Auto-hide pack counter if quantity hits 0
+  useEffect(() => {
+    if (fulfillment && fulfillment.take_away === 0 && isPackVisible) {
+      setIsPackVisible(false);
+    }
+  }, [fulfillment?.take_away, isPackVisible]);
+
   useEffect(() => {
     if (quantity !== prevQuantity.current) {
       const diff = quantity - prevQuantity.current;
@@ -52,7 +61,7 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
         <span className="text-[13px] leading-[1.2] text-[#32324d] font-medium pr-16 line-clamp-2">{title}</span>
         {showQuantityControls ? (
           fulfillment ? (
-            <div className="flex flex-col gap-0.5 mt-[2px]">
+            <div className="flex flex-col gap-0.5 mt-[2px] overflow-hidden transition-all duration-300">
               {/* Dine-In Counter */}
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-bold text-[#6366f1] w-[36px]">Serve</span>
@@ -63,18 +72,38 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
                 <button onClick={(e) => { e.stopPropagation(); onIncrease('dine_in'); }} className="w-5 h-5 rounded-[6px] bg-[#f8faff] flex items-center justify-center text-[#6366f1] cursor-pointer hover:bg-[#eef2ff] transition-colors border border-[#6366f1]/20">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
+                
+                {/* Pack Reveal Button (Shows when Pack is 0 and not visible) */}
+                {(!fulfillment.take_away && !isPackVisible) && (
+                  <button 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setIsPackVisible(true);
+                      if (!fulfillment.take_away) {
+                        onIncrease('take_away'); 
+                      }
+                    }} 
+                    className="ml-2 px-2 py-0.5 h-5 rounded-[6px] bg-white border border-[#ffb01d]/50 text-[#d88c00] text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-[#fffcf5] transition-colors"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                    Pack
+                  </button>
+                )}
               </div>
-              {/* Takeaway Counter */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-[#d88c00] w-[36px]">Pack</span>
-                <button onClick={(e) => { e.stopPropagation(); onDecrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                </button>
-                <span className="text-[12px] font-bold text-[#32324d] min-w-[12px] text-center leading-none">{fulfillment.take_away || 0}</span>
-                <button onClick={(e) => { e.stopPropagation(); onIncrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                </button>
-              </div>
+              
+              {/* Takeaway Counter (Contextually Revealed) */}
+              {(fulfillment.take_away > 0 || isPackVisible) && (
+                <div className="flex items-center gap-1.5 animate-in slide-in-from-top-1 fade-in duration-200 fill-mode-both">
+                  <span className="text-[11px] font-bold text-[#d88c00] w-[36px]">Pack</span>
+                  <button onClick={(e) => { e.stopPropagation(); onDecrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                  <span className="text-[12px] font-bold text-[#32324d] min-w-[12px] text-center leading-none">{fulfillment.take_away || 0}</span>
+                  <button onClick={(e) => { e.stopPropagation(); onIncrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2 mt-[2px] relative">

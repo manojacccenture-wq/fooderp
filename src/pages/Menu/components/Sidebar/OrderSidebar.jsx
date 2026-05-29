@@ -6,6 +6,8 @@ import { OrderTypeSelector } from './OrderTypeSelector';
 import { TableSelector } from './TableSelector';
 import { PaymentSummary } from './PaymentSummary';
 import { ActionButtons } from './ActionButtons';
+import { useAppSelector } from '../../../../store/hooks';
+import { selectActiveTakeaways, selectCompletedTakeaways } from '../../../../store/slices/takeawaySlice';
 
 export const OrderSidebar = ({
   rightView,
@@ -76,8 +78,14 @@ export const OrderSidebar = ({
   resetCompleteBillingSession,
   isPhoneMissingForDineIn,
   activeKeyboardSection,
-  setActiveKeyboardSection
+  setActiveKeyboardSection,
+  currentOrderNumber
 }) => {
+  const activeTakeaways = useAppSelector(selectActiveTakeaways);
+  const completedTakeaways = useAppSelector(selectCompletedTakeaways);
+  const allLinkedTakeaways = [...activeTakeaways, ...completedTakeaways].filter(t => t.orderNumber === currentOrderNumber);
+  const linkedTakeaway = allLinkedTakeaways.length > 0 ? allLinkedTakeaways[allLinkedTakeaways.length - 1] : null;
+
   return (
     <div className="w-full h-full max-h-screen bg-white flex flex-col relative shrink-0">
       {rightView === 'order' && (
@@ -100,6 +108,11 @@ export const OrderSidebar = ({
                   {ORDER_STATUS_COLORS[globalOrderStatus]?.label || 'AVAILABLE'}
                 </span>
               </div>
+              {linkedTakeaway && (
+                <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#f8faff] border border-[#6366f1]/30 shadow-sm">
+                  <span className="text-[10px] font-bold text-[#6366f1] uppercase">Parcel #{String(linkedTakeaway.tokenNumber).padStart(3, '0')}</span>
+                </div>
+              )}
               <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setDraftOrderItems([]); setSentKotItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
               <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
             </div>

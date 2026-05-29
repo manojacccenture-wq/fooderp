@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   activeTakeaways: [], // Array of parcel orders
+  completedTakeaways: [], // Array of historical completed parcels
   lastTokenDate: new Date().toDateString(),
   dailyTokenCounter: 0,
 };
@@ -33,6 +34,7 @@ const takeawaySlice = createSlice({
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         items: [], // Snapshotted separately or retrieved from main order
         createdAt: new Date().toISOString(),
+        preparingAt: new Date().toISOString(),
       });
     },
     updateTakeawayStatus: (state, action) => {
@@ -40,11 +42,26 @@ const takeawaySlice = createSlice({
       const takeaway = state.activeTakeaways.find(t => t.tokenNumber === tokenNumber);
       if (takeaway) {
         takeaway.status = status;
+        if (status === 'Packed') takeaway.packedAt = new Date().toISOString();
+        if (status === 'Ready') takeaway.readyAt = new Date().toISOString();
       }
     },
     completeTakeaway: (state, action) => {
       const { tokenNumber } = action.payload;
-      state.activeTakeaways = state.activeTakeaways.filter(t => t.tokenNumber !== tokenNumber);
+      const takeawayIndex = state.activeTakeaways.findIndex(t => t.tokenNumber === tokenNumber);
+      
+      if (takeawayIndex !== -1) {
+        const takeaway = state.activeTakeaways[takeawayIndex];
+        takeaway.status = 'Completed';
+        takeaway.handedOverAt = new Date().toISOString();
+        takeaway.completedAt = new Date().toISOString();
+        
+        // Move to completed array
+        state.completedTakeaways.push(takeaway);
+        
+        // Remove from active array
+        state.activeTakeaways.splice(takeawayIndex, 1);
+      }
     }
   }
 });
@@ -52,6 +69,7 @@ const takeawaySlice = createSlice({
 export const { generateToken, updateTakeawayStatus, completeTakeaway } = takeawaySlice.actions;
 
 export const selectActiveTakeaways = (state) => state.takeaway.activeTakeaways;
+export const selectCompletedTakeaways = (state) => state.takeaway.completedTakeaways;
 export const selectDailyTokenCounter = (state) => state.takeaway.dailyTokenCounter;
 
 export default takeawaySlice.reducer;

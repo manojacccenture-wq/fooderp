@@ -30,6 +30,7 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
 
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-6">
         <div className="flex flex-col gap-3 p-4 bg-[#f8faff] rounded-[16px] border border-[#eaeaef]">
+          <span className="text-[10px] font-bold text-[#8e8ea9] uppercase tracking-wider mb-[-8px]">Generated From</span>
           <div className="flex justify-between items-center text-[12px] group cursor-pointer hover:bg-white rounded-md p-1 -mx-1 transition-colors" onClick={onOpenMenu}>
             <span className="text-[#8e8ea9] font-semibold flex items-center gap-1">
               Order Number
@@ -83,9 +84,45 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
             )}
           </div>
         </div>
+
+        {/* Audit Trail */}
+        <div>
+          <h3 className="text-[14px] font-bold text-[#4a4a6a] mb-3">Audit Trail</h3>
+          <div className="flex flex-col gap-3 p-4 bg-white border border-[#eaeaef] rounded-[16px]">
+            <div className="flex justify-between items-center text-[12px]">
+              <span className="text-[#8e8ea9]">Created Time</span>
+              <span className="font-semibold text-[#32324d]">{takeaway.createdAt ? new Date(takeaway.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : takeaway.time}</span>
+            </div>
+            {takeaway.packedAt && (
+              <div className="flex justify-between items-center text-[12px]">
+                <span className="text-[#8e8ea9]">Packed Time</span>
+                <span className="font-semibold text-[#32324d]">{new Date(takeaway.packedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            )}
+            {takeaway.readyAt && (
+              <div className="flex justify-between items-center text-[12px]">
+                <span className="text-[#8e8ea9]">Ready Time</span>
+                <span className="font-semibold text-[#32324d]">{new Date(takeaway.readyAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            )}
+            {takeaway.handedOverAt && (
+              <div className="flex justify-between items-center text-[12px]">
+                <span className="text-[#8e8ea9]">Handed Over Time</span>
+                <span className="font-semibold text-[#32324d]">{new Date(takeaway.handedOverAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            )}
+            {takeaway.completedAt && (
+              <div className="flex justify-between items-center text-[12px] pt-2 border-t border-[#eaeaef]">
+                <span className="text-[#24a44b] font-bold">Completed Time</span>
+                <span className="font-bold text-[#24a44b]">{new Date(takeaway.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="p-4 border-t border-[#eaeaef] bg-white flex flex-col gap-3">
+      {takeaway.status !== 'Completed' && (
+        <div className="p-4 border-t border-[#eaeaef] bg-white flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-3">
           <button 
             onClick={() => onStatusChange && onStatusChange(takeaway.tokenNumber, 'Preparing')}
@@ -127,6 +164,7 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
           Complete Handover
         </button>
       </div>
+      )}
     </div>
   );
 };
