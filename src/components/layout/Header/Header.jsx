@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const imgVector = "http://localhost:3845/assets/56c9b6210eb0436b457badfa3ee0358646ef3cb3.svg";
@@ -7,24 +7,98 @@ const imgVector1 = "http://localhost:3845/assets/12ceba92ef4e88b4f9c796089133f31
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   const isActive = (path) => location.pathname.includes(path);
 
+  const menuItems = [
+    { label: "Overview", route: "/dashboard" },
+    { label: "Shift Summary", route: "/dashboard" },
+    { label: "Item on/off", route: "/dashboard/item-on-off" },
+    { label: "Money management", route: "/dashboard/money-management" },
+    { label: "Order History", route: "/dashboard/order-history" },
+    { label: "Log Out", route: "/dashboard" },
+  ];
+
+  const isMenuItemActive = (route) => {
+    if (route === "/dashboard/item-on-off") {
+      return location.pathname === "/dashboard/item-on-off";
+    }
+    if (route === "/dashboard/money-management") {
+      return location.pathname === "/dashboard/money-management";
+    }
+    if (route === "/dashboard/order-history") {
+      return location.pathname.startsWith("/dashboard/order-history");
+    }
+    return location.pathname === "/dashboard" && route === "/dashboard";
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  const handleMenuClick = (route) => {
+    navigate(route);
+    setIsDropdownOpen(false);
+  };
+
   return (
-    <header className="h-[84px] shrink-0 w-full bg-[var(--color-tertiary-5)] border-b border-[var(--color-neutral-10)] flex items-center justify-between px-6 py-6 z-20">
+    <header className="h-[84px] shrink-0 w-full bg-[var(--color-tertiary-5)] border-b border-[var(--color-neutral-10)] flex items-center justify-between px-6 py-6 z-30 relative">
       
       <div className="flex items-center gap-3">
-        <button 
-          onClick={() => navigate(-1)}
-          className="bg-white p-3 rounded-xl shadow-[0px_4px_20px_0px_rgba(50,50,71,0.02),0px_0px_2px_0px_rgba(12,26,75,0.05)] flex items-center justify-center w-[44px] h-[44px]"
-        >
-          <div className="relative w-5 h-5 flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 12H5" stroke="#32324D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 19L5 12L12 5" stroke="#32324D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-        </button>
+        <div className="relative" ref={dropdownRef}>
+          <button 
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="bg-white p-3 rounded-xl shadow-[0px_4px_20px_0px_rgba(50,50,71,0.02),0px_0px_2px_0px_rgba(12,26,75,0.05)] flex items-center justify-center w-[44px] h-[44px]"
+            aria-haspopup="menu"
+            aria-expanded={isDropdownOpen}
+          >
+            <div className="relative w-5 h-5 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="2" fill="#32324D"/>
+                <circle cx="5" cy="12" r="2" fill="#32324D"/>
+                <circle cx="19" cy="12" r="2" fill="#32324D"/>
+              </svg>
+            </div>
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute top-[calc(100%+12px)] left-0 w-[260px] bg-[var(--color-neutral-100)] border border-[var(--color-border-light)] rounded-2xl shadow-xl flex flex-col gap-4 py-4 px-4 z-50">
+              <nav className="flex flex-col gap-2 w-full">
+                {menuItems.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleMenuClick(item.route)}
+                    className={`w-full text-left flex items-center px-4 py-3 rounded-lg cursor-pointer transition-colors ${
+                      isMenuItemActive(item.route)
+                        ? 'bg-[var(--color-secondary-5)]'
+                        : 'hover:bg-[var(--color-secondary-5)]'
+                    }`}
+                  >
+                    <span className="text-label-active text-[var(--color-neutral-800)] font-medium">
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          )}
+        </div>
         
         <div className="flex flex-col gap-[2px]">
           <span className="text-body-2 text-[var(--color-neutral-500)]">Anna's Kitchen</span>

@@ -285,6 +285,29 @@ export const OrderSidebar = ({
             </div>
 
             <div className="mt-6 mb-6">
+              {paymentMode !== 'Due' && (
+                <>
+                  <div>
+                    <span className="text-[14px] font-semibold text-[#666687] block mb-3">Received Amount</span>
+                    <input ref={paymentInputRef} type="number" {...registerPayment('customerPaidAmount')} className={clsx("w-full h-[40px] border focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] mb-1 transition-all duration-200", paymentErrors.customerPaidAmount ? "border-red-500 focus:border-red-500" : "border-[#ffb01d] focus:border-[#ff7b2c]")} />
+                    {paymentErrors.customerPaidAmount && <p className="text-red-500 text-xs mb-3 ml-2">{paymentErrors.customerPaidAmount.message}</p>}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 mb-3 mt-2">
+                    {['500', '200', '100', '50', '20', '10'].map(amt => (
+                      <button key={amt} onClick={() => setCustomerPaidAmount(prev => Number(prev) + Number(amt))} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]">
+                        <span className="text-[#ff9556] text-center text-2xl">-</span>{amt}<span className="text-[#ff9556] text-center text-2xl">+</span>
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => paymentInputRef.current?.focus()} className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-4 transition-all duration-200 active:scale-[0.98]">Custom amount</button>
+
+                  <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-6">
+                    <span className="text-[12px] font-bold text-[#24a44b]">₹{changeToReturn.toFixed(2)} change to return</span>
+                  </div>
+                </>
+              )}
+
               <span className="text-[14px] font-semibold text-[#666687] block mb-3">Payment Mode</span>
               <div className="flex gap-2 mb-4">
                 {['Cash', 'Upi', 'Card', 'Due'].map(mode => (
@@ -292,7 +315,7 @@ export const OrderSidebar = ({
                 ))}
               </div>
 
-              {paymentMode === 'Due' ? (
+              {paymentMode === 'Due' && (
                 <div className="flex flex-col gap-3 mb-6">
                   <div>
                     <input type="text" {...registerPayment('dueCustomerName')} placeholder="Customer name" className={clsx("w-full h-[48px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]", paymentErrors.dueCustomerName ? "border-red-500" : "border-[#eaeaef]")} />
@@ -313,24 +336,6 @@ export const OrderSidebar = ({
                   <div><input type="date" {...registerPayment('dueDate')} placeholder="Due date" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" /></div>
                   <div><textarea {...registerPayment('dueReason')} placeholder="Reason for discount" className="w-full h-[80px] border border-[#eaeaef] rounded-[16px] p-4 text-[12px] font-semibold outline-none resize-none text-[#32324d] placeholder:text-[#8e8ea9]"></textarea></div>
                 </div>
-              ) : (
-                <>
-                  <div>
-                    <input ref={paymentInputRef} type="number" {...registerPayment('customerPaidAmount')} className={clsx("w-full h-[40px] border focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] mb-1 transition-all duration-200", paymentErrors.customerPaidAmount ? "border-red-500 focus:border-red-500" : "border-[#ffb01d] focus:border-[#ff7b2c]")} />
-                    {paymentErrors.customerPaidAmount && <p className="text-red-500 text-xs mb-3 ml-2">{paymentErrors.customerPaidAmount.message}</p>}
-                  </div>
-                  <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-4 mt-2">
-                    <span className="text-[12px] font-bold text-[#24a44b]">₹{changeToReturn.toFixed(2)} change to return</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    {['500', '200', '100', '50', '20', '10'].map(amt => (
-                      <button key={amt} onClick={() => setCustomerPaidAmount(prev => Number(prev) + Number(amt))} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]">
-                        <span className="text-[#ff9556] text-center text-2xl">-</span>{amt}<span className="text-[#ff9556] text-center text-2xl">+</span>
-                      </button>
-                    ))}
-                  </div>
-                  <button onClick={() => paymentInputRef.current?.focus()} className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-6 transition-all duration-200 active:scale-[0.98]">Custom amount</button>
-                </>
               )}
             </div>
           </div>

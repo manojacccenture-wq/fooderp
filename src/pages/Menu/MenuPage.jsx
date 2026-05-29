@@ -27,6 +27,8 @@ import { useSidebarResize } from './hooks/useSidebarResize';
 // Utils
 import { getOrderStatusStyles } from '../../utils/orderStatus';
 
+const NOOP = () => {};
+
 export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -84,7 +86,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setDraftOrderItems,
     setSentKotItems,
     setHeldItems,
-    setKotStatus: () => {} // will sync with useKotFlow
+    setKotStatus: NOOP // will sync with useKotFlow
   });
 
   // 3. KOT Flow Hook
