@@ -58,31 +58,77 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
         </div>
 
         <div>
-          <h3 className="text-[14px] font-bold text-[#4a4a6a] mb-3">Parcel Items</h3>
-          <div className="flex flex-col gap-2">
-            {allItems.length === 0 ? (
-               <div className="text-[12px] text-[#8e8ea9] italic text-center p-4">Waiting for items to sync...</div>
-            ) : (
-              allItems.map((item, idx) => (
-                <div key={idx} className="flex gap-3 p-3 border border-[#eaeaef] rounded-[16px] bg-white items-center">
-                  <div className="w-[40px] h-[40px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)] bg-[#f3f5f9] rounded-full overflow-hidden">
-                    {item.image ? (
-                      <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8e8ea9]">Img</div>
-                    )}
-                  </div>
-                  <div className="flex-1 flex flex-col gap-[2px]">
-                    <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
-                    <span className="text-[12px] text-[#8e8ea9] font-medium">Qty: {item.fulfillment?.take_away || item.quantity}</span>
-                    {item.specialInstructions && (
-                      <span className="text-[11px] text-[#ffb01d] bg-[#fff7e8] px-2 py-[2px] rounded-full inline-block w-fit mt-1">Note: {item.specialInstructions}</span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <h3 className="text-[14px] font-bold text-[#4a4a6a] mb-4 border-b border-[#eaeaef] pb-2">Parcel Items</h3>
+          
+          {/* Active Items */}
+          {(allItems.length > 0 || !takeaway.completedParcelBatches?.length) && (
+            <div className="mb-6">
+              <span className="text-[11px] font-bold text-[#8e8ea9] uppercase tracking-wider block mb-3 px-1">Active Items</span>
+              <div className="flex flex-col gap-2">
+                {allItems.length === 0 ? (
+                   <div className="text-[12px] text-[#8e8ea9] italic text-center p-4">Waiting for items to sync...</div>
+                ) : (
+                  // Reverse allItems to show newest active items first
+                  [...allItems].reverse().map((item, idx) => (
+                    <div key={`active-${idx}`} className="flex gap-3 p-3 border border-[#eaeaef] rounded-[16px] bg-white items-center">
+                      <div className="w-[40px] h-[40px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)] bg-[#f3f5f9] rounded-full overflow-hidden">
+                        {item.image ? (
+                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8e8ea9]">Img</div>
+                        )}
+                      </div>
+                      <div className="flex-1 flex flex-col gap-[2px]">
+                        <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
+                        <span className="text-[12px] text-[#8e8ea9] font-medium">Qty: {item.fulfillment?.take_away || item.quantity}</span>
+                        {item.specialInstructions && (
+                          <span className="text-[11px] text-[#ffb01d] bg-[#fff7e8] px-2 py-[2px] rounded-full inline-block w-fit mt-1">Note: {item.specialInstructions}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Completed Batches */}
+          {takeaway.completedParcelBatches && takeaway.completedParcelBatches.length > 0 && (
+            <div>
+              <span className="text-[11px] font-bold text-[#8e8ea9] uppercase tracking-wider block mb-3 px-1">Packed / Delivered</span>
+              <div className="flex flex-col gap-2">
+                {[...takeaway.completedParcelBatches].reverse().map((batch, bIdx) => (
+                  <React.Fragment key={`batch-${batch.batchId}`}>
+                    {batch.items.map((item, idx) => (
+                      <div key={`completed-${bIdx}-${idx}`} className="flex gap-3 p-3 border border-[#eaeaef] border-l-[4px] border-l-[#22c55e] rounded-[16px] bg-white items-center">
+                        <div className="w-[40px] h-[40px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)] bg-[#f3f5f9] rounded-full overflow-hidden opacity-80">
+                          {item.image ? (
+                            <img src={item.image} alt={item.title} className="w-full h-full object-cover grayscale-[20%]" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8e8ea9]">Img</div>
+                          )}
+                        </div>
+                        <div className="flex-1 flex flex-col gap-[2px]">
+                          <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
+                          <span className="text-[12px] text-[#8e8ea9] font-medium mb-1">Qty: {item.fulfillment?.take_away || item.quantity}</span>
+                          <div className="flex gap-2 items-center">
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-[#24a44b] bg-[#e8fbf0] border border-[#24a44b]/20 px-2 py-[2px] rounded-full">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              Packed
+                            </span>
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-[#24a44b] bg-[#e8fbf0] border border-[#24a44b]/20 px-2 py-[2px] rounded-full">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              Delivered
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Audit Trail */}

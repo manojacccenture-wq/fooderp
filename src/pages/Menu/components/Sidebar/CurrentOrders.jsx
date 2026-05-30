@@ -1,6 +1,8 @@
 import React from 'react';
 import { OrderItem } from '../OrderItem';
 import { ORDER_STATUS_COLORS } from '../../../../utils/orderStatus';
+import { useAppSelector } from '../../../../store/hooks';
+import { selectActiveKots } from '../../../../store/slices/kotSlice';
 
 export const CurrentOrders = ({
   sentKotItems,
@@ -20,6 +22,8 @@ export const CurrentOrders = ({
   activeKeyboardSection,
   setActiveKeyboardSection
 }) => {
+  const activeKots = useAppSelector(selectActiveKots);
+
   return (
     <div className="px-4 mt-4 flex flex-col gap-4">
       {(() => {
@@ -49,25 +53,29 @@ export const CurrentOrders = ({
                 <span className="text-[12px] font-semibold text-[#8e8ea9]">{roundObj.time || 'Pending'}</span>
               </div>
               <div className="p-3 flex flex-col gap-3">
-                {roundObj.items.map((item) => (
-                  <OrderItem
-                    key={`sent-${item.id}`}
-                    image={item.image}
-                    title={item.title}
-                    price={item.price}
-                    quantity={item.quantity}
-                    onSplit={() => handleSplitClick(item)}
-                    onReplace={() => handleReplaceClick(item)}
-                    onAddInstruction={undefined}
-                    specialInstructions={item.specialInstructions}
-                    showDelete={false}
-                    showQuantityControls={false}
-                    fulfillment={item.fulfillment}
-                    isSelected={selectedOrderItem === item.id && activeKeyboardSection === 'order'}
-                    onSelect={() => { setSelectedOrderItem(item.id); setActiveKeyboardSection('order'); }}
-                    itemRef={(el) => { if(itemRefs && itemRefs.current) itemRefs.current[item.id] = el; }}
-                  />
-                ))}
+                {roundObj.items.map((item) => {
+                  const isParcelActive = activeKots.some(k => k.type === 'take_away' && k.items.some(i => i.id === item.id));
+                  return (
+                    <OrderItem
+                      key={`sent-${item.id}`}
+                      image={item.image}
+                      title={item.title}
+                      price={item.price}
+                      quantity={item.quantity}
+                      onSplit={() => handleSplitClick(item)}
+                      onReplace={() => handleReplaceClick(item)}
+                      onAddInstruction={undefined}
+                      specialInstructions={item.specialInstructions}
+                      showDelete={false}
+                      showQuantityControls={false}
+                      fulfillment={item.fulfillment}
+                      isParcelActive={isParcelActive}
+                      isSelected={selectedOrderItem === item.id && activeKeyboardSection === 'order'}
+                      onSelect={() => { setSelectedOrderItem(item.id); setActiveKeyboardSection('order'); }}
+                      itemRef={(el) => { if(itemRefs && itemRefs.current) itemRefs.current[item.id] = el; }}
+                    />
+                  );
+                })}
               </div>
             </div>
           );

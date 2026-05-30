@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectActiveTakeaways, selectCompletedTakeaways, updateTakeawayStatus, completeTakeaway } from '../../store/slices/takeawaySlice';
-import { selectActiveKots } from '../../store/slices/kotSlice';
+import { selectActiveKots, removeKots } from '../../store/slices/kotSlice';
 import { TakeawayCard } from './components/TakeawayCard';
 import { TakeawaySidebar } from './components/TakeawaySidebar';
 
@@ -13,7 +13,7 @@ export const TakeawayPage = () => {
   const completedTakeaways = useAppSelector(selectCompletedTakeaways);
   const activeKots = useAppSelector(selectActiveKots);
   
-  const [selectedToken, setSelectedToken] = useState(null);
+  const [selectedTakeawayId, setSelectedTakeawayId] = useState(null);
   const [filter, setFilter] = useState('Active'); // 'Active' | 'Completed' | 'All'
 
   const displayedTakeaways = filter === 'Active' ? activeTakeaways
@@ -22,14 +22,14 @@ export const TakeawayPage = () => {
 
   // Auto-select first token if none is selected
   useEffect(() => {
-    if (!selectedToken && displayedTakeaways.length > 0) {
-      setSelectedToken(displayedTakeaways[0].tokenNumber);
+    if (!selectedTakeawayId && displayedTakeaways.length > 0) {
+      setSelectedTakeawayId(displayedTakeaways[0].id);
     }
-  }, [selectedToken, displayedTakeaways]);
+  }, [selectedTakeawayId, displayedTakeaways]);
 
-  const selectedTakeaway = displayedTakeaways.find(t => t.tokenNumber === selectedToken);
+  const selectedTakeaway = displayedTakeaways.find(t => t.id === selectedTakeawayId);
   const relatedKots = selectedTakeaway 
-    ? activeKots.filter(k => k.orderNumber === selectedTakeaway.orderNumber && k.type === 'take_away')
+    ? activeKots.filter(k => k.orderNumber === selectedTakeaway.orderNumber && k.type === 'take_away' && k.tokenNumber === selectedTakeaway.tokenNumber)
     : [];
 
   const handleStatusChange = (tokenNumber, newStatus) => {
@@ -37,9 +37,18 @@ export const TakeawayPage = () => {
   };
 
   const handleHandover = (tokenNumber) => {
-    dispatch(completeTakeaway({ tokenNumber }));
-    if (selectedToken === tokenNumber) {
-      setSelectedToken(null);
+    // Extract items to store in completed batch
+    const currentActiveItems = relatedKots.flatMap(k => k.items);
+    const currentKotIds = relatedKots.map(k => k.id);
+    
+    dispatch(completeTakeaway({ tokenNumber, items: currentActiveItems }));
+    
+    if (currentKotIds.length > 0) {
+      dispatch(removeKots(currentKotIds));
+    }
+    
+    if (selectedTakeaway && selectedTakeaway.tokenNumber === tokenNumber) {
+      setSelectedTakeawayId(null);
     }
   };
 
@@ -73,7 +82,7 @@ export const TakeawayPage = () => {
               key={tab}
               onClick={() => {
                 setFilter(tab);
-                setSelectedToken(null);
+                setSelectedTakeawayId(null);
               }}
               className={`px-4 py-2 rounded-full text-[13px] font-bold transition-colors ${
                 filter === tab 
@@ -102,8 +111,8 @@ export const TakeawayPage = () => {
                 <TakeawayCard
                   key={takeaway.id}
                   takeaway={takeaway}
-                  isSelected={selectedToken === takeaway.tokenNumber}
-                  onClick={() => setSelectedToken(takeaway.tokenNumber)}
+                  isSelected={selectedTakeawayId === takeaway.id}
+                  onClick={() => setSelectedTakeawayId(takeaway.id)}
                 />
               ))}
             </div>
@@ -116,7 +125,7 @@ export const TakeawayPage = () => {
           <TakeawaySidebar
             takeaway={selectedTakeaway}
             relatedKots={relatedKots}
-            onClose={() => setSelectedToken(null)}
+            onClose={() => setSelectedTakeawayId(null)}
             onStatusChange={handleStatusChange}
             onHandover={() => handleHandover(selectedTakeaway.tokenNumber)}
             onOpenMenu={handleOpenMenu}

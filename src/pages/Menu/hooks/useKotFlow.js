@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { useAppSelector } from '../../../store/hooks';
 import { startOrderForTable } from '../../../store/slices/tableSlice';
 import { getCurrentOrderStatus } from '../../../utils/orderStatus';
 import { generateKOT } from '../../../store/slices/kotSlice';
-import { generateToken } from '../../../store/slices/takeawaySlice';
+import { generateToken, selectActiveTakeaways, selectCompletedTakeaways, selectDailyTokenCounter } from '../../../store/slices/takeawaySlice';
 import { assignOrderNumber } from '../../../store/slices/orderSlice';
 
 export const useKotFlow = ({
@@ -26,6 +27,11 @@ export const useKotFlow = ({
   currentOrderNumber
 }) => {
   const [kotStatus, setKotStatus] = useState('idle'); // 'idle' | 'success_anim' | 'sent' | 'kot_sent' | 'preparing' | 'ready'
+  
+  const activeTakeaways = useAppSelector(selectActiveTakeaways);
+  const completedTakeaways = useAppSelector(selectCompletedTakeaways);
+  const dailyTokenCounter = useAppSelector(selectDailyTokenCounter);
+  const lastTokenDate = useAppSelector(state => state.takeaway.lastTokenDate);
 
   const globalOrderStatus = getCurrentOrderStatus({
     paymentStatus,
@@ -71,16 +77,39 @@ export const useKotFlow = ({
     let assignedToken = null;
 
     if (takeAwayItems.length > 0 || orderType === 'take_away') {
-      // Dispatch takeaway generation (which generates token)
-      dispatch(generateToken({
-        orderNumber: effectiveOrderNumber,
-        source: orderType,
-        tableReference: selectedTable,
-        customerInfo: phone ? { phone } : null,
-        status: 'Preparing'
-      }));
-      // We don't have the exact token number synchronously here, but Redux slice will assign it.
-      assignedToken = 'Generating...'; 
+      const allTakeaways = [...activeTakeaways, ...completedTakeaways];
+      const existingToken = allTakeaways.find(t => 
+        t.orderNumber === effectiveOrderNumber && 
+        (selectedTable ? t.tableReference === selectedTable : true)
+      );
+
+      if (existingToken) {
+        assignedToken = existingToken.tokenNumber;
+        
+        // Ensure there's an active batch for this token. If not, create one.
+        const isActive = activeTakeaways.some(t => t.tokenNumber === assignedToken);
+        if (!isActive) {
+          dispatch(generateToken({
+            orderNumber: effectiveOrderNumber,
+            source: orderType,
+            tableReference: selectedTable,
+            customerInfo: phone ? { phone } : null,
+            status: 'Preparing',
+            tokenNumber: assignedToken
+          }));
+        }
+      } else {
+        const today = new Date().toDateString();
+        assignedToken = lastTokenDate === today ? dailyTokenCounter + 1 : 1;
+        
+        dispatch(generateToken({
+          orderNumber: effectiveOrderNumber,
+          source: orderType,
+          tableReference: selectedTable,
+          customerInfo: phone ? { phone } : null,
+          status: 'Preparing'
+        }));
+      }
     }
 
     if (dineInItems.length > 0) {

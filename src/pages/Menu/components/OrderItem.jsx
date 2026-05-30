@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { SpecialInstructionTags } from '../../../components/orders/SpecialInstructionTags';
 
 export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
-  onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction, fulfillment, onToggleFulfillmentType }) => {
+  onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction, fulfillment, onToggleFulfillmentType, isParcelActive = false }) => {
   
   const [isAnimating, setIsAnimating] = useState(false);
   const [animIndicator, setAnimIndicator] = useState(null);
@@ -124,8 +124,24 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
             </div>
           )
         ) : (
-          <div className="flex items-center mt-[2px]">
-            <span className="text-[13px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
+          <div className="flex items-center gap-2 mt-[2px]">
+            {fulfillment && (fulfillment.dine_in > 0 || fulfillment.take_away > 0) ? (
+              <>
+                {fulfillment.dine_in > 0 && (
+                  <span className="text-[13px] font-semibold text-[#666687]">Serve x{fulfillment.dine_in}</span>
+                )}
+                {fulfillment.take_away > 0 && (
+                  <div className={clsx("flex items-center gap-1 px-2 py-[2px] rounded-full", isParcelActive ? "bg-[#fff7e8] border border-[#ffb01d]/30" : "bg-[#e8fbf0] border border-[#24a44b]/30")}>
+                    <span className={clsx("text-[10px] font-bold uppercase", isParcelActive ? "text-[#d88c00]" : "text-[#24a44b]")}>Pack x{fulfillment.take_away}</span>
+                    {!isParcelActive && (
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-[#24a44b]"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <span className="text-[13px] font-semibold text-[#666687] text-center">{quantity} Quantity</span>
+            )}
           </div>
         )}
         <SpecialInstructionTags instructions={specialInstructions} />

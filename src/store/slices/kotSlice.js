@@ -32,13 +32,17 @@ const kotSlice = createSlice({
         kot.status = status;
       }
     },
+    removeKots: (state, action) => {
+      const kotIdsToRemove = action.payload; // array of IDs
+      state.activeKots = state.activeKots.filter(k => !kotIdsToRemove.includes(k.id));
+    },
     clearCompletedKots: (state) => {
       state.activeKots = state.activeKots.filter(k => k.status !== 'delivered');
     }
   }
 });
 
-export const { generateKOT, updateKotStatus, clearCompletedKots } = kotSlice.actions;
+export const { generateKOT, updateKotStatus, removeKots, clearCompletedKots } = kotSlice.actions;
 
 export const selectActiveKots = (state) => state.kot.activeKots;
 

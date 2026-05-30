@@ -12,16 +12,20 @@ const takeawaySlice = createSlice({
   initialState,
   reducers: {
     generateToken: (state, action) => {
-      const { orderNumber, source, tableReference, customerInfo, status } = action.payload;
+      const { orderNumber, source, tableReference, customerInfo, status, tokenNumber } = action.payload;
       
-      const today = new Date().toDateString();
-      if (state.lastTokenDate !== today) {
-        state.dailyTokenCounter = 0;
-        state.lastTokenDate = today;
+      let newToken = tokenNumber;
+      
+      if (!newToken) {
+        const today = new Date().toDateString();
+        if (state.lastTokenDate !== today) {
+          state.dailyTokenCounter = 0;
+          state.lastTokenDate = today;
+        }
+        
+        state.dailyTokenCounter += 1;
+        newToken = state.dailyTokenCounter;
       }
-      
-      state.dailyTokenCounter += 1;
-      const newToken = state.dailyTokenCounter;
       
       state.activeTakeaways.push({
         id: `TK-${Date.now()}`,
@@ -33,6 +37,7 @@ const takeawaySlice = createSlice({
         status: status || 'Preparing',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         items: [], // Snapshotted separately or retrieved from main order
+        completedParcelBatches: [], // Store historical batches here
         createdAt: new Date().toISOString(),
         preparingAt: new Date().toISOString(),
       });
@@ -47,11 +52,24 @@ const takeawaySlice = createSlice({
       }
     },
     completeTakeaway: (state, action) => {
-      const { tokenNumber } = action.payload;
+      const { tokenNumber, items } = action.payload;
       const takeawayIndex = state.activeTakeaways.findIndex(t => t.tokenNumber === tokenNumber);
       
       if (takeawayIndex !== -1) {
         const takeaway = state.activeTakeaways[takeawayIndex];
+        
+        if (!takeaway.completedParcelBatches) {
+          takeaway.completedParcelBatches = [];
+        }
+        
+        if (items && items.length > 0) {
+          takeaway.completedParcelBatches.push({
+            batchId: takeaway.completedParcelBatches.length + 1,
+            completedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            items: items
+          });
+        }
+        
         takeaway.status = 'Completed';
         takeaway.handedOverAt = new Date().toISOString();
         takeaway.completedAt = new Date().toISOString();
