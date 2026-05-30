@@ -70,21 +70,6 @@ export const ActionButtons = ({
               <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => setIsUpiModalOpen(true)}>
                 Generate UPI QR & Pay
               </button>
-              <div className="flex gap-2 w-full mt-2">
-                <button className="flex-1 border border-[#eaeaef] bg-white text-[#4a4a6a] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#f3f5f9] transition-all" onClick={handleQuickPrint}>
-                  Print
-                </button>
-                <button 
-                  className="flex-1 border border-[#eaeaef] bg-white text-[#24a44b] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#b4efc6]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
-                  onClick={handleQuickWhatsApp}
-                  disabled={isPhoneMissingForDineIn}
-                >
-                  WhatsApp
-                </button>
-                <button className="flex-1 border border-[#eaeaef] bg-white text-[#6b4eff] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#d4cbfc]/30 transition-all" onClick={handleQuickEmail}>
-                  Email
-                </button>
-              </div>
             </>
           ) : (
             <>

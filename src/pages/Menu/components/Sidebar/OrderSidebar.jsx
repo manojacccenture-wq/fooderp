@@ -1,4 +1,4 @@
-import React,{useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { ORDER_STATUS_COLORS } from '../../../../utils/orderStatus';
 import { CurrentOrders } from './CurrentOrders';
@@ -84,6 +84,8 @@ export const OrderSidebar = ({
   currentOrderNumber,
   totalPackQuantity
 }) => {
+  const [isSplitBillExpanded, setIsSplitBillExpanded] = useState(false);
+
   useEffect(() => {
     if (totalPackQuantity === 0 && orderType === 'take_away') {
       setOrderType('dine_in');
@@ -285,65 +287,65 @@ export const OrderSidebar = ({
               isCheckoutView={true}
             />
 
-            <div className="mt-6">
-              <span className="text-[14px] font-semibold text-[#666687] block mb-3">Split bill</span>
-              <div className="flex gap-2">
-                <button onClick={() => setSplitMode('full')} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", splitMode === 'full' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>Full Bill</button>
-                <button onClick={() => setSplitMode('equal')} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", splitMode === 'equal' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>Equal Split</button>
-                <button onClick={() => setSplitMode('by_item')} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", splitMode === 'by_item' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>By Item</button>
-              </div>
-              <span className="text-[12px] text-[#8e8ea9] block mt-2">
-                {splitMode === 'equal' ? `Each guest pays ₹${splitCalculatedAmount.toFixed(2)}` : `Full bill amount ₹${payableAmount.toFixed(2)}`}
-              </span>
-            </div>
-
-            <div className="mt-6">
-              <span className="text-[14px] font-semibold text-[#666687] block mb-3">Add Tip</span>
-              <div className="flex gap-2 mb-3">
-                {[20, 50, 100].map((tip) => (
-                  <button key={tip} onClick={() => { setSelectedTip(tip); setCustomTip(''); }} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", selectedTip === tip && customTip === '' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>{tip}</button>
-                ))}
-                <button onClick={() => { setSelectedTip(0); setCustomTip(''); }} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", selectedTip === 0 && customTip === '' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>No tip</button>
-              </div>
-              <div>
-                <input type="number" {...registerPayment('customTip')} placeholder="Custom tip amount-" className={clsx("w-full h-[40px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none", paymentErrors.customTip ? "border-red-500" : "border-[#ffb01d]")} />
-                {paymentErrors.customTip && <p className="text-red-500 text-xs mt-1">{paymentErrors.customTip.message}</p>}
-              </div>
-            </div>
-
-            <div className="mt-6 mb-6">
-              {paymentMode !== 'Due' && (
-                <>
-                  <div>
-                    <span className="text-[14px] font-semibold text-[#666687] block mb-3">Received Amount</span>
-                    <input ref={paymentInputRef} type="number" {...registerPayment('customerPaidAmount')} className={clsx("w-full h-[40px] border focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] mb-1 transition-all duration-200", paymentErrors.customerPaidAmount ? "border-red-500 focus:border-red-500" : "border-[#ffb01d] focus:border-[#ff7b2c]")} />
-                    {paymentErrors.customerPaidAmount && <p className="text-red-500 text-xs mb-3 ml-2">{paymentErrors.customerPaidAmount.message}</p>}
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 mb-3 mt-2">
-                    {['500', '200', '100', '50', '20', '10'].map(amt => (
-                      <button key={amt} onClick={() => setCustomerPaidAmount(prev => Number(prev) + Number(amt))} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]">
-                        <span className="text-[#ff9556] text-center text-2xl">-</span>{amt}<span className="text-[#ff9556] text-center text-2xl">+</span>
-                      </button>
-                    ))}
-                  </div>
-                  <button onClick={() => paymentInputRef.current?.focus()} className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-4 transition-all duration-200 active:scale-[0.98]">Custom amount</button>
-
-                  <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center mb-6">
-                    <span className="text-[12px] font-bold text-[#24a44b]">₹{changeToReturn.toFixed(2)} change to return</span>
-                  </div>
-                </>
-              )}
-
+            <div className="mt-6 mb-4">
               <span className="text-[14px] font-semibold text-[#666687] block mb-3">Payment Mode</span>
-              <div className="flex gap-2 mb-4">
+              <div className="flex gap-2">
                 {['Cash', 'Upi', 'Card', 'Due'].map(mode => (
                   <button key={mode} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", paymentMode === mode ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")} onClick={() => setPaymentMode(mode)}>{mode}</button>
                 ))}
               </div>
+            </div>
 
-              {paymentMode === 'Due' && (
-                <div className="flex flex-col gap-3 mb-6">
+            {paymentMode === 'Cash' && (
+              <div className="mb-6 border border-[#eaeaef] rounded-[16px] p-4 bg-[#fcfcfd]">
+                <span className="text-[14px] font-semibold text-[#666687] block mb-3">Received Amount</span>
+                <input ref={paymentInputRef} type="number" {...registerPayment('customerPaidAmount')} className={clsx("w-full h-[40px] border focus:ring-0 focus:outline-none rounded-[16px] px-4 text-[14px] font-bold text-[#666687] mb-1 transition-all duration-200", paymentErrors.customerPaidAmount ? "border-red-500 focus:border-red-500" : "border-[#ffb01d] focus:border-[#ff7b2c]")} />
+                {paymentErrors.customerPaidAmount && <p className="text-red-500 text-xs mb-3 ml-2">{paymentErrors.customerPaidAmount.message}</p>}
+                
+                <div className="grid grid-cols-2 gap-2 mb-3 mt-2">
+                  {['500', '200', '100', '50', '20', '10'].map(amt => (
+                    <button key={amt} onClick={() => setCustomerPaidAmount(prev => Number(prev) + Number(amt))} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]">
+                      <span className="text-[#ff9556] text-center text-2xl">-</span>{amt}<span className="text-[#ff9556] text-center text-2xl">+</span>
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => paymentInputRef.current?.focus()} className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-4 transition-all duration-200 active:scale-[0.98]">Custom amount</button>
+
+                <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center">
+                  <span className="text-[12px] font-bold text-[#24a44b]">₹{changeToReturn.toFixed(2)} change to return</span>
+                </div>
+              </div>
+            )}
+
+            {paymentMode === 'Upi' && (
+              <div className="flex gap-2 w-full mt-2 mb-6">
+                <button className="flex-1 border border-[#eaeaef] bg-white text-[#4a4a6a] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#f3f5f9] transition-all" onClick={handleQuickPrint}>
+                  Print
+                </button>
+                <button 
+                  className="flex-1 border border-[#eaeaef] bg-white text-[#24a44b] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#b4efc6]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
+                  onClick={handleQuickWhatsApp}
+                  disabled={isPhoneMissingForDineIn}
+                >
+                  WhatsApp
+                </button>
+                <button className="flex-1 border border-[#eaeaef] bg-white text-[#6b4eff] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#d4cbfc]/30 transition-all" onClick={handleQuickEmail}>
+                  Email
+                </button>
+              </div>
+            )}
+
+            {paymentMode === 'Card' && (
+              <div className="mb-6 border border-[#eaeaef] rounded-[16px] p-4 bg-[#fcfcfd]">
+                <span className="text-[14px] font-semibold text-[#666687] block mb-3">Card Reference Number</span>
+                <input type="text" {...registerPayment('cardReference')} placeholder="Enter Card Ref No." className="w-full h-[40px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d]" />
+              </div>
+            )}
+
+            {paymentMode === 'Due' && (
+              <div className="mb-6 border border-[#eaeaef] rounded-[16px] p-4 bg-[#fcfcfd]">
+                <span className="text-[14px] font-semibold text-[#666687] block mb-3">Due Details</span>
+                <div className="flex flex-col gap-3">
                   <div>
                     <input type="text" {...registerPayment('dueCustomerName')} placeholder="Customer name" className={clsx("w-full h-[48px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]", paymentErrors.dueCustomerName ? "border-red-500" : "border-[#eaeaef]")} />
                     {paymentErrors.dueCustomerName && <p className="text-red-500 text-xs mt-1">{paymentErrors.dueCustomerName.message}</p>}
@@ -363,7 +365,45 @@ export const OrderSidebar = ({
                   <div><input type="date" {...registerPayment('dueDate')} placeholder="Due date" className="w-full h-[48px] border border-[#eaeaef] rounded-[16px] px-4 text-[12px] font-semibold outline-none text-[#32324d] placeholder:text-[#8e8ea9]" /></div>
                   <div><textarea {...registerPayment('dueReason')} placeholder="Reason for discount" className="w-full h-[80px] border border-[#eaeaef] rounded-[16px] p-4 text-[12px] font-semibold outline-none resize-none text-[#32324d] placeholder:text-[#8e8ea9]"></textarea></div>
                 </div>
+              </div>
+            )}
+
+            <div className="mt-2 mb-6">
+              <button 
+                onClick={() => setIsSplitBillExpanded(!isSplitBillExpanded)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#fff7e8] text-[#ff9556] rounded-full border border-[#ffb01d]/30 text-[12px] font-bold shadow-sm transition-all hover:bg-[#ffb01d] hover:text-white group"
+              >
+                <span>Split Bill</span>
+                <span className="text-[14px]">⚡</span>
+                <svg className={clsx("w-3 h-3 ml-1 transition-transform", isSplitBillExpanded ? "rotate-180" : "")} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+              
+              {isSplitBillExpanded && (
+                <div className="mt-4 p-4 border border-[#eaeaef] rounded-[16px] bg-[#fcfcfd] animate-fade-in-up">
+                  <div className="flex gap-2">
+                    <button onClick={() => setSplitMode('full')} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", splitMode === 'full' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>Full Bill</button>
+                    <button onClick={() => setSplitMode('equal')} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", splitMode === 'equal' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>Equal Split</button>
+                    <button onClick={() => setSplitMode('by_item')} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", splitMode === 'by_item' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>By Item</button>
+                  </div>
+                  <span className="text-[12px] font-semibold text-[#8e8ea9] block mt-3 text-center">
+                    {splitMode === 'equal' ? `Each guest pays ₹${splitCalculatedAmount.toFixed(2)}` : `Full bill amount ₹${payableAmount.toFixed(2)}`}
+                  </span>
+                </div>
               )}
+            </div>
+
+            <div className="mt-6 mb-6">
+              <span className="text-[14px] font-semibold text-[#666687] block mb-3">Add Tip</span>
+              <div className="flex gap-2 mb-3">
+                {[20, 50, 100].map((tip) => (
+                  <button key={tip} onClick={() => { setSelectedTip(tip); setCustomTip(''); }} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", selectedTip === tip && customTip === '' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>{tip}</button>
+                ))}
+                <button onClick={() => { setSelectedTip(0); setCustomTip(''); }} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", selectedTip === 0 && customTip === '' ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")}>No tip</button>
+              </div>
+              <div>
+                <input type="number" {...registerPayment('customTip')} placeholder="Custom tip amount-" className={clsx("w-full h-[40px] border rounded-[16px] px-4 text-[12px] font-semibold outline-none", paymentErrors.customTip ? "border-red-500" : "border-[#ffb01d]")} />
+                {paymentErrors.customTip && <p className="text-red-500 text-xs mt-1">{paymentErrors.customTip.message}</p>}
+              </div>
             </div>
           </div>
         </div>

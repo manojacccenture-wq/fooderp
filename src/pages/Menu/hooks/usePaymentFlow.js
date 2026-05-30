@@ -25,7 +25,9 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
       dueGivenAmount: 0,
       dueAmount: 0,
       dueDate: '',
-      dueReason: ''
+      dueReason: '',
+      upiReference: '',
+      cardReference: ''
     }
   });
 
