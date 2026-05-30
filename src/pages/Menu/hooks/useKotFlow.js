@@ -10,6 +10,7 @@ export const useKotFlow = ({
   draftOrderItems,
   setDraftOrderItems,
   setSentKotItems,
+  setHeldItems,
   orderType,
   isDineInFlow,
   selectedTable,
@@ -149,9 +150,112 @@ export const useKotFlow = ({
     }
   };
 
+  const handleSendHeldItem = (heldItem) => {
+    const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
+    
+    if (!currentOrderNumber) {
+      dispatch(assignOrderNumber());
+    }
+
+    if (orderType === 'dine_in' && !isDineInFlow && selectedTable) {
+      dispatch(startOrderForTable({ 
+        tableNo: selectedTable, 
+        formData: { name: 'Walk-in Customer', guests: guestCount, time: '', mobile: phone } 
+      }));
+    }
+
+    const nextRound = Math.max(0, ...sentKotItems.map(i => i.kotRound || 0)) + 1;
+    const kotTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const newItem = {
+      ...heldItem,
+      kotRound: nextRound,
+      kotTime: kotTime
+    };
+
+    // Since it's a split item, its fulfillment property is technically still the original item's fulfillment.
+    // However, since it's now an isolated item of quantity N, we determine its type based on the orderType.
+    const isTakeaway = orderType === 'take_away';
+    const dineInItems = !isTakeaway ? [{...newItem, fulfillment: {dine_in: newItem.quantity, take_away: 0}}] : [];
+    const takeAwayItems = isTakeaway ? [{...newItem, fulfillment: {dine_in: 0, take_away: newItem.quantity}}] : [];
+
+    let assignedToken = null;
+
+    if (takeAwayItems.length > 0 || orderType === 'take_away') {
+      const allTakeaways = [...activeTakeaways, ...completedTakeaways];
+      const existingToken = allTakeaways.find(t => 
+        t.orderNumber === effectiveOrderNumber && 
+        (selectedTable ? t.tableReference === selectedTable : true)
+      );
+
+      if (existingToken) {
+        assignedToken = existingToken.tokenNumber;
+        const isActive = activeTakeaways.some(t => t.tokenNumber === assignedToken);
+        if (!isActive) {
+          dispatch(generateToken({
+            orderNumber: effectiveOrderNumber,
+            source: orderType,
+            tableReference: selectedTable,
+            customerInfo: phone ? { phone } : null,
+            status: 'Preparing',
+            tokenNumber: assignedToken
+          }));
+        }
+      } else {
+        const today = new Date().toDateString();
+        assignedToken = lastTokenDate === today ? dailyTokenCounter + 1 : 1;
+        dispatch(generateToken({
+          orderNumber: effectiveOrderNumber,
+          source: orderType,
+          tableReference: selectedTable,
+          customerInfo: phone ? { phone } : null,
+          status: 'Preparing'
+        }));
+      }
+    }
+
+    if (dineInItems.length > 0) {
+      dispatch(generateKOT({
+        orderNumber: effectiveOrderNumber,
+        type: 'dine_in',
+        items: dineInItems,
+        tableReference: selectedTable
+      }));
+    }
+
+    if (takeAwayItems.length > 0) {
+      dispatch(generateKOT({
+        orderNumber: effectiveOrderNumber,
+        type: 'take_away',
+        items: takeAwayItems,
+        tableReference: selectedTable,
+        tokenNumber: assignedToken
+      }));
+    }
+
+    setSentKotItems(prevSent => [...prevSent, newItem]);
+    if (setHeldItems) {
+      setHeldItems(prevHeld => prevHeld.filter(i => i.id !== heldItem.id));
+    }
+    
+    // Also dispatch Redux actions as requested for cleanup
+    dispatch({ type: 'order/removeHeldItem', payload: heldItem.id });
+    dispatch({ type: 'order/clearSplitState', payload: heldItem.id });
+    dispatch({ type: 'order/refreshHeldItems' });
+    
+    setKotStatus('kot_sent');
+    setTimeout(() => {
+      setKotStatus(prev => prev === 'kot_sent' ? 'preparing' : prev);
+    }, 2000);
+    setTimeout(() => {
+      setKotStatus(prev => prev === 'preparing' ? 'ready' : prev);
+    }, 6000);
+  };
+
   return {
     kotStatus, setKotStatus,
     globalOrderStatus,
-    handleSendKOT
+    handleSendKOT,
+    handleSendHeldItem
   };
 };

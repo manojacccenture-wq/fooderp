@@ -114,6 +114,17 @@ const orderSlice = createSlice({
           state.heldItems.push({ ...item, quantity: heldQty });
         }
       }
+    },
+    removeHeldItem: (state, action) => {
+      const itemId = action.payload;
+      state.heldItems = state.heldItems.filter(i => i.id !== itemId);
+    },
+    clearSplitState: (state, action) => {
+      // Clear any temporary split cache if it exists (mostly a placeholder to satisfy the workflow)
+    },
+    refreshHeldItems: (state) => {
+      // Force a reference update to trigger selectors
+      state.heldItems = [...state.heldItems];
     }
   },
 });
@@ -132,7 +143,10 @@ export const {
   confirmSplit,
   toggleFulfillmentType,
   assignOrderNumber,
-  clearOrderNumber
+  clearOrderNumber,
+  removeHeldItem,
+  clearSplitState,
+  refreshHeldItems
 } = orderSlice.actions;
 
 export const selectOrderItems = (state) => state.order.orderItems;

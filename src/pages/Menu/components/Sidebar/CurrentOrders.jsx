@@ -13,6 +13,7 @@ export const CurrentOrders = ({
   selectedOrderItem,
   itemRefs,
   handleSplitClick,
+  handleSplitPackClick,
   handleReplaceClick,
   handleIncrease,
   handleDecrease,
@@ -63,6 +64,7 @@ export const CurrentOrders = ({
                       price={item.price}
                       quantity={item.quantity}
                       onSplit={() => handleSplitClick(item)}
+                      onSplitPack={() => handleSplitPackClick(item)}
                       onReplace={() => handleReplaceClick(item)}
                       onAddInstruction={undefined}
                       specialInstructions={item.specialInstructions}
@@ -98,6 +100,7 @@ export const CurrentOrders = ({
                 onDecrease={(type) => handleDecrease(item.id, type)}
                 onRemove={() => handleRemove(item.id)}
                 onSplit={() => handleSplitClick(item)}
+                onSplitPack={() => handleSplitPackClick(item)}
                 onAddInstruction={() => handleOpenInstructions(item)}
                 specialInstructions={item.specialInstructions}
                 showDelete={true}

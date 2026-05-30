@@ -8,6 +8,7 @@ import { selectGlobalOrderCounter, selectCurrentOrderNumber } from '../../store/
 // Components
 import { MenuContent } from '../../components/menu/MenuContent';
 import { SplitOrderModal } from '../../components/orders/SplitOrderModal/SplitOrderModal';
+import { SplitPackModal } from '../../components/orders/SplitPackModal/SplitPackModal';
 import { ApplyDiscountModal } from '../../components/orders/ApplyDiscountModal/ApplyDiscountModal';
 import { UpiPaymentModal } from '../../components/payment/UpiPaymentModal';
 import { SpecialInstructionsModal } from '../../components/orders/SpecialInstructionsModal';
@@ -55,14 +56,15 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     centerView, setCenterView,
     selectedItemForAction,
     isSplitModalOpen, setIsSplitModalOpen,
+    isSplitPackModalOpen, setIsSplitPackModalOpen,
     isSpecialInstructionsModalOpen, setIsSpecialInstructionsModalOpen,
     isQuantitySelectorOpen, setIsQuantitySelectorOpen,
     quantityToApply,
     itemForInstructions,
     combinedItems, subtotal, totalHeldPrice,
     handleIncrease, handleDecrease, handleRemove,
-    handleSplitClick, handleReplaceClick, handleOpenInstructions,
-    handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit,
+    handleSplitClick, handleSplitPackClick, handleReplaceClick, handleOpenInstructions,
+    handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit, handleConfirmSplitPack,
     handleProductCardClick
   } = useMenuOrders();
 
@@ -96,11 +98,13 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const {
     kotStatus, setKotStatus,
     globalOrderStatus,
-    handleSendKOT
+    handleSendKOT,
+    handleSendHeldItem
   } = useKotFlow({
     draftOrderItems,
     setDraftOrderItems,
     setSentKotItems,
+    setHeldItems,
     orderType,
     isDineInFlow,
     selectedTable,
@@ -127,6 +131,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setKotStatus('idle');
   };
 
+  const totalPackQuantity = combinedItems.reduce((sum, item) => sum + (item.fulfillment?.take_away || 0), 0);
+
   // 4. Payment Flow Hook
   const {
     paymentMode, setPaymentMode,
@@ -145,7 +151,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     orderType,
     navigate,
     resetOrders,
-    setKotStatus
+    setKotStatus,
+    handleSendKOT,
+    totalPackQuantity,
+    draftOrderItems
   });
 
   const tax = subtotal * 0.08;
@@ -183,7 +192,14 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
 
   const handlePrintBilling = () => {
     if (orderType === 'take_away') {
-      setRightView('checkout');
+      if (draftOrderItems && draftOrderItems.length > 0 && handleSendKOT) {
+        handleSendKOT();
+      }
+      setTimeout(() => {
+        resetOrders();
+        dispatch(clearOrderNumber());
+        navigate('/dashboard/takeaways');
+      }, 300);
     }
   };
 
@@ -353,6 +369,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         setSelectedOrderItem={setSelectedOrderItem}
         itemRefs={itemRefs}
         handleSplitClick={handleSplitClick}
+        handleSplitPackClick={handleSplitPackClick}
         handleReplaceClick={handleReplaceClick}
         handleIncrease={handleIncrease}
         handleDecrease={handleDecrease}
@@ -393,6 +410,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         handlePrintBilling={handlePrintBilling}
         handleOrderSubmit={handleOrderSubmit}
         handleSendKOT={handleSendKOT}
+        handleSendHeldItem={handleSendHeldItem}
         handlePaymentSubmit={handlePaymentSubmit}
         setOrderItems={resetOrders}
         setIsDiscountModalOpen={setIsDiscountModalOpen}
@@ -402,6 +420,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         handleQuickEmail={handleQuickEmail}
         resetCompleteBillingSession={resetCompleteBillingSession}
         isPhoneMissingForDineIn={isPhoneMissingForDineIn}
+        totalPackQuantity={totalPackQuantity}
       />
       </div>
 
@@ -414,6 +433,12 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         onClose={() => setIsSplitModalOpen(false)}
         item={selectedItemForAction}
         onConfirm={handleConfirmSplit}
+      />
+      <SplitPackModal
+        isOpen={isSplitPackModalOpen}
+        onClose={() => setIsSplitPackModalOpen(false)}
+        item={selectedItemForAction}
+        onConfirm={handleConfirmSplitPack}
       />
       <ApplyDiscountModal
         isOpen={isDiscountModalOpen}

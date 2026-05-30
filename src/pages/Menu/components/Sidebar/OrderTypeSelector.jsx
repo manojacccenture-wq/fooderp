@@ -4,7 +4,8 @@ import clsx from 'clsx';
 export const OrderTypeSelector = ({
   orderType,
   setOrderType,
-  isTakeawayPage
+  isTakeawayPage,
+  totalPackQuantity = 0
 }) => {
   return (
     <div className="px-4 mt-6">
@@ -19,8 +20,13 @@ export const OrderTypeSelector = ({
           </button>
         )}
         <button
-          className={clsx("rounded-[16px] px-4 py-[12px] font-bold text-[16px]", orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]")}
+          className={clsx(
+            "rounded-[16px] px-4 py-[12px] font-bold text-[16px] transition-opacity", 
+            orderType === 'take_away' ? "bg-[#ffb01d] text-white" : "bg-transparent text-[#212134]",
+            totalPackQuantity === 0 && "opacity-50 cursor-not-allowed"
+          )}
           onClick={() => setOrderType('take_away')}
+          disabled={totalPackQuantity === 0}
         >
           Take away
         </button>

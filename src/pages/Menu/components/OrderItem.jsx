@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import { SpecialInstructionTags } from '../../../components/orders/SpecialInstructionTags';
 
-export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onReplace, showDelete, isSelected,
+export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onSplitPack, onReplace, showDelete, isSelected,
   onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction, fulfillment, onToggleFulfillmentType, isParcelActive = false }) => {
   
   const [isAnimating, setIsAnimating] = useState(false);
@@ -60,53 +60,14 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
       <div className="flex-1 flex flex-col gap-0.5">
         <span className="text-[13px] leading-[1.2] text-[#32324d] font-medium pr-16 line-clamp-2">{title}</span>
         {showQuantityControls ? (
-          fulfillment ? (
-            <div className="flex flex-col gap-0.5 mt-[2px] overflow-hidden transition-all duration-300">
-              {/* Dine-In Counter */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-[#6366f1] w-[36px]">Serve</span>
-                <button onClick={(e) => { e.stopPropagation(); onDecrease('dine_in'); }} className="w-5 h-5 rounded-[6px] bg-[#f8faff] flex items-center justify-center text-[#6366f1] cursor-pointer hover:bg-[#eef2ff] transition-colors border border-[#6366f1]/20">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                </button>
-                <span className="text-[12px] font-bold text-[#32324d] min-w-[12px] text-center leading-none">{fulfillment.dine_in || 0}</span>
-                <button onClick={(e) => { e.stopPropagation(); onIncrease('dine_in'); }} className="w-5 h-5 rounded-[6px] bg-[#f8faff] flex items-center justify-center text-[#6366f1] cursor-pointer hover:bg-[#eef2ff] transition-colors border border-[#6366f1]/20">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                </button>
-                
-                {/* Pack Reveal Button (Shows when Pack is 0 and not visible) */}
-                {(!fulfillment.take_away && !isPackVisible) && (
-                  <button 
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      setIsPackVisible(true);
-                      if (!fulfillment.take_away) {
-                        onIncrease('take_away'); 
-                      }
-                    }} 
-                    className="ml-2 px-2 py-0.5 h-5 rounded-[6px] bg-white border border-[#ffb01d]/50 text-[#d88c00] text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-[#fffcf5] transition-colors"
-                  >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                    Pack
-                  </button>
-                )}
+          <div className="flex flex-col gap-0.5 mt-[2px] transition-all duration-300">
+            {fulfillment && fulfillment.take_away > 0 && (
+              <div className="flex items-center gap-1 text-[#9333ea] text-[11px] font-bold mb-0.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"></path><path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"></path><path d="m2.1 21.8 6.4-6.3"></path><path d="m19 5-7 7"></path></svg>
+                <span>Dine-In: {fulfillment.dine_in || 0} • Takeaway: {fulfillment.take_away}</span>
               </div>
-              
-              {/* Takeaway Counter (Contextually Revealed) */}
-              {(fulfillment.take_away > 0 || isPackVisible) && (
-                <div className="flex items-center gap-1.5 animate-in slide-in-from-top-1 fade-in duration-200 fill-mode-both">
-                  <span className="text-[11px] font-bold text-[#d88c00] w-[36px]">Pack</span>
-                  <button onClick={(e) => { e.stopPropagation(); onDecrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  </button>
-                  <span className="text-[12px] font-bold text-[#32324d] min-w-[12px] text-center leading-none">{fulfillment.take_away || 0}</span>
-                  <button onClick={(e) => { e.stopPropagation(); onIncrease('take_away'); }} className="w-5 h-5 rounded-[6px] bg-[#fffcf5] flex items-center justify-center text-[#d88c00] cursor-pointer hover:bg-[#fff7e8] transition-colors border border-[#ffb01d]/30">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 mt-[2px] relative">
+            )}
+            <div className="flex items-center gap-2 relative">
               <button onClick={(e) => { e.stopPropagation(); onDecrease(); }} className="w-5 h-5 rounded-[6px] bg-[#fff2ea] flex items-center justify-center text-[#666687] cursor-pointer hover:bg-[#ffe3d1] transition-colors">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               </button>
@@ -122,7 +83,7 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               </button>
             </div>
-          )
+          </div>
         ) : (
           <div className="flex items-center gap-2 mt-[2px]">
             {fulfillment && (fulfillment.dine_in > 0 || fulfillment.take_away > 0) ? (
@@ -181,6 +142,26 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
               <path d="M6.66667 2.5H2.5V6.66667" stroke="#666687" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M10 18.3333V11.4167C10.0048 10.9728 9.92082 10.5325 9.75311 10.1215C9.5854 9.71049 9.33728 9.33714 9.02333 9.02333L2.5 2.5" stroke="#666687" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M12.5 7.5L17.5 2.5" stroke="#666687" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+        {onSplitPack && (
+          <div 
+            onClick={(e) => { e.stopPropagation(); onSplitPack(); }} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                onSplitPack();
+              }
+            }}
+            tabIndex={0}
+            className="w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8ea9] hover:text-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:ring-offset-1 rounded-sm"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22v-5"></path>
+              <path d="M9 7H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-5"></path>
+              <path d="M9 7V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"></path>
             </svg>
           </div>
         )}

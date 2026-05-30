@@ -20,6 +20,7 @@ export const useMenuOrders = (setKotStatus) => {
   const [centerView, setCenterView] = useState('menu'); // 'menu' | 'cancel_item' | 'replace_item'
   const [selectedItemForAction, setSelectedItemForAction] = useState(null);
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
+  const [isSplitPackModalOpen, setIsSplitPackModalOpen] = useState(false);
 
   const [isSpecialInstructionsModalOpen, setIsSpecialInstructionsModalOpen] = useState(false);
   const [isQuantitySelectorOpen, setIsQuantitySelectorOpen] = useState(false);
@@ -74,6 +75,11 @@ export const useMenuOrders = (setKotStatus) => {
   const handleSplitClick = (item) => {
     setSelectedItemForAction(item);
     setIsSplitModalOpen(true);
+  };
+
+  const handleSplitPackClick = (item) => {
+    setSelectedItemForAction(item);
+    setIsSplitPackModalOpen(true);
   };
 
   const handleReplaceClick = (item) => {
@@ -152,6 +158,18 @@ export const useMenuOrders = (setKotStatus) => {
         return [...prev, { ...item, quantity: heldQty }];
       });
     }
+  };
+
+  const handleConfirmSplitPack = ({ item, serveQty, packQty }) => {
+    setDraftOrderItems(prev => prev.map(i => {
+      if (i.id === item.id) {
+        return {
+          ...i,
+          fulfillment: { ...i.fulfillment, dine_in: serveQty, take_away: packQty }
+        };
+      }
+      return i;
+    }));
   };
 
   const handleProductCardClick = (product) => {
@@ -233,14 +251,15 @@ export const useMenuOrders = (setKotStatus) => {
     centerView, setCenterView,
     selectedItemForAction, setSelectedItemForAction,
     isSplitModalOpen, setIsSplitModalOpen,
+    isSplitPackModalOpen, setIsSplitPackModalOpen,
     isSpecialInstructionsModalOpen, setIsSpecialInstructionsModalOpen,
     isQuantitySelectorOpen, setIsQuantitySelectorOpen,
     quantityToApply, setQuantityToApply,
     itemForInstructions, setItemForInstructions,
     combinedItems, subtotal, totalHeldPrice,
     handleIncrease, handleDecrease, handleRemove,
-    handleSplitClick, handleReplaceClick, handleOpenInstructions,
-    handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit,
+    handleSplitClick, handleSplitPackClick, handleReplaceClick, handleOpenInstructions,
+    handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit, handleConfirmSplitPack,
     handleProductCardClick, handleAddToOrder
   };
 };

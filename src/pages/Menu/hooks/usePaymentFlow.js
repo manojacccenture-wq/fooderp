@@ -5,7 +5,7 @@ import { paymentCheckoutSchema } from '../../../validations/payment.validation';
 import { completeTableOrder } from '../../../store/slices/tableSlice';
 import { clearOrderNumber } from '../../../store/slices/orderSlice';
 
-export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus }) => {
+export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus, handleSendKOT, totalPackQuantity, draftOrderItems }) => {
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
   const [splitMode, setSplitMode] = useState('full');
   const [selectedTip, setSelectedTip] = useState(0);
@@ -45,6 +45,14 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
 
   const resetCompleteBillingSession = () => {
     setPaymentStatus('success');
+
+    // For pure takeaway orders, draft items were never sent to KOT
+    // They skipped straight to Print Billing. So we dispatch them now
+    // to generate the token and KOT before clearing.
+    if (draftOrderItems && draftOrderItems.length > 0 && handleSendKOT) {
+      handleSendKOT();
+    }
+
     setTimeout(() => {
       if (selectedTable) {
         dispatch(completeTableOrder({ tableNo: selectedTable }));
@@ -57,7 +65,9 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
       setSplitMode('full');
       dispatch(clearOrderNumber());
       
-      if (orderType === 'dine_in') {
+      if (totalPackQuantity > 0 || orderType === 'take_away') {
+        navigate('/dashboard/takeaways');
+      } else if (orderType === 'dine_in') {
         navigate('/dashboard/dine-in');
       } else {
         navigate('/dashboard/menu');

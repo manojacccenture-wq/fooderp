@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useEffect } from 'react';
 import clsx from 'clsx';
 import { ORDER_STATUS_COLORS } from '../../../../utils/orderStatus';
 import { CurrentOrders } from './CurrentOrders';
@@ -28,6 +28,7 @@ export const OrderSidebar = ({
   setSelectedOrderItem,
   itemRefs,
   handleSplitClick,
+  handleSplitPackClick,
   handleReplaceClick,
   handleIncrease,
   handleDecrease,
@@ -68,6 +69,7 @@ export const OrderSidebar = ({
   handlePrintBilling,
   handleOrderSubmit,
   handleSendKOT,
+  handleSendHeldItem,
   handlePaymentSubmit,
   setOrderItems,
   setIsDiscountModalOpen,
@@ -79,8 +81,15 @@ export const OrderSidebar = ({
   isPhoneMissingForDineIn,
   activeKeyboardSection,
   setActiveKeyboardSection,
-  currentOrderNumber
+  currentOrderNumber,
+  totalPackQuantity
 }) => {
+  useEffect(() => {
+    if (totalPackQuantity === 0 && orderType === 'take_away') {
+      setOrderType('dine_in');
+    }
+  }, [totalPackQuantity, orderType, setOrderType]);
+
   const activeTakeaways = useAppSelector(selectActiveTakeaways);
   const completedTakeaways = useAppSelector(selectCompletedTakeaways);
   const allLinkedTakeaways = [...activeTakeaways, ...completedTakeaways].filter(t => t.orderNumber === currentOrderNumber);
@@ -145,6 +154,7 @@ export const OrderSidebar = ({
                 setSelectedOrderItem={setSelectedOrderItem}
                 itemRefs={itemRefs}
                 handleSplitClick={handleSplitClick}
+                handleSplitPackClick={handleSplitPackClick}
                 handleReplaceClick={handleReplaceClick}
                 handleIncrease={handleIncrease}
                 handleDecrease={handleDecrease}
@@ -174,7 +184,10 @@ export const OrderSidebar = ({
                             <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
                             <span className="text-[14px] font-semibold text-[#666687]">{item.quantity} Quantity</span>
                           </div>
-                          <button className="bg-[#ffb01d] text-white rounded-[16px] px-4 py-[8px] text-[12px] font-bold shadow-[0px_4px_20px_0px_rgba(50,50,71,0.02)]">
+                          <button 
+                            onClick={() => handleSendHeldItem(item)}
+                            className="bg-[#ffb01d] text-white rounded-[16px] px-4 py-[8px] text-[12px] font-bold shadow-[0px_4px_20px_0px_rgba(50,50,71,0.02)]"
+                          >
                             Send now
                           </button>
                         </div>
@@ -190,6 +203,7 @@ export const OrderSidebar = ({
                         orderType={orderType}
                         setOrderType={setOrderType}
                         isTakeawayPage={isTakeawayPage}
+                        totalPackQuantity={totalPackQuantity}
                       />
 
                       <TableSelector

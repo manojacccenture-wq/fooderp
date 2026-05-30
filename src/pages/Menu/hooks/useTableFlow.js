@@ -68,10 +68,14 @@ export const useTableFlow = ({
       const { draftOrderItems: savedDraft = [], sentKotItems: savedSent = [], heldItems: savedHeld = [], kotStatus: savedKot = 'idle' } = newTableObj.orderData;
       const oldOrderItems = newTableObj.orderData.orderItems || [];
       
-      if (savedDraft.length > 0 || savedSent.length > 0 || oldOrderItems.length > 0) {
-        setDraftOrderItems(prev => prev.length === 0 && sentKotItems.length === 0 ? (savedDraft.length ? savedDraft : oldOrderItems) : prev);
-        setSentKotItems(prev => prev.length === 0 && draftOrderItems.length === 0 ? savedSent : prev);
-        setHeldItems(prev => prev.length === 0 ? savedHeld : prev);
+      const currentDraftLength = currentOrderDataRef.current.draftOrderItems.length;
+      const currentSentLength = currentOrderDataRef.current.sentKotItems.length;
+      const currentHeldLength = currentOrderDataRef.current.heldItems.length;
+      
+      if (savedDraft.length > 0 || savedSent.length > 0 || oldOrderItems.length > 0 || savedHeld.length > 0) {
+        setDraftOrderItems(prev => prev.length === 0 && currentSentLength === 0 ? (savedDraft.length ? savedDraft : oldOrderItems) : prev);
+        setSentKotItems(prev => prev.length === 0 && currentDraftLength === 0 ? savedSent : prev);
+        setHeldItems(prev => prev.length === 0 && currentHeldLength === 0 ? savedHeld : prev);
         setKotStatus(prev => prev === 'idle' ? savedKot : prev);
       }
     }
@@ -84,7 +88,7 @@ export const useTableFlow = ({
         }));
       }
     };
-  }, [selectedTable, dispatch, setDraftOrderItems, setSentKotItems, setHeldItems, setKotStatus, draftOrderItems.length, sentKotItems.length]);
+  }, [selectedTable, dispatch, setDraftOrderItems, setSentKotItems, setHeldItems, setKotStatus]);
 
   useEffect(() => {
     setOrderType(stateOrderType);
