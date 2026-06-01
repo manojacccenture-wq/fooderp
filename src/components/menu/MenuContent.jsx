@@ -137,8 +137,14 @@ export const MenuContent = ({
       const timer = setTimeout(() => {
         const targetRef = productRefs.current[keyboardSelectedIndex];
         if (targetRef && typeof targetRef.focus === 'function') {
-          // Do not steal focus if user is actively typing in the search bar
-          if (document.activeElement !== searchRef.current && !targetRef.contains(document.activeElement)) {
+          // Do not steal focus if user is actively typing in an input
+          const activeTag = document.activeElement?.tagName;
+          if (
+            document.activeElement !== searchRef.current &&
+            activeTag !== 'INPUT' &&
+            activeTag !== 'TEXTAREA' &&
+            !targetRef.contains(document.activeElement)
+          ) {
             targetRef.focus({ preventScroll: true });
           }
         }
