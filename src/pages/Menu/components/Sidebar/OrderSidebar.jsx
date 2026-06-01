@@ -86,11 +86,7 @@ export const OrderSidebar = ({
 }) => {
   const [isSplitBillExpanded, setIsSplitBillExpanded] = useState(false);
 
-  useEffect(() => {
-    if (totalPackQuantity === 0 && orderType === 'take_away') {
-      setOrderType('dine_in');
-    }
-  }, [totalPackQuantity, orderType, setOrderType]);
+
 
   const activeTakeaways = useAppSelector(selectActiveTakeaways);
   const completedTakeaways = useAppSelector(selectCompletedTakeaways);
@@ -125,7 +121,7 @@ export const OrderSidebar = ({
                 </div>
               )}
               <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setDraftOrderItems([]); setSentKotItems([]); setHeldItems([]); setKotStatus('idle'); }}>Cancel order</button>
-              <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
+              {/* <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button> */}
             </div>
           </div>
 
@@ -271,7 +267,7 @@ export const OrderSidebar = ({
                 </span>
               </div>
               <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setRightView('order'); setKotStatus('idle'); }}>Cancel order</button>
-              <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
+              {/* <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button> */}
             </div>
           </div>
 

@@ -149,7 +149,7 @@ export const OrderSummarySidebar = ({
            <div className="flex gap-[10px]">
              {/* Note: This is simplified for pure component, handlers can be passed in children if needed */}
              <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Cancel order</button>
-             <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button>
+             {/* <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button> */}
            </div>
         )}
       </div>

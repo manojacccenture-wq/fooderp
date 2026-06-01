@@ -37,7 +37,7 @@ export const OrderPanel = () => {
     <div className="w-[354px] min-h-full h-fit bg-white border-l border-[var(--color-neutral-150)] flex flex-col relative py-4 shrink-0">
       <div className="flex items-center gap-4 px-4">
         <button className="bg-[var(--color-danger-500)] text-white flex-1 py-3 rounded-[16px] text-button-sm">Cancel order</button>
-        <button className="bg-[var(--color-secondary-1)] text-white flex-1 py-3 rounded-[16px] text-button-sm">Pause</button>
+        {/* <button className="bg-[var(--color-secondary-1)] text-white flex-1 py-3 rounded-[16px] text-button-sm">Pause</button> */}
       </div>
 
       <div className="px-4 mt-8">
