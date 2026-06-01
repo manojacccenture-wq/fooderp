@@ -41,17 +41,15 @@ export const ActionButtons = ({
           </button>
         ) : kotStatus === 'success_anim' ? null : draftOrderItemsCount > 0 ? (
           <button 
-            className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
+            className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" 
             onClick={handleOrderSubmit(handleSendKOT)}
-            disabled={(orderType === 'dine_in' && !selectedTable) || isPhoneMissingForDineIn}
           >
             Send to KOT
           </button>
         ) : sentKotItemsCount > 0 ? (
           <button 
-            className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
+            className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" 
             onClick={() => setRightView('checkout')}
-            disabled={isPhoneMissingForDineIn}
           >
             Complete Order
           </button>

@@ -43,11 +43,11 @@ export const useTableFlow = ({
 
   useEffect(() => {
     if (currentTableObj) {
-      if (currentTableObj.guests) setOrderValue('guestCount', currentTableObj.guests, { shouldValidate: true });
-      if (currentTableObj.customerPhone) setOrderValue('phone', currentTableObj.customerPhone, { shouldValidate: true });
+      if (currentTableObj.guests) setOrderValue('guestCount', currentTableObj.guests);
+      if (currentTableObj.customerPhone) setOrderValue('phone', currentTableObj.customerPhone);
     } else {
-      setOrderValue('guestCount', 4, { shouldValidate: true });
-      setOrderValue('phone', '', { shouldValidate: true });
+      setOrderValue('guestCount', 4);
+      setOrderValue('phone', '');
     }
   }, [currentTableObj, setOrderValue]);
 
