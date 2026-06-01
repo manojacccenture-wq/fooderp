@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { selectAllTables } from '../../store/slices/tableSlice';
-import { selectGlobalOrderCounter, selectCurrentOrderNumber } from '../../store/slices/orderSlice';
+import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber } from '../../store/slices/orderSlice';
+import { createTakeawayEntry } from '../../store/slices/takeawaySlice';
 
 // Components
 import { MenuContent } from '../../components/menu/MenuContent';
@@ -154,7 +155,11 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setKotStatus,
     handleSendKOT,
     totalPackQuantity,
-    draftOrderItems
+    draftOrderItems,
+    combinedItems,
+    phone,
+    currentOrderNumber,
+    globalOrderCounter
   });
 
   const tax = subtotal * 0.08;
@@ -195,6 +200,28 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       if (draftOrderItems && draftOrderItems.length > 0 && handleSendKOT) {
         handleSendKOT();
       }
+
+      const allItems = combinedItems || [];
+      const parcelItems = allItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
+      
+      if (parcelItems.length > 0 || orderType === 'take_away') {
+        const takeAwayItemsToPass = parcelItems.length > 0 ? parcelItems.map(item => ({
+          ...item,
+          quantity: item.fulfillment?.take_away || item.quantity
+        })) : [];
+
+        const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
+
+        dispatch(createTakeawayEntry({
+          orderNumber: effectiveOrderNumber,
+          source: orderType,
+          tableReference: selectedTable,
+          customerInfo: phone ? { phone } : null,
+          status: 'Preparing',
+          items: takeAwayItemsToPass
+        }));
+      }
+
       setTimeout(() => {
         resetOrders();
         dispatch(clearOrderNumber());

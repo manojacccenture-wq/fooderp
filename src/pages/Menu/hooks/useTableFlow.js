@@ -29,7 +29,8 @@ export const useTableFlow = ({
 
   const { register: registerOrder, watch: watchOrder, handleSubmit: handleOrderSubmit, formState: { errors: orderErrors }, setValue: setOrderValue } = useForm({
     resolver: zodResolver(menuOrderSchema),
-    defaultValues: { phone: '', guestCount: 4 }
+    defaultValues: { phone: '', guestCount: 4 },
+    shouldUnregister: false
   });
 
   const phone = watchOrder('phone') || '';
@@ -82,9 +83,21 @@ export const useTableFlow = ({
 
     return () => {
       if (tableToSave) {
+        const existingTable = allTablesRef.current.find(t => t.tableNo === tableToSave);
+        const existingOrder = existingTable?.orderData || {};
+        
         dispatch(updateTableOrder({
           tableNo: tableToSave,
-          orderData: currentOrderDataRef.current
+          orderData: {
+            ...existingOrder,
+            selectedTable: existingOrder.selectedTable || tableToSave,
+            tableId: existingOrder.tableId || existingTable?.id,
+            tableNumber: existingOrder.tableNumber || tableToSave,
+            draftOrderItems: currentOrderDataRef.current.draftOrderItems,
+            sentKotItems: currentOrderDataRef.current.sentKotItems,
+            heldItems: currentOrderDataRef.current.heldItems,
+            kotStatus: currentOrderDataRef.current.kotStatus
+          }
         }));
       }
     };

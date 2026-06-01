@@ -166,7 +166,7 @@ export const OrderSidebar = ({
                 setActiveKeyboardSection={setActiveKeyboardSection}
               />
 
-              {isSplitView ? (
+              {isSplitView && (
                 <div className="mt-8 px-4">
                   <div className="bg-[#ffc861]/20 border border-[#ff9556] rounded-[16px] overflow-hidden shadow-[0px_0px_1px_0px_rgba(12,26,75,0.03),0px_4px_20px_0px_rgba(50,50,71,0.04)]">
                     <div className="flex justify-between items-center p-3">
@@ -197,9 +197,9 @@ export const OrderSidebar = ({
                     </div>
                   </div>
                 </div>
-              ) : (
-                <>
-                  {shouldShowOrderControls && kotStatus !== 'sent' && combinedItems.length > 0 && !isExistingSessionMode && (
+              )}
+              
+              {shouldShowOrderControls && kotStatus !== 'sent' && (combinedItems.length > 0 || heldItems.length > 0) && !isExistingSessionMode && (
                     <>
                       <OrderTypeSelector
                         orderType={orderType}
@@ -248,8 +248,6 @@ export const OrderSidebar = ({
                       </div>
                     </>
                   )}
-                </>
-              )}
             </>
           )}
         </div>

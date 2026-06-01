@@ -4,8 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { paymentCheckoutSchema } from '../../../validations/payment.validation';
 import { completeTableOrder } from '../../../store/slices/tableSlice';
 import { clearOrderNumber } from '../../../store/slices/orderSlice';
+import { createTakeawayEntry } from '../../../store/slices/takeawaySlice';
 
-export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus, handleSendKOT, totalPackQuantity, draftOrderItems }) => {
+export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus, handleSendKOT, totalPackQuantity, draftOrderItems, combinedItems, phone, currentOrderNumber, globalOrderCounter }) => {
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
   const [splitMode, setSplitMode] = useState('full');
   const [selectedTip, setSelectedTip] = useState(0);
@@ -53,6 +54,27 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
     // to generate the token and KOT before clearing.
     if (draftOrderItems && draftOrderItems.length > 0 && handleSendKOT) {
       handleSendKOT();
+    }
+
+    const allItems = combinedItems || [];
+    const parcelItems = allItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
+    
+    if (parcelItems.length > 0 || orderType === 'take_away') {
+      const takeAwayItemsToPass = parcelItems.length > 0 ? parcelItems.map(item => ({
+        ...item,
+        quantity: item.fulfillment?.take_away || item.quantity
+      })) : [];
+
+      const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
+
+      dispatch(createTakeawayEntry({
+        orderNumber: effectiveOrderNumber,
+        source: orderType,
+        tableReference: selectedTable,
+        customerInfo: phone ? { phone } : null,
+        status: 'Preparing',
+        items: takeAwayItemsToPass
+      }));
     }
 
     setTimeout(() => {
