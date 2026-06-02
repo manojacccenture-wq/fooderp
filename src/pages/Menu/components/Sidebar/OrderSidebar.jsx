@@ -302,7 +302,16 @@ export const OrderSidebar = ({
             />
 
             <div className="mt-6 mb-4">
-              <span className="text-[14px] font-semibold text-[#666687] block mb-3">Payment Mode</span>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-[14px] font-semibold text-[#666687] block">Payment Mode</span>
+                <button 
+                  className="flex items-center gap-1.5 border border-[#eaeaef] bg-white text-[#4a4a6a] px-3 py-1.5 rounded-[10px] font-bold text-[12px] shadow-sm hover:bg-[#f3f5f9] transition-all"
+                  onClick={handleQuickPrint}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                  Print Bill
+                </button>
+              </div>
               <div className="flex gap-2">
                 {['Cash', 'Upi', 'Card', 'Due'].map(mode => (
                   <button key={mode} className={clsx("flex-1 py-2 rounded-[16px] text-[12px] font-bold", paymentMode === mode ? "bg-[#ffb01d] text-white" : "bg-[#f3f5f9] text-[#32324d] hover:bg-[#eaeaef]")} onClick={() => setPaymentMode(mode)}>{mode}</button>
@@ -333,9 +342,6 @@ export const OrderSidebar = ({
 
             {paymentMode === 'Upi' && (
               <div className="flex gap-2 w-full mt-2 mb-6">
-                <button className="flex-1 border border-[#eaeaef] bg-white text-[#4a4a6a] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#f3f5f9] transition-all" onClick={handleQuickPrint}>
-                  Print
-                </button>
                 <button 
                   className="flex-1 border border-[#eaeaef] bg-white text-[#24a44b] py-[10px] rounded-[12px] font-bold text-[13px] hover:bg-[#b4efc6]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
                   onClick={handleQuickWhatsApp}
