@@ -451,6 +451,7 @@ export const OrderSidebar = ({
         handleQuickEmail={handleQuickEmail}
         resetCompleteBillingSession={resetCompleteBillingSession}
         paymentStatus={paymentStatus}
+        payableAmount={payableAmount}
       />
     </div>
   );

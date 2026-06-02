@@ -207,10 +207,12 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
       const parcelItems = allItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
       
       if (parcelItems.length > 0 || orderType === 'take_away') {
-        const takeAwayItemsToPass = parcelItems.length > 0 ? parcelItems.map(item => ({
-          ...item,
-          quantity: item.fulfillment?.take_away || item.quantity
-        })) : [];
+        const takeAwayItemsToPass = orderType === 'take_away'
+          ? allItems
+          : parcelItems.map(item => ({
+              ...item,
+              quantity: item.fulfillment?.take_away || item.quantity
+            }));
 
         const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
 
@@ -496,7 +498,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         onClose={() => setIsUpiModalOpen(false)}
         onConfirm={() => {
           setIsUpiModalOpen(false);
-          resetCompleteBillingSession();
+          resetCompleteBillingSession(payableAmount);
         }}
         amount={payableAmount}
         orderId={Date.now().toString().slice(-6)}

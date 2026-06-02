@@ -5,6 +5,7 @@ import { paymentCheckoutSchema } from '../../../validations/payment.validation';
 import { completeTableOrder } from '../../../store/slices/tableSlice';
 import { clearOrderNumber } from '../../../store/slices/orderSlice';
 import { createTakeawayEntry } from '../../../store/slices/takeawaySlice';
+import { addTransaction } from '../../../store/slices/moneyManagementSlice';
 
 export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus, handleSendKOT, totalPackQuantity, draftOrderItems, combinedItems, phone, currentOrderNumber, globalOrderCounter }) => {
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
@@ -46,8 +47,25 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
 
   const setCustomTip = (val) => setPaymentValue('customTip', val, { shouldValidate: true });
 
-  const resetCompleteBillingSession = () => {
+  const resetCompleteBillingSession = (payableAmount = 0) => {
     setPaymentStatus('success');
+
+    // Dispatch the money management transaction
+    let txType = 'cash_sale';
+    if (paymentMode === 'Upi') txType = 'upi_sale';
+    else if (paymentMode === 'Card') txType = 'card_sale';
+
+    const orderId = currentOrderNumber || (globalOrderCounter + 1);
+
+    dispatch(addTransaction({
+      type: txType,
+      amount: payableAmount,
+      direction: paymentMode === 'Cash' ? 'in' : paymentMode.toLowerCase(),
+      orderId: orderId,
+      tableNumber: selectedTable,
+      reason: `Order #${orderId} Payment`,
+      createdBy: 'Cashier'
+    }));
 
     // For pure takeaway orders, draft items were never sent to KOT
     // They skipped straight to Print Billing. So we dispatch them now
@@ -60,10 +78,12 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
     const parcelItems = allItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
     
     if (parcelItems.length > 0 || orderType === 'take_away') {
-      const takeAwayItemsToPass = parcelItems.length > 0 ? parcelItems.map(item => ({
-        ...item,
-        quantity: item.fulfillment?.take_away || item.quantity
-      })) : [];
+      const takeAwayItemsToPass = orderType === 'take_away'
+        ? allItems
+        : parcelItems.map(item => ({
+            ...item,
+            quantity: item.fulfillment?.take_away || item.quantity
+          }));
 
       const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
 

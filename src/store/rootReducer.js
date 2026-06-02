@@ -6,6 +6,8 @@ import checkoutReducer from './slices/checkoutSlice';
 import uiReducer from './slices/uiSlice';
 import takeawayReducer from './slices/takeawaySlice';
 import kotReducer from './slices/kotSlice';
+import productReducer from './slices/productSlice';
+import moneyManagementReducer from './slices/moneyManagementSlice';
 
 const rootReducer = combineReducers({
   order: orderReducer,
@@ -15,6 +17,8 @@ const rootReducer = combineReducers({
   ui: uiReducer,
   takeaway: takeawayReducer,
   kot: kotReducer,
+  product: productReducer,
+  moneyManagement: moneyManagementReducer,
 });
 
 export default rootReducer;

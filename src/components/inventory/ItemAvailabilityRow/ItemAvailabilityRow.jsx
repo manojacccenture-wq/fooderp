@@ -8,6 +8,7 @@ export const ItemAvailabilityRow = ({
   image,
   title,
   price,
+  category,
   isAvailable = true,
   status = 'Unavailable',
   stock = 'In Stock',
@@ -15,40 +16,44 @@ export const ItemAvailabilityRow = ({
   onStockChange,
 }) => {
   return (
-    <div className="bg-white border border-[var(--color-neutral-150)] rounded-[16px] shadow-[0px_0px_1px_0px_rgba(12,26,75,0.03),0px_4px_20px_0px_rgba(50,50,71,0.04)] h-[70px] relative flex items-center px-4 py-3">
-      {/* Item Image */}
-      <div className="w-[50px] h-[50px] flex-shrink-0 rounded-[8px] overflow-hidden shadow-[0px_0px_4px_0px_rgba(255,255,255,0.7)]">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* Item Details */}
-      <div className="flex flex-col gap-1 ml-4 flex-1">
-        <h3 className="text-subtitle-3 text-[var(--color-neutral-800)] truncate">{title}</h3>
-        <div className="flex gap-1 items-baseline">
-          <span className="text-[8px] font-bold text-[var(--color-tertiary-3)]">₹</span>
-          <span className="text-price-sm text-[var(--color-tertiary-1)]">{price}</span>
+    <div className="bg-white border border-gray-200 rounded-[12px] hover:shadow-md hover:border-gray-300 transition-all duration-200 h-[64px] relative flex items-center px-4 py-2">
+      {/* LEFT: Image, Name, No, Category */}
+      <div className="flex items-center gap-4 w-1/2">
+        <div className="w-12 h-12 flex-shrink-0 rounded-[8px] overflow-hidden shadow-sm">
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900 truncate max-w-[200px]">{title}</h3>
+            <span className="text-sm text-gray-500 font-medium">#{id}</span>
+          </div>
+          {category && (
+            <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md w-max mt-0.5 font-medium">
+              {category}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Toggle */}
-      <div className="mx-6 flex-shrink-0">
+      {/* CENTER: Price */}
+      <div className="w-1/6 flex items-center justify-start">
+        <div className="flex gap-1 items-baseline">
+          <span className="text-sm font-bold text-orange-400">₹</span>
+          <span className="text-xl font-bold text-orange-500">{price}</span>
+        </div>
+      </div>
+
+      {/* RIGHT: Actions */}
+      <div className="flex-1 flex items-center justify-end gap-6">
         <AvailabilityToggle
           isOn={isAvailable}
           onChange={(newState) => onToggle?.(id, newState)}
         />
-      </div>
-
-      {/* Badge */}
-      <div className="mx-6 flex-shrink-0">
         <AvailabilityBadge status={status} />
-      </div>
-
-      {/* Stock Dropdown */}
-      <div className="flex-shrink-0">
         <StockDropdown
           value={stock}
           onChange={(newStock) => onStockChange?.(id, newStock)}

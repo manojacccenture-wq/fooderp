@@ -25,7 +25,8 @@ export const ActionButtons = ({
   handleQuickWhatsApp,
   handleQuickEmail,
   resetCompleteBillingSession,
-  paymentStatus
+  paymentStatus,
+  payableAmount
 }) => {
   if (combinedItems.length === 0 || paymentStatus === 'success') return null;
 
@@ -76,7 +77,7 @@ export const ActionButtons = ({
                 Apply Discount
               </button>
               <button className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" onClick={() => { 
-                resetCompleteBillingSession();
+                resetCompleteBillingSession(payableAmount);
               }}>
                 Mark as paid
               </button>

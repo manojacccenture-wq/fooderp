@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import clsx from 'clsx';
+import { useSelector } from 'react-redux';
 import { ProductCard } from '../cards/ProductCard/ProductCard';
 import { useMenuKeyboardNavigation } from '../../hooks/useMenuKeyboardNavigation';
-import { CATEGORIES, MENU_PRODUCTS } from '../../data/menuProducts';
+import { CATEGORIES } from '../../data/menuProducts';
 import { KEYBOARD_ACTIONS } from '../../config/keyboardShortcutsConfig';
 
 export const MenuContent = ({
@@ -28,13 +29,17 @@ export const MenuContent = ({
   const [activeCategory, setActiveCategory] = useState("All Dishes");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
+  
+  const menuProducts = useSelector(state => state.product.items);
+  
   const searchRef = useRef(null);
   const productRefs = useRef([]);
   const observerTarget = useRef(null);
   const scrollContainerRef = useRef(null);
 
   const filteredProducts = useMemo(() => {
-    let filtered = MENU_PRODUCTS;
+    // Only show available items on the menu
+    let filtered = menuProducts.filter(item => item.isAvailable !== false);
     
     if (search.trim()) {
       const searchValue = search.toLowerCase();
@@ -47,7 +52,7 @@ export const MenuContent = ({
     }
     
     return filtered;
-  }, [search, activeCategory]);
+  }, [search, activeCategory, menuProducts]);
 
   // Hook for keyboard navigation
   const { keyboardSelectedIndex, setKeyboardSelectedIndex } = useMenuKeyboardNavigation({

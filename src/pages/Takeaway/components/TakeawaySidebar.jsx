@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, onStatusChange, onOpenMenu }) => {
-  const allItems = relatedKots.flatMap(k => k.items);
+  const allItems = takeaway.items || [];
 
   return (
     <div className="w-full h-full max-h-screen bg-white flex flex-col relative shrink-0">
@@ -68,25 +68,35 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
                 {allItems.length === 0 ? (
                    <div className="text-[12px] text-[#8e8ea9] italic text-center p-4">Waiting for items to sync...</div>
                 ) : (
-                  // Reverse allItems to show newest active items first
-                  [...allItems].reverse().map((item, idx) => (
-                    <div key={`active-${idx}`} className="flex gap-3 p-3 border border-[#eaeaef] rounded-[16px] bg-white items-center">
-                      <div className="w-[40px] h-[40px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)] bg-[#f3f5f9] rounded-full overflow-hidden">
-                        {item.image ? (
-                          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8e8ea9]">Img</div>
-                        )}
+                  <>
+                    {[...allItems].reverse().map((item, idx) => (
+                      <div key={`active-${idx}`} className="flex gap-3 p-3 border border-[#eaeaef] rounded-[16px] bg-white items-center">
+                        <div className="w-[40px] h-[40px] shrink-0 drop-shadow-[0px_0px_4px_rgba(255,255,255,0.7)] bg-[#f3f5f9] rounded-full overflow-hidden">
+                          {item.image ? (
+                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8e8ea9]">Img</div>
+                          )}
+                        </div>
+                        <div className="flex-1 flex flex-col gap-[2px]">
+                          <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
+                          <div className="flex justify-between items-center w-full">
+                            <span className="text-[12px] text-[#8e8ea9] font-medium">Qty: {item.fulfillment?.take_away || item.quantity}</span>
+                            <span className="text-[13px] font-bold text-[#32324d]">₹{(item.price * (item.fulfillment?.take_away || item.quantity)).toFixed(2)}</span>
+                          </div>
+                          {item.specialInstructions && (
+                            <span className="text-[11px] text-[#ffb01d] bg-[#fff7e8] px-2 py-[2px] rounded-full inline-block w-fit mt-1">Note: {item.specialInstructions}</span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1 flex flex-col gap-[2px]">
-                        <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
-                        <span className="text-[12px] text-[#8e8ea9] font-medium">Qty: {item.fulfillment?.take_away || item.quantity}</span>
-                        {item.specialInstructions && (
-                          <span className="text-[11px] text-[#ffb01d] bg-[#fff7e8] px-2 py-[2px] rounded-full inline-block w-fit mt-1">Note: {item.specialInstructions}</span>
-                        )}
-                      </div>
+                    ))}
+                    <div className="flex justify-between items-center p-3 mt-2 bg-[#f8faff] rounded-[16px] border border-[#eaeaef]">
+                      <span className="text-[14px] font-bold text-[#32324d]">Total Amount</span>
+                      <span className="text-[16px] font-black text-[#6366f1]">
+                        ₹{allItems.reduce((sum, item) => sum + (item.price * (item.fulfillment?.take_away || item.quantity)), 0).toFixed(2)}
+                      </span>
                     </div>
-                  ))
+                  </>
                 )}
               </div>
             </div>
@@ -110,7 +120,10 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
                         </div>
                         <div className="flex-1 flex flex-col gap-[2px]">
                           <span className="text-[14px] font-semibold text-[#32324d]">{item.title}</span>
-                          <span className="text-[12px] text-[#8e8ea9] font-medium mb-1">Qty: {item.fulfillment?.take_away || item.quantity}</span>
+                          <div className="flex justify-between items-center w-full mb-1">
+                            <span className="text-[12px] text-[#8e8ea9] font-medium">Qty: {item.fulfillment?.take_away || item.quantity}</span>
+                            <span className="text-[13px] font-bold text-[#32324d]">₹{(item.price * (item.fulfillment?.take_away || item.quantity)).toFixed(2)}</span>
+                          </div>
                           <div className="flex gap-2 items-center">
                             <span className="flex items-center gap-1 text-[10px] font-bold text-[#24a44b] bg-[#e8fbf0] border border-[#24a44b]/20 px-2 py-[2px] rounded-full">
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
