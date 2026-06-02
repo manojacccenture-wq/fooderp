@@ -84,14 +84,63 @@ const takeawaySlice = createSlice({
     createTakeawayEntry: (state, action) => {
       const { orderNumber, source, tableReference, customerInfo, status, tokenNumber, items } = action.payload;
 
-      const existingTakeaway = state.activeTakeaways.find(t => t.orderNumber === orderNumber);
+      const isMatch = (t) => {
+        if (orderNumber) {
+          if (t.orderNumber == orderNumber) return true;
+          if (t.sourceOrderId && t.sourceOrderId == orderNumber) return true;
+          if (t.originalOrderId && t.originalOrderId == orderNumber) return true;
+          return false;
+        }
+        if (tableReference && t.tableReference == tableReference) return true;
+        return false;
+      };
+
+      // Since we want the latest for that table if multiple exist, we search backwards or just find.
+      // Active takes precedence over completed.
+      let existingTakeaway = [...state.activeTakeaways].reverse().find(isMatch);
+      let wasCompleted = false;
+
+      if (!existingTakeaway) {
+        const completedIndex = [...state.completedTakeaways].reverse().findIndex(isMatch);
+        if (completedIndex !== -1) {
+          // Because we searched reversed, we need to correct the index
+          const actualIndex = state.completedTakeaways.length - 1 - completedIndex;
+          existingTakeaway = state.completedTakeaways[actualIndex];
+          state.completedTakeaways.splice(actualIndex, 1);
+          wasCompleted = true;
+        }
+      }
 
       if (existingTakeaway) {
-        // Update existing record
-        existingTakeaway.items = items || [];
-        existingTakeaway.status = status || existingTakeaway.status;
+        // Reopen token, append items
+        const newItems = items || [];
+        newItems.forEach(newItem => {
+           const existingItem = existingTakeaway.items.find(i => i.id === newItem.id);
+           if (existingItem) {
+              existingItem.quantity += newItem.quantity;
+              existingItem.fulfillment = { 
+                ...existingItem.fulfillment, 
+                take_away: (existingItem.fulfillment?.take_away || 0) + (newItem.fulfillment?.take_away || newItem.quantity) 
+              };
+           } else {
+              existingTakeaway.items.push(newItem);
+           }
+        });
+        
+        existingTakeaway.status = status || 'Preparing'; 
         if (customerInfo) existingTakeaway.customerInfo = customerInfo;
         if (tableReference) existingTakeaway.tableReference = tableReference;
+        
+        if (wasCompleted) {
+          // Reset Audit Trail stamps
+          delete existingTakeaway.handedOverAt;
+          delete existingTakeaway.completedAt;
+          delete existingTakeaway.readyAt;
+          delete existingTakeaway.packedAt;
+          
+          existingTakeaway.preparingAt = new Date().toISOString();
+          state.activeTakeaways.push(existingTakeaway);
+        }
       } else {
         // Create new record
         let newToken = tokenNumber;

@@ -26,7 +26,9 @@ export const ActionButtons = ({
   handleQuickEmail,
   resetCompleteBillingSession,
   paymentStatus,
-  payableAmount
+  payableAmount,
+  hasPackedItems,
+  handleSendPackToTakeaway
 }) => {
   if (combinedItems.length === 0 || paymentStatus === 'success') return null;
 
@@ -49,12 +51,22 @@ export const ActionButtons = ({
             Send to KOT
           </button>
         ) : sentKotItemsCount > 0 ? (
-          <button 
-            className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" 
-            onClick={() => setRightView('checkout')}
-          >
-            Complete Order
-          </button>
+          <div className="flex flex-col gap-3">
+            {hasPackedItems && (
+              <button 
+                className="w-full bg-[#fff7e8] border-2 border-[#ffb01d] text-[#ff9556] py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]"
+                onClick={handleSendPackToTakeaway}
+              >
+                Send Parcel To Takeaway
+              </button>
+            )}
+            <button 
+              className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" 
+              onClick={() => setRightView('checkout')}
+            >
+              Complete Order
+            </button>
+          </div>
         ) : null
       ) : rightView === 'checkout' && (
         <div className="flex flex-col gap-3">

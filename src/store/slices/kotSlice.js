@@ -38,11 +38,35 @@ const kotSlice = createSlice({
     },
     clearCompletedKots: (state) => {
       state.activeKots = state.activeKots.filter(k => k.status !== 'delivered');
+    },
+    updateKotItemFulfillment: (state, action) => {
+      const { itemId, serveQty, packQty } = action.payload;
+      // Search all KOTs for the item
+      for (const kot of state.activeKots) {
+        const item = kot.items.find(i => i.id === itemId);
+        if (item) {
+          item.fulfillment = { ...item.fulfillment, dine_in: serveQty, take_away: packQty };
+        }
+      }
+    },
+    removePackedKotItems: (state, action) => {
+      const { packedItemIds } = action.payload;
+      for (const kot of state.activeKots) {
+        kot.items = kot.items.filter(item => {
+          if (packedItemIds.includes(item.id)) {
+            // Keep the item only if it has dine_in quantity > 0
+            return (item.fulfillment?.dine_in || 0) > 0;
+          }
+          return true;
+        });
+      }
+      // Optional: remove empty KOTs
+      state.activeKots = state.activeKots.filter(k => k.items.length > 0);
     }
   }
 });
 
-export const { generateKOT, updateKotStatus, removeKots, clearCompletedKots } = kotSlice.actions;
+export const { generateKOT, updateKotStatus, removeKots, clearCompletedKots, updateKotItemFulfillment, removePackedKotItems } = kotSlice.actions;
 
 export const selectActiveKots = (state) => state.kot.activeKots;
 

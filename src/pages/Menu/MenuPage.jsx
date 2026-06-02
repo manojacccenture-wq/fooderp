@@ -197,6 +197,43 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     currentTableObj
   });
 
+  const hasPackedItems = orderType === 'dine_in' && sentKotItems.some(item => (item.fulfillment?.take_away || 0) > 0);
+
+  const handleSendPackToTakeaway = () => {
+    const parcelItems = sentKotItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
+    
+    if (parcelItems.length > 0) {
+      const takeAwayItemsToPass = parcelItems.map(item => ({
+        ...item,
+        quantity: item.fulfillment.take_away,
+        fulfillment: { dine_in: 0, take_away: item.fulfillment.take_away }
+      }));
+      
+      const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
+
+      dispatch(createTakeawayEntry({
+        orderNumber: effectiveOrderNumber,
+        source: 'dine_in',
+        tableReference: selectedTable,
+        customerInfo: phone ? { phone } : null,
+        status: 'Preparing',
+        items: takeAwayItemsToPass
+      }));
+
+      // Cleanup local sentKotItems (remove items entirely moved to takeaway)
+      setSentKotItems(prev => prev.filter(item => {
+        if ((item.fulfillment?.take_away || 0) > 0) {
+          return (item.fulfillment?.dine_in || 0) > 0;
+        }
+        return true;
+      }));
+
+      // Also clean up Redux kotSlice using the existing action
+      const packedItemIds = parcelItems.map(i => i.id);
+      dispatch({ type: 'kot/removePackedKotItems', payload: { packedItemIds } });
+    }
+  };
+
   const handlePrintBilling = () => {
     if (orderType === 'take_away') {
       if (draftOrderItems && draftOrderItems.length > 0 && handleSendKOT) {
@@ -453,6 +490,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         resetCompleteBillingSession={resetCompleteBillingSession}
         isPhoneMissingForDineIn={isPhoneMissingForDineIn}
         totalPackQuantity={totalPackQuantity}
+        hasPackedItems={hasPackedItems}
+        handleSendPackToTakeaway={handleSendPackToTakeaway}
       />
       </div>
 

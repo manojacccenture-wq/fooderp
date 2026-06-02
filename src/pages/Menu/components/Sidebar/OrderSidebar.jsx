@@ -83,7 +83,9 @@ export const OrderSidebar = ({
   activeKeyboardSection,
   setActiveKeyboardSection,
   currentOrderNumber,
-  totalPackQuantity
+  totalPackQuantity,
+  hasPackedItems,
+  handleSendPackToTakeaway
 }) => {
   const [isSplitBillExpanded, setIsSplitBillExpanded] = useState(false);
 
@@ -458,6 +460,8 @@ export const OrderSidebar = ({
         resetCompleteBillingSession={resetCompleteBillingSession}
         paymentStatus={paymentStatus}
         payableAmount={payableAmount}
+        hasPackedItems={hasPackedItems}
+        handleSendPackToTakeaway={handleSendPackToTakeaway}
       />
     </div>
   );

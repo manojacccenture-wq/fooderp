@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 
 export const areInstructionsEqual = (inst1, inst2) => {
   if (!inst1 && !inst2) return true;
@@ -12,6 +13,7 @@ export const areItemsEqual = (item1, item2) => {
 };
 
 export const useMenuOrders = (setKotStatus) => {
+  const dispatch = useDispatch();
   const [draftOrderItems, setDraftOrderItems] = useState([]);
   const [sentKotItems, setSentKotItems] = useState([]);
   const [heldItems, setHeldItems] = useState([]);
@@ -161,8 +163,11 @@ export const useMenuOrders = (setKotStatus) => {
   };
 
   const handleConfirmSplitPack = ({ item, serveQty, packQty }) => {
+    let itemFoundInDraft = false;
+
     setDraftOrderItems(prev => prev.map(i => {
       if (i.id === item.id) {
+        itemFoundInDraft = true;
         return {
           ...i,
           fulfillment: { ...i.fulfillment, dine_in: serveQty, take_away: packQty }
@@ -170,6 +175,24 @@ export const useMenuOrders = (setKotStatus) => {
       }
       return i;
     }));
+
+    // If it's not in draft, it must be in sentKotItems
+    if (!itemFoundInDraft) {
+      setSentKotItems(prev => prev.map(i => {
+        if (i.id === item.id) {
+          return {
+            ...i,
+            fulfillment: { ...i.fulfillment, dine_in: serveQty, take_away: packQty }
+          };
+        }
+        return i;
+      }));
+      // Dispatch to Redux to persist the change across sessions
+      dispatch({ 
+        type: 'kot/updateKotItemFulfillment', 
+        payload: { itemId: item.id, serveQty, packQty } 
+      });
+    }
   };
 
   const handleProductCardClick = (product) => {
