@@ -26,6 +26,7 @@ const ClockIcon = () => (
 export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(startOrderSchema),
+    mode: "onSubmit",
     defaultValues: { name: '', guests: '', reserve: '', time: '', mobile: '' }
   });
 
@@ -113,14 +114,10 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
               <ClockIcon />
             </div>
             <input 
-              type="text" 
-              placeholder="12:30" 
-              className={`${inputClass} pl-12 pr-12`}
+              type="time" 
+              className={`${inputClass} pl-12 pr-4 cursor-pointer`}
               {...register('time')}
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#8e8ea9] text-[14px] font-semibold">
-              AM
-            </div>
             {errors.time && <p className="text-red-500 text-xs mt-1 absolute -bottom-5">{errors.time.message}</p>}
           </div>
 

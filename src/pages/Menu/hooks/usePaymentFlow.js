@@ -16,7 +16,7 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
   const [isUpiModalOpen, setIsUpiModalOpen] = useState(false);
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
 
-  const { register: registerPayment, watch: watchPayment, handleSubmit: handlePaymentSubmit, formState: { errors: paymentErrors }, setValue: setPaymentValue } = useForm({
+  const { register: registerPayment, watch: watchPayment, handleSubmit: handlePaymentSubmit, formState: { errors: paymentErrors }, setValue: setPaymentValue, reset: resetPaymentForm } = useForm({
     resolver: zodResolver(paymentCheckoutSchema),
     defaultValues: {
       customerPaidAmount: 600,
@@ -87,14 +87,13 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
       setDiscountAmount(0);
       setPaymentMode('Cash');
       setSplitMode('full');
+      resetPaymentForm();
       dispatch(clearOrderNumber());
       
       if (totalPackQuantity > 0 || orderType === 'take_away') {
         navigate('/dashboard/takeaways');
-      } else if (orderType === 'dine_in') {
-        navigate('/dashboard/dine-in');
       } else {
-        navigate('/dashboard/menu');
+        navigate('/dashboard/menu', { replace: true, state: {} });
       }
     }, 2500); // 2.5 second delay to show the green success sidebar
   };

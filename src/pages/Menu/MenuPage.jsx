@@ -130,6 +130,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setHeldItems([]);
     setRightView('order');
     setKotStatus('idle');
+    setSelectedTable(null);
+    setSelectedOrderItem(null);
   };
 
   const totalPackQuantity = combinedItems.reduce((sum, item) => sum + (item.fulfillment?.take_away || 0), 0);
@@ -420,6 +422,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         setDiscountAmount={setDiscountAmount}
         registerOrder={registerOrder}
         orderErrors={orderErrors}
+        paymentStatus={paymentStatus}
         paymentMode={paymentMode}
         setPaymentMode={setPaymentMode}
         splitMode={splitMode}

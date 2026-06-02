@@ -82,7 +82,7 @@ export const TableCard = ({
   };
 
   const renderDropdown = () => {
-    if (minimalView) return null;
+    if (minimalView || status !== 'occupied') return null;
     return (
       <div className="absolute top-[16px] left-[16px] z-20" ref={menuRef}>
         <button 

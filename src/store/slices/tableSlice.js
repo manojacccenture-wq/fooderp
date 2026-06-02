@@ -109,7 +109,8 @@ const tableSlice = createSlice({
     updateTableOrder: (state, action) => {
       const { tableNo, orderData } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
-      if (table) {
+      // NEVER restore order data to an available table. This fixes the zombie state!
+      if (table && table.status !== 'available') {
         table.orderData = orderData;
       }
     },

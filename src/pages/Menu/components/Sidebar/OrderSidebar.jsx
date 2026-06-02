@@ -52,6 +52,7 @@ export const OrderSidebar = ({
   setDiscountAmount,
   registerOrder,
   orderErrors,
+  paymentStatus,
   paymentMode,
   setPaymentMode,
   splitMode,
@@ -251,7 +252,26 @@ export const OrderSidebar = ({
 
       {rightView === 'checkout' && (
         <div className="flex-1 overflow-y-auto pb-4 flex flex-col">
-          <div 
+          {paymentStatus === 'success' ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-4 h-full animate-in fade-in zoom-in duration-300">
+              <span className="text-[18px] font-extrabold text-[#32324d] mb-8">Payment Successful</span>
+              <div className="relative w-[120px] h-[120px] flex items-center justify-center mb-6">
+                <div className="absolute inset-0 rounded-full border border-[#b4efc6] animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite] opacity-40"></div>
+                <div className="absolute inset-4 rounded-full border border-[#24a44b]/30 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] opacity-60"></div>
+                <div className="w-[60px] h-[60px] bg-[#b4efc6]/40 rounded-full flex items-center justify-center relative z-10">
+                  <div className="w-[36px] h-[36px] bg-[#24a44b] rounded-full flex items-center justify-center shadow-[0_4px_10px_rgba(36,164,75,0.3)]">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <span className="text-[14px] font-bold text-[#4a4a6a]">Order {currentOrderNumber ? `#${currentOrderNumber}` : ''} Complete</span>
+              {selectedTable && <span className="text-[13px] text-[#8e8ea9] mt-2">Table {selectedTable} is now available</span>}
+            </div>
+          ) : (
+            <>
+              <div 
             className="flex items-center justify-between p-3 mt-[2px] mx-[1px]"
             style={{ backgroundColor: statusStyles.bg, transition: 'all 0.3s ease' }}
           >
@@ -400,6 +420,8 @@ export const OrderSidebar = ({
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
       )}
 
@@ -428,6 +450,7 @@ export const OrderSidebar = ({
         handleQuickWhatsApp={handleQuickWhatsApp}
         handleQuickEmail={handleQuickEmail}
         resetCompleteBillingSession={resetCompleteBillingSession}
+        paymentStatus={paymentStatus}
       />
     </div>
   );
