@@ -112,17 +112,27 @@ export const TableCard = ({
   
   if (status === 'available') {
     return (
-      <div className={`w-[293px] h-[183px] cursor-pointer border-2 rounded-[16px] relative shrink-0 transition-colors duration-200 ${
-        isSelected ? 'border-[#4ad775] bg-[rgba(180,239,198,0.12)]' : 'border-[#eaeaef] bg-white'
-      }`}
+      <div 
+        className={`w-[293px] h-[183px] cursor-pointer border-2 rounded-[16px] relative shrink-0 transition-all duration-200 focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(251,191,36,0.25)] hover:-translate-y-[1px] hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)] ${
+          isSelected 
+            ? 'border-[#4ad775] bg-[rgba(251,191,36,0.02)] shadow-[0_0_0_3px_rgba(251,191,36,0.18),0_4px_12px_rgba(251,191,36,0.15)]' 
+            : 'border-[#eaeaef] bg-white'
+        }`}
+        tabIndex={0}
         onClick={onStartOrder}
       >
         {renderDropdown()}
+        
+        {/* Tiny Dot Indicator for Selected State */}
+        {isSelected && (
+          <div className="absolute top-[-4px] right-[-4px] w-[8px] h-[8px] bg-[#FBBF24] rounded-full shadow-[0_0_0_2px_white]" />
+        )}
+
         <div className="absolute top-[12px] right-[12px] h-[28px] px-4 bg-[#b4efc6] rounded-[16px] flex items-center justify-center">
           <span className="text-[8px] font-bold text-[#24a44b]">Available</span>
         </div>
         <div className={`absolute left-0 right-0 flex flex-col items-center ${minimalView ? 'top-[80px]' : 'top-[64px] gap-[9px]'}`}>
-          <h3 className="text-[16px] font-extrabold text-[#4a4a6a]">Table {tableNo}</h3>
+          <h3 className={`text-[16px] text-[#4a4a6a] ${isSelected ? 'font-[700]' : 'font-extrabold'}`}>Table {tableNo}</h3>
           {!minimalView && <p className="text-[12px] font-medium text-[#8e8ea9]">Ready for new order</p>}
         </div>
         {!minimalView && (

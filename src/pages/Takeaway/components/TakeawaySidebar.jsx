@@ -29,34 +29,8 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-6">
-        <div className="flex flex-col gap-3 p-4 bg-[#f8faff] rounded-[16px] border border-[#eaeaef]">
-          <span className="text-[10px] font-bold text-[#8e8ea9] uppercase tracking-wider mb-[-8px]">Generated From</span>
-          <div className="flex justify-between items-center text-[12px] group cursor-pointer hover:bg-white rounded-md p-1 -mx-1 transition-colors" onClick={onOpenMenu}>
-            <span className="text-[#8e8ea9] font-semibold flex items-center gap-1">
-              Order Number
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 group-hover:opacity-100 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-            </span>
-            <span className="font-bold text-[#6366f1] group-hover:underline">#{takeaway.orderNumber}</span>
-          </div>
-          <div className="flex justify-between items-center text-[12px]">
-            <span className="text-[#8e8ea9] font-semibold">Customer</span>
-            <span className="font-bold text-[#32324d]">{takeaway.customerInfo?.phone || 'Walk-in'}</span>
-          </div>
-          <div className="flex justify-between items-center text-[12px]">
-            <span className="text-[#8e8ea9] font-semibold">Source</span>
-            <span className="font-bold text-[#32324d] capitalize">{takeaway.source.replace('_', ' ')}</span>
-          </div>
-          {takeaway.tableReference && (
-            <div className="flex justify-between items-center text-[12px] group cursor-pointer hover:bg-white rounded-md p-1 -mx-1 transition-colors" onClick={onOpenMenu}>
-              <span className="text-[#8e8ea9] font-semibold flex items-center gap-1">
-                Table Reference
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 group-hover:opacity-100 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              </span>
-              <span className="font-bold text-[#6366f1] group-hover:underline">{takeaway.tableReference}</span>
-            </div>
-          )}
-        </div>
-
+        
+        {/* 1. Parcel Items */}
         <div>
           <h3 className="text-[14px] font-bold text-[#4a4a6a] mb-4 border-b border-[#eaeaef] pb-2">Parcel Items</h3>
           
@@ -144,7 +118,7 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
           )}
         </div>
 
-        {/* Audit Trail */}
+        {/* 2. Audit Trail */}
         <div>
           <h3 className="text-[14px] font-bold text-[#4a4a6a] mb-3">Audit Trail</h3>
           <div className="flex flex-col gap-3 p-4 bg-white border border-[#eaeaef] rounded-[16px]">
@@ -178,6 +152,36 @@ export const TakeawaySidebar = ({ takeaway, relatedKots, onClose, onHandover, on
             )}
           </div>
         </div>
+
+        {/* 3. Generated From */}
+        <div className="flex flex-col gap-3 p-4 bg-[#f8faff] rounded-[16px] border border-[#eaeaef]">
+          <span className="text-[10px] font-bold text-[#8e8ea9] uppercase tracking-wider mb-[-8px]">Generated From</span>
+          <div className="flex justify-between items-center text-[12px] group cursor-pointer hover:bg-white rounded-md p-1 -mx-1 transition-colors" onClick={onOpenMenu}>
+            <span className="text-[#8e8ea9] font-semibold flex items-center gap-1">
+              Order Number
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 group-hover:opacity-100 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </span>
+            <span className="font-bold text-[#6366f1] group-hover:underline">#{takeaway.orderNumber}</span>
+          </div>
+          <div className="flex justify-between items-center text-[12px]">
+            <span className="text-[#8e8ea9] font-semibold">Customer</span>
+            <span className="font-bold text-[#32324d]">{takeaway.customerInfo?.phone || 'Walk-in'}</span>
+          </div>
+          <div className="flex justify-between items-center text-[12px]">
+            <span className="text-[#8e8ea9] font-semibold">Source</span>
+            <span className="font-bold text-[#32324d] capitalize">{takeaway.source.replace('_', ' ')}</span>
+          </div>
+          {takeaway.tableReference && (
+            <div className="flex justify-between items-center text-[12px] group cursor-pointer hover:bg-white rounded-md p-1 -mx-1 transition-colors" onClick={onOpenMenu}>
+              <span className="text-[#8e8ea9] font-semibold flex items-center gap-1">
+                Table Reference
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 group-hover:opacity-100 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </span>
+              <span className="font-bold text-[#6366f1] group-hover:underline">{takeaway.tableReference}</span>
+            </div>
+          )}
+        </div>
+        
       </div>
 
       {takeaway.status !== 'Completed' && (

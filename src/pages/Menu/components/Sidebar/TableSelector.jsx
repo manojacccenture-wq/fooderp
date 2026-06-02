@@ -28,20 +28,20 @@ export const TableSelector = ({
               onClick={() => !isDisabled && setSelectedTable(num)}
               className={clsx(
                 "relative flex items-center justify-center transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shrink-0 bg-white",
-                selectedTable === num ? "scale-[1.05] z-10" : "hover:scale-[1.02]"
+                selectedTable === num ? "scale-[1.05] z-10 shadow-[0_4px_12px_rgba(0,0,0,0.08)]" : "hover:scale-[1.02]"
               )}
               style={{
                 width: '45px',
                 height: '45px',
                 borderRadius: '16px',
-                border: `1.5px solid ${tableStyle.border}`,
-                backgroundColor: '#ffffff',
+                border: selectedTable === num ? `2.5px solid ${tableStyle.text}` : `1.5px solid ${tableStyle.border}`,
+                backgroundColor: selectedTable === num ? `${tableStyle.text}10` : '#ffffff', // adding slight tint
               }}
             >
               <span style={{ 
                 color: tableStyle.text,
                 fontSize: '15px',
-                fontWeight: 600
+                fontWeight: selectedTable === num ? 800 : 600
               }}>
                 {num}
               </span>

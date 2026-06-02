@@ -1,40 +1,52 @@
 import React from 'react';
 
-export const TransactionRow = ({ title, amount, type, badgeText, dateText, icon, iconBgClass }) => {
+const getBadgeColor = (text) => {
+  const t = text.toLowerCase();
+  if (t.includes('cash sale')) return 'text-green-600 bg-green-50';
+  if (t.includes('upi sale')) return 'text-blue-600 bg-blue-50';
+  if (t.includes('expense') || t.includes('cash out')) return 'text-red-600 bg-red-50';
+  if (t.includes('vendor')) return 'text-orange-600 bg-orange-50';
+  if (t.includes('refund')) return 'text-purple-600 bg-purple-50';
+  return 'text-gray-600 bg-gray-100'; // Default
+};
+
+export const TransactionRow = ({ title, amount, badgeText, dateText }) => {
   const isPositive = amount > 0;
-  const formattedAmount = isPositive ? `+${amount}` : `${amount}`;
-  const amountColor = isPositive ? 'text-[#4AD775]' : 'text-[#F24343]'; // Success-500 : Danger-500
+  
+  // Format with INR
+  const formattedAmount = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR'
+  }).format(Math.abs(amount));
+
+  const amountColor = isPositive ? 'text-[#22C55E]' : 'text-[#EF4444]';
+  const prefix = isPositive ? '+' : '-';
+  const badgeClasses = getBadgeColor(badgeText);
 
   return (
-    <div className="w-full max-w-[1020px] h-[70px] bg-white rounded-[16px] shadow-[0px_0px_1px_0px_rgba(12,26,75,0.03),0px_4px_20px_0px_rgba(50,50,71,0.04)] flex items-center relative shrink-0">
+    <div className="w-full max-w-[1020px] h-[66px] bg-white rounded-[12px] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center justify-between px-5 shrink-0 hover:bg-gray-50 transition-colors">
       
-      {/* Icon Area */}
-      <div className={`absolute left-[18px] top-[10px] w-12 h-12 rounded-[36.667px] flex items-center justify-center ${iconBgClass}`}>
-        <img src={icon} alt="" className="w-6 h-6 object-contain" />
-      </div>
-      
-      {/* Title & Badge */}
-      <div className="absolute left-[74px] top-[5px] flex flex-col items-start w-[183px]">
-        <h4 className="text-subtitle-3 text-[#32324D] truncate w-full">{title}</h4>
-      </div>
-      
-      <div className="absolute left-[74px] top-[31px] bg-[#EAEAEF] h-[24px] px-[8px] py-[8px] rounded-[77.6px] flex items-center justify-center">
-        <span className="text-caption-3 font-bold text-[#32324D] whitespace-nowrap">{badgeText}</span>
-      </div>
-
-      {/* Date */}
-      {dateText && (
-        <div className="absolute left-[189px] top-[50px] text-label-active text-[#8E8EA9] whitespace-nowrap">
-          {dateText}
+      <div className="flex flex-col items-start gap-1">
+        <div className="flex items-center gap-3">
+          <h4 className="text-[15px] font-semibold text-[#32324D]">{title}</h4>
+          <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider ${badgeClasses}`}>
+            {badgeText}
+          </span>
         </div>
-      )}
+        
+        {dateText && (
+          <span className="text-[12px] font-medium text-[#8E8EA9]">
+            {dateText}
+          </span>
+        )}
+      </div>
 
-      {/* Amount */}
-      <div className="absolute right-[14px] top-1/2 -translate-y-1/2">
-        <span className={`text-heading-4 whitespace-nowrap ${amountColor}`}>
-          {formattedAmount}
+      <div className="flex flex-col items-end">
+        <span className={`text-[16px] font-bold ${amountColor}`}>
+          {prefix} {formattedAmount}
         </span>
       </div>
+      
     </div>
   );
 };
