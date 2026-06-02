@@ -56,9 +56,33 @@ export const DineInPage = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-full h-screen bg-white flex flex-col overflow-hidden">
+      <style>
+        {`
+          .dinein-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
+          .dinein-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 999px;
+          }
+          .dinein-scrollbar:hover::-webkit-scrollbar-track {
+            background: #F3F4F6;
+          }
+          .dinein-scrollbar::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 999px;
+          }
+          .dinein-scrollbar:hover::-webkit-scrollbar-thumb {
+            background: #FBBF24;
+          }
+          .dinein-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #F59E0B !important;
+          }
+        `}
+      </style>
       {/* Main Content container matches the exact width in Figma 947px */}
-      <div className="p-11 mx-auto pt-[74px]">
+      <div className="p-11 mx-auto pt-[74px] flex flex-col h-full w-full">
         {actionTarget?.type === 'cancel-food' ? (
           <CancelFoodView
             tableNo={actionTarget.tableNo}
@@ -81,34 +105,37 @@ export const DineInPage = () => {
             selectionMode={actionTarget.type === 'change' ? 'single' : 'multiple'}
           />
         ) : (
-          <>
+          <div className="flex flex-col flex-1 min-h-0">
             {/* Page Title Section */}
-            <h1 className="text-[18px] font-bold text-[#666687] mb-[31px]">
+            <h1 className="text-[18px] font-bold text-[#666687] mb-[31px] shrink-0">
               Top Number of Table ({totalTables})
             </h1>
 
-            {/* Table Grid */}
-            <div className="grid grid-cols-3 gap-x-[34px] gap-y-[31px]">
-              {tables.map((table) => (
-                <TableCard
-                  key={table.id}
-                  tableNo={table.tableNo}
-                  status={table.status}
-                  customerName={table.customerName}
-                  guests={table.guests}
-                  duration={table.duration}
-                  reservedGuests={table.reservedGuests}
-                  onStartOrder={() => dispatch(setSelectedTableForOrder(table.tableNo))}
-                  onResumeOrder={() => navigate('/dashboard/menu', { state: { tableNo: table.tableNo, existingSession: true } })}
-                  onChangeTable={(tableNo) => dispatch(setActionTarget({ type: 'change', tableNo }))}
-                  onMergeTable={(tableNo) => dispatch(setActionTarget({ type: 'merge', tableNo }))}
-                  onCancelFood={(tableNo) => dispatch(setActionTarget({ type: 'cancel-food', tableNo }))}
-                  onReplaceFood={(tableNo) => dispatch(setActionTarget({ type: 'replace-food', tableNo }))}
-                  onCancelTable={(tableNo) => dispatch(setActionTarget({ type: 'cancel-table', tableNo }))}
-                />
-              ))}
+            {/* Scrollable Table Container */}
+            <div className="flex-1 overflow-y-auto scroll-smooth pr-4 pb-8 dinein-scrollbar">
+              {/* Table Grid */}
+              <div className="grid grid-cols-3 gap-x-[34px] gap-y-[31px]">
+                {tables.map((table) => (
+                  <TableCard
+                    key={table.id}
+                    tableNo={table.tableNo}
+                    status={table.status}
+                    customerName={table.customerName}
+                    guests={table.guests}
+                    duration={table.duration}
+                    reservedGuests={table.reservedGuests}
+                    onStartOrder={() => dispatch(setSelectedTableForOrder(table.tableNo))}
+                    onResumeOrder={() => navigate('/dashboard/menu', { state: { tableNo: table.tableNo, existingSession: true } })}
+                    onChangeTable={(tableNo) => dispatch(setActionTarget({ type: 'change', tableNo }))}
+                    onMergeTable={(tableNo) => dispatch(setActionTarget({ type: 'merge', tableNo }))}
+                    onCancelFood={(tableNo) => dispatch(setActionTarget({ type: 'cancel-food', tableNo }))}
+                    onReplaceFood={(tableNo) => dispatch(setActionTarget({ type: 'replace-food', tableNo }))}
+                    onCancelTable={(tableNo) => dispatch(setActionTarget({ type: 'cancel-table', tableNo }))}
+                  />
+                ))}
+              </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
