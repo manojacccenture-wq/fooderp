@@ -19,16 +19,16 @@ export const Header = () => {
   const isActive = (path) => location.pathname.includes(path);
 
   const menuItems = [
-    { label: "Lock POS (Ctrl+Shift+L)", action: "lock" },
     { label: "Overview", route: "/dashboard" },
     { label: "Shift Summary", route: "/dashboard/shift-summary" },
     { label: "Item on/off", route: "/dashboard/item-on-off" },
     { label: "Money management", route: "/dashboard/money-management" },
     { label: "Order History", route: "/dashboard/order-history" },
+    { label: "Lock POS (Ctrl+Shift+L)", action: "lock" },
     { label: "End Shift / Log Out", action: "logout" },
   ];
 
-  const autoLockOptions = [0, 5, 10, 15, 30]; // 0 means disabled
+  const autoLockOptions = [0,2, 5, 10, 15, 30]; // 0 means disabled
 
   const isMenuItemActive = (route) => {
     if (route === "/dashboard/shift-summary") {

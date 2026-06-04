@@ -93,7 +93,34 @@ export const OrderSidebar = ({
 
   const activeTakeaways = useAppSelector(selectActiveTakeaways);
   const completedTakeaways = useAppSelector(selectCompletedTakeaways);
-  const allLinkedTakeaways = [...activeTakeaways, ...completedTakeaways].filter(t => t.orderNumber === currentOrderNumber);
+  const activeKots = useAppSelector(state => state.kot.activeKots);
+
+  // Determine the correct order number for the current view
+  let actualOrderNumber = null;
+  if (isDineInFlow && selectedTable) {
+    // For dine-in, fetch the table's specific order number from its active KOTs
+    const tableKot = activeKots.find(k => k.tableReference === selectedTable);
+    if (tableKot) {
+      actualOrderNumber = tableKot.orderNumber;
+    }
+  } else {
+    // For native takeaway, use the passed currentOrderNumber
+    actualOrderNumber = currentOrderNumber;
+  }
+
+  const allLinkedTakeaways = [...activeTakeaways, ...completedTakeaways].filter(t => {
+    if (!actualOrderNumber) return false;
+    
+    // Must match the table's actual order number
+    if (t.orderNumber !== actualOrderNumber) return false;
+
+    // Additional safety check for dine-in
+    if (isDineInFlow && selectedTable) {
+      return t.tableReference === selectedTable;
+    }
+    return true;
+  });
+  
   const linkedTakeaway = allLinkedTakeaways.length > 0 ? allLinkedTakeaways[allLinkedTakeaways.length - 1] : null;
 
   return (
@@ -288,7 +315,26 @@ export const OrderSidebar = ({
                   {ORDER_STATUS_COLORS[globalOrderStatus]?.label || 'BILLING'}
                 </span>
               </div>
-              <button className="bg-[#e23744] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold" onClick={() => { setOrderItems([]); setHeldItems([]); setRightView('order'); setKotStatus('idle'); }}>Cancel order</button>
+              <div className="flex gap-2">
+                <button 
+                  className="bg-white hover:bg-[#f3f5f9] text-[#32324d] border border-[#eaeaef] rounded-[16px] px-3 py-2 text-[12px] font-bold shadow-[0px_2px_4px_rgba(50,50,71,0.02)] transition-all" 
+                  onClick={() => setRightView('order')}
+                >
+                  ← Edit Order
+                </button>
+                <button 
+                  className="bg-[#e23744] hover:bg-[#c92e3a] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold transition-all" 
+                  onClick={() => { 
+                    setDraftOrderItems([]); 
+                    setSentKotItems([]); 
+                    setHeldItems([]); 
+                    setRightView('order'); 
+                    setKotStatus('idle'); 
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
               {/* <button className="bg-[#ffb01d] text-white rounded-[16px] px-3 py-2 text-[12px] font-bold">Pause</button> */}
             </div>
           </div>

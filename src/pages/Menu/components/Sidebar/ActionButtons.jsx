@@ -52,14 +52,6 @@ export const ActionButtons = ({
           </button>
         ) : sentKotItemsCount > 0 ? (
           <div className="flex flex-col gap-3">
-            {hasPackedItems && (
-              <button 
-                className="w-full bg-[#fff7e8] border-2 border-[#ffb01d] text-[#ff9556] py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]"
-                onClick={handleSendPackToTakeaway}
-              >
-                Send Parcel To Takeaway
-              </button>
-            )}
             <button 
               className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" 
               onClick={() => setRightView('checkout')}

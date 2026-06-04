@@ -509,7 +509,31 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         isOpen={isSplitPackModalOpen}
         onClose={() => setIsSplitPackModalOpen(false)}
         item={selectedItemForAction}
-        onConfirm={handleConfirmSplitPack}
+        onConfirm={({ item, serveQty, packQty }) => {
+          handleConfirmSplitPack({ item, serveQty, packQty });
+          
+          const isSentKotItem = sentKotItems.some(i => i.id === item.id);
+          if (isSentKotItem) {
+             const oldPackQty = sentKotItems.find(i => i.id === item.id)?.fulfillment?.take_away || 0;
+             const deltaPack = packQty - oldPackQty;
+             
+             if (deltaPack !== 0) {
+                const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
+                dispatch(createTakeawayEntry({
+                  orderNumber: effectiveOrderNumber,
+                  source: 'dine_in',
+                  tableReference: selectedTable,
+                  customerInfo: phone ? { phone } : null,
+                  status: 'Preparing',
+                  items: [{
+                    ...item,
+                    quantity: deltaPack,
+                    fulfillment: { dine_in: 0, take_away: deltaPack }
+                  }]
+                }));
+             }
+          }
+        }}
       />
       <ApplyDiscountModal
         isOpen={isDiscountModalOpen}
