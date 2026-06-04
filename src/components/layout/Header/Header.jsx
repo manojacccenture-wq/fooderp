@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { LogoutModal } from './LogoutModal';
+import { lockPOS, setAutoLockTimeout } from '../../../store/slices/authSlice';
 
 const imgVector = "http://localhost:3845/assets/56c9b6210eb0436b457badfa3ee0358646ef3cb3.svg";
 const imgVector1 = "http://localhost:3845/assets/12ceba92ef4e88b4f9c796089133f3191aa892be.svg";
@@ -9,6 +10,7 @@ const imgVector1 = "http://localhost:3845/assets/12ceba92ef4e88b4f9c796089133f31
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const auth = useSelector(state => state.auth);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
@@ -17,6 +19,7 @@ export const Header = () => {
   const isActive = (path) => location.pathname.includes(path);
 
   const menuItems = [
+    { label: "Lock POS (Ctrl+Shift+L)", action: "lock" },
     { label: "Overview", route: "/dashboard" },
     { label: "Shift Summary", route: "/dashboard/shift-summary" },
     { label: "Item on/off", route: "/dashboard/item-on-off" },
@@ -24,6 +27,8 @@ export const Header = () => {
     { label: "Order History", route: "/dashboard/order-history" },
     { label: "End Shift / Log Out", action: "logout" },
   ];
+
+  const autoLockOptions = [0, 5, 10, 15, 30]; // 0 means disabled
 
   const isMenuItemActive = (route) => {
     if (route === "/dashboard/shift-summary") {
@@ -62,6 +67,8 @@ export const Header = () => {
   const handleMenuClick = (item) => {
     if (item.action === 'logout') {
       setShowLogout(true);
+    } else if (item.action === 'lock') {
+      dispatch(lockPOS());
     } else if (item.route) {
       navigate(item.route);
     }
@@ -90,8 +97,8 @@ export const Header = () => {
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute top-[calc(100%+12px)] left-0 w-[260px] bg-[var(--color-neutral-100)] border border-[var(--color-border-light)] rounded-2xl shadow-xl flex flex-col gap-4 py-4 px-4 z-50">
-              <nav className="flex flex-col gap-2 w-full">
+            <div className="absolute top-[calc(100%+12px)] left-0 w-[260px] bg-[var(--color-neutral-100)] border border-[var(--color-border-light)] rounded-2xl shadow-xl flex flex-col py-4 z-50">
+              <nav className="flex flex-col w-full px-4 gap-2">
                 {menuItems.map((item, index) => (
                   <button
                     key={index}
@@ -102,12 +109,33 @@ export const Header = () => {
                         : 'hover:bg-[var(--color-secondary-5)]'
                     }`}
                   >
-                    <span className="text-label-active text-[var(--color-neutral-800)] font-medium">
+                    <span className={`text-label-active font-medium ${item.action === 'logout' ? 'text-[#f24343]' : 'text-[var(--color-neutral-800)]'}`}>
                       {item.label}
                     </span>
                   </button>
                 ))}
               </nav>
+              
+              <div className="w-full h-[1px] bg-[var(--color-border-light)] my-4"></div>
+              
+              <div className="px-8 flex flex-col gap-2">
+                <span className="text-[12px] font-bold text-[var(--color-neutral-500)] uppercase tracking-wider">Auto-Lock Inactivity</span>
+                <div className="flex flex-wrap gap-2">
+                  {autoLockOptions.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => dispatch(setAutoLockTimeout(opt))}
+                      className={`px-3 py-1 rounded-[8px] text-[12px] font-bold transition-all ${
+                        auth.autoLockTimeout === opt 
+                          ? 'bg-[#ffb01d] text-white shadow-sm' 
+                          : 'bg-[var(--color-neutral-10)] text-[var(--color-neutral-600)] hover:bg-[var(--color-neutral-20)]'
+                      }`}
+                    >
+                      {opt === 0 ? 'Disabled' : `${opt}m`}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>

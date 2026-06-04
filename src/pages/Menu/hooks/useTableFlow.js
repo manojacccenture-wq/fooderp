@@ -56,17 +56,17 @@ export const useTableFlow = ({
     allTablesRef.current = allTables;
   }, [allTables]);
 
-  const currentOrderDataRef = useRef({ draftOrderItems, sentKotItems, heldItems, kotStatus });
+  const currentOrderDataRef = useRef({ draftOrderItems, sentKotItems, heldItems, kotStatus, rightView });
   useEffect(() => {
-    currentOrderDataRef.current = { draftOrderItems, sentKotItems, heldItems, kotStatus };
-  }, [draftOrderItems, sentKotItems, heldItems, kotStatus]);
+    currentOrderDataRef.current = { draftOrderItems, sentKotItems, heldItems, kotStatus, rightView };
+  }, [draftOrderItems, sentKotItems, heldItems, kotStatus, rightView]);
 
   useEffect(() => {
     const tableToSave = selectedTable;
     
     const newTableObj = allTablesRef.current.find(t => t.tableNo === selectedTable);
     if (newTableObj && newTableObj.orderData) {
-      const { draftOrderItems: savedDraft = [], sentKotItems: savedSent = [], heldItems: savedHeld = [], kotStatus: savedKot = 'idle' } = newTableObj.orderData;
+      const { draftOrderItems: savedDraft = [], sentKotItems: savedSent = [], heldItems: savedHeld = [], kotStatus: savedKot = 'idle', rightView: savedRightView = 'order' } = newTableObj.orderData;
       const oldOrderItems = newTableObj.orderData.orderItems || [];
       
       const currentDraftLength = currentOrderDataRef.current.draftOrderItems.length;
@@ -78,7 +78,14 @@ export const useTableFlow = ({
         setSentKotItems(prev => prev.length === 0 && currentDraftLength === 0 ? savedSent : prev);
         setHeldItems(prev => prev.length === 0 && currentHeldLength === 0 ? savedHeld : prev);
         setKotStatus(prev => prev === 'idle' ? savedKot : prev);
+        // We restore rightView directly to bring the user back to the exact screen they left off at
+        setRightView(savedRightView);
+      } else {
+        // Reset view if the table is fresh/empty
+        setRightView('order');
       }
+    } else {
+      setRightView('order');
     }
 
     return () => {
@@ -96,7 +103,8 @@ export const useTableFlow = ({
             draftOrderItems: currentOrderDataRef.current.draftOrderItems,
             sentKotItems: currentOrderDataRef.current.sentKotItems,
             heldItems: currentOrderDataRef.current.heldItems,
-            kotStatus: currentOrderDataRef.current.kotStatus
+            kotStatus: currentOrderDataRef.current.kotStatus,
+            rightView: currentOrderDataRef.current.rightView
           }
         }));
       }

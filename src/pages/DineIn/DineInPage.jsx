@@ -115,24 +115,37 @@ export const DineInPage = () => {
             <div className="flex-1 overflow-y-auto scroll-smooth pr-4 pb-8 dinein-scrollbar">
               {/* Table Grid */}
               <div className="grid grid-cols-3 gap-x-[34px] gap-y-[31px]">
-                {tables.map((table) => (
-                  <TableCard
-                    key={table.id}
-                    tableNo={table.tableNo}
-                    status={table.status}
-                    customerName={table.customerName}
-                    guests={table.guests}
-                    duration={table.duration}
-                    reservedGuests={table.reservedGuests}
-                    onStartOrder={() => dispatch(setSelectedTableForOrder(table.tableNo))}
-                    onResumeOrder={() => navigate('/dashboard/menu', { state: { tableNo: table.tableNo, existingSession: true } })}
-                    onChangeTable={(tableNo) => dispatch(setActionTarget({ type: 'change', tableNo }))}
-                    onMergeTable={(tableNo) => dispatch(setActionTarget({ type: 'merge', tableNo }))}
-                    onCancelFood={(tableNo) => dispatch(setActionTarget({ type: 'cancel-food', tableNo }))}
-                    onReplaceFood={(tableNo) => dispatch(setActionTarget({ type: 'replace-food', tableNo }))}
-                    onCancelTable={(tableNo) => dispatch(setActionTarget({ type: 'cancel-table', tableNo }))}
-                  />
-                ))}
+                {tables.map((table) => {
+                  let workflowStatus = null;
+                  if (table.status === 'occupied') {
+                    const data = table.orderData;
+                    if (!data) workflowStatus = 'DRAFT';
+                    else if (data.rightView === 'checkout') workflowStatus = 'BILLING';
+                    else if (data.kotStatus === 'ready') workflowStatus = 'READY';
+                    else if (data.kotStatus === 'sent' || (data.sentKotItems && data.sentKotItems.length > 0)) workflowStatus = 'KOT SENT';
+                    else workflowStatus = 'DRAFT';
+                  }
+
+                  return (
+                    <TableCard
+                      key={table.id}
+                      tableNo={table.tableNo}
+                      status={table.status}
+                      customerName={table.customerName}
+                      guests={table.guests}
+                      duration={table.duration}
+                      reservedGuests={table.reservedGuests}
+                      workflowStatus={workflowStatus}
+                      onStartOrder={() => dispatch(setSelectedTableForOrder(table.tableNo))}
+                      onResumeOrder={() => navigate('/dashboard/menu', { state: { tableNo: table.tableNo, existingSession: true } })}
+                      onChangeTable={(tableNo) => dispatch(setActionTarget({ type: 'change', tableNo }))}
+                      onMergeTable={(tableNo) => dispatch(setActionTarget({ type: 'merge', tableNo }))}
+                      onCancelFood={(tableNo) => dispatch(setActionTarget({ type: 'cancel-food', tableNo }))}
+                      onReplaceFood={(tableNo) => dispatch(setActionTarget({ type: 'replace-food', tableNo }))}
+                      onCancelTable={(tableNo) => dispatch(setActionTarget({ type: 'cancel-table', tableNo }))}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
