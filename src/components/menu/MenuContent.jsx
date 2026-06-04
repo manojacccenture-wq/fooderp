@@ -38,8 +38,8 @@ export const MenuContent = ({
   const scrollContainerRef = useRef(null);
 
   const filteredProducts = useMemo(() => {
-    // Only show available items on the menu
-    let filtered = menuProducts.filter(item => item.isAvailable !== false);
+    // Show all items, unavailable ones will be styled visually
+    let filtered = menuProducts;
     
     if (search.trim()) {
       const searchValue = search.toLowerCase();
@@ -75,7 +75,9 @@ export const MenuContent = ({
   const handleSearchKeyDown = (e) => {
     if (KEYBOARD_ACTIONS.ADD_ITEM.match(e) && e.key === 'Enter') {
       if (search.trim() !== '' && filteredProducts.length === 1) {
-        onProductEnter(filteredProducts[0]);
+        if (filteredProducts[0].isAvailable !== false) {
+          onProductEnter(filteredProducts[0]);
+        }
       }
     } else if (KEYBOARD_ACTIONS.EXIT_SEARCH.match(e)) {
       searchRef.current?.blur();
@@ -248,12 +250,17 @@ export const MenuContent = ({
               return (
                 <div key={index}
                   ref={(el) => (productRefs.current[index] = el)}
-                  onClick={() => onProductClick && onProductClick(p)}
+                  onClick={() => {
+                    if (p.isAvailable === false) return;
+                    if (onProductClick) onProductClick(p);
+                  }}
                   onFocus={() => {
+                    if (p.isAvailable === false) return;
                     setActiveKeyboardSection('menu');
                     if (setKeyboardSelectedIndex) setKeyboardSelectedIndex(index);
                   }}
                   onKeyDown={(e) => {
+                    if (p.isAvailable === false) return;
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       e.stopPropagation();
@@ -264,10 +271,11 @@ export const MenuContent = ({
                       if (onProductClick) onProductClick(p);
                     }
                   }}
-                  tabIndex={0}
+                  tabIndex={p.isAvailable === false ? -1 : 0}
                   className={clsx(
-                    "cursor-pointer transition-all h-full outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:ring-offset-2 rounded-[16px]",
-                    isActiveReplaceTarget ? "ring-2 ring-[#ffb01d] transform scale-[1.02]" : ""
+                    "transition-all h-full outline-none focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:ring-offset-2 rounded-[16px]",
+                    isActiveReplaceTarget ? "ring-2 ring-[#ffb01d] transform scale-[1.02]" : "",
+                    p.isAvailable === false ? "cursor-not-allowed" : "cursor-pointer"
                   )}
                 >
                   <ProductCard
@@ -278,6 +286,7 @@ export const MenuContent = ({
                         ? 0
                         : orderItems.find(item => item.title === p.title)?.quantity || 0
                     }
+                    isAvailable={p.isAvailable !== false}
                   />
                 </div>
               );

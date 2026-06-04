@@ -6,8 +6,12 @@ import { completeTableOrder } from '../../../store/slices/tableSlice';
 import { clearOrderNumber } from '../../../store/slices/orderSlice';
 import { createTakeawayEntry } from '../../../store/slices/takeawaySlice';
 import { addTransaction } from '../../../store/slices/moneyManagementSlice';
+import { addCompletedOrder } from '../../../store/slices/orderHistorySlice';
+import { useSelector } from 'react-redux';
+import { selectActiveKots } from '../../../store/slices/kotSlice';
 
 export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus, handleSendKOT, totalPackQuantity, draftOrderItems, combinedItems, phone, currentOrderNumber, globalOrderCounter }) => {
+  const activeKots = useSelector(selectActiveKots);
   const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'Upi' | 'Card' | 'Due'
   const [splitMode, setSplitMode] = useState('full');
   const [selectedTip, setSelectedTip] = useState(0);
@@ -54,18 +58,78 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
     let txType = 'cash_sale';
     if (paymentMode === 'Upi') txType = 'upi_sale';
     else if (paymentMode === 'Card') txType = 'card_sale';
+    else if (paymentMode === 'Due') txType = 'due_sale';
 
     const orderId = currentOrderNumber || (globalOrderCounter + 1);
 
     dispatch(addTransaction({
       type: txType,
       amount: payableAmount,
-      direction: paymentMode === 'Cash' ? 'in' : paymentMode.toLowerCase(),
+      direction: 'in', // Sales are ALWAYS 'in' regardless of payment method
       orderId: orderId,
       tableNumber: selectedTable,
+      orderSource: orderType,
       reason: `Order #${orderId} Payment`,
       createdBy: 'Cashier'
     }));
+
+    const allItems = combinedItems || [];
+    const subtotal = allItems.reduce((acc, item) => acc + Number(item.price) * item.quantity, 0);
+    const tax = subtotal * 0.08; // 8% tax match
+    const finalAmount = subtotal + tax - discountAmount;
+
+    // Retrieve specific KOTs for this order before they are cleared
+    const orderKots = activeKots.filter(k => k.orderNumber === orderId);
+    
+    // Build Timeline
+    const nowISO = new Date().toISOString();
+    const nowTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase();
+    
+    const timeline = [];
+    if (orderKots.length > 0) {
+      const firstKotTime = new Date(orderKots[0].createdAt);
+      timeline.push({ time: firstKotTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(), event: 'Order Created' });
+      orderKots.forEach((kot, idx) => {
+        timeline.push({ time: new Date(kot.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(), event: `KOT Round ${idx + 1} Sent` });
+      });
+    } else {
+      timeline.push({ time: nowTimeStr, event: 'Order Created' });
+    }
+    
+    timeline.push({ time: nowTimeStr, event: 'Bill Generated' });
+    timeline.push({ time: nowTimeStr, event: 'Payment Completed' });
+
+    // Dispatch full snapshot to history ONLY for Dine-In.
+    // Takeaways will be dispatched upon Handover.
+    if (orderType !== 'take_away') {
+      dispatch(addCompletedOrder({
+        id: orderId,
+        kotNumber: `KOT-${orderId}`,
+        tableNumber: selectedTable,
+        customerName: phone || 'Walk-in Customer',
+        type: 'Dine-In',
+        items: allItems,
+        subtotal,
+        tax,
+        discount: discountAmount,
+        finalAmount,
+        paymentMode,
+        cashier: 'Cashier',
+        shift: 'Morning',
+        orderStartTime: orderKots.length > 0 ? orderKots[0].createdAt : nowISO,
+        duration: '45 min',
+        kots: orderKots,
+        timeline,
+        paymentDetails: {
+          customerPaidAmount,
+          dueGivenAmount: watchPayment('dueGivenAmount') || 0,
+          changeReturned: (customerPaidAmount - finalAmount) > 0 ? (customerPaidAmount - finalAmount) : 0,
+        },
+        tableAudit: {
+          guestCount: 4 // Usually this is tracked in table session, hardcoding to 4 as per current UI mockup
+        }
+      }));
+    }
 
     // For pure takeaway orders, draft items were never sent to KOT
     // They skipped straight to Print Billing. So we dispatch them now
@@ -74,7 +138,6 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
       handleSendKOT();
     }
 
-    const allItems = combinedItems || [];
     const parcelItems = allItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
     
     if (parcelItems.length > 0 || orderType === 'take_away') {
@@ -93,7 +156,14 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
         tableReference: selectedTable,
         customerInfo: phone ? { phone } : null,
         status: 'Preparing',
-        items: takeAwayItemsToPass
+        items: takeAwayItemsToPass,
+        financials: {
+          subtotal,
+          tax,
+          discount: discountAmount,
+          finalAmount,
+          paymentMode
+        }
       }));
     }
 

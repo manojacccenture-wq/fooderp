@@ -7,7 +7,7 @@ const persistConfig = {
   key: 'food-erp-root',
   version: 1,
   storage: typeof storage !== 'undefined' ? (storage.default || storage) : storage,
-  whitelist: ['order', 'table', 'payment', 'checkout', 'product', 'moneyManagement'], // UI is explicitly not persisted
+  whitelist: ['auth', 'orderHistory', 'order', 'table', 'payment', 'checkout', 'product', 'moneyManagement', 'takeaway', 'kot'], // Explicitly persist what we need
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

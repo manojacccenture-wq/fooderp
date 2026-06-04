@@ -9,7 +9,12 @@ import kotReducer from './slices/kotSlice';
 import productReducer from './slices/productSlice';
 import moneyManagementReducer from './slices/moneyManagementSlice';
 
+import authReducer from './slices/authSlice';
+import orderHistoryReducer from './slices/orderHistorySlice';
+
 const rootReducer = combineReducers({
+  auth: authReducer,
+  orderHistory: orderHistoryReducer,
   order: orderReducer,
   table: tableReducer,
   payment: paymentReducer,

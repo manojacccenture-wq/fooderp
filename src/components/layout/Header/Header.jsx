@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { LogoutModal } from './LogoutModal';
 
 const imgVector = "http://localhost:3845/assets/56c9b6210eb0436b457badfa3ee0358646ef3cb3.svg";
 const imgVector1 = "http://localhost:3845/assets/12ceba92ef4e88b4f9c796089133f3191aa892be.svg";
@@ -7,21 +9,26 @@ const imgVector1 = "http://localhost:3845/assets/12ceba92ef4e88b4f9c796089133f31
 export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = useSelector(state => state.auth);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showLogout, setShowLogout] = useState(false);
   const dropdownRef = useRef(null);
 
   const isActive = (path) => location.pathname.includes(path);
 
   const menuItems = [
     { label: "Overview", route: "/dashboard" },
-    { label: "Shift Summary", route: "/dashboard" },
+    { label: "Shift Summary", route: "/dashboard/shift-summary" },
     { label: "Item on/off", route: "/dashboard/item-on-off" },
     { label: "Money management", route: "/dashboard/money-management" },
     { label: "Order History", route: "/dashboard/order-history" },
-    { label: "Log Out", route: "/dashboard" },
+    { label: "End Shift / Log Out", action: "logout" },
   ];
 
   const isMenuItemActive = (route) => {
+    if (route === "/dashboard/shift-summary") {
+      return location.pathname === "/dashboard/shift-summary";
+    }
     if (route === "/dashboard/item-on-off") {
       return location.pathname === "/dashboard/item-on-off";
     }
@@ -52,13 +59,18 @@ export const Header = () => {
     };
   }, [isDropdownOpen]);
 
-  const handleMenuClick = (route) => {
-    navigate(route);
+  const handleMenuClick = (item) => {
+    if (item.action === 'logout') {
+      setShowLogout(true);
+    } else if (item.route) {
+      navigate(item.route);
+    }
     setIsDropdownOpen(false);
   };
 
   return (
     <header className="h-[84px] shrink-0 w-full bg-[var(--color-tertiary-5)] border-b border-[var(--color-neutral-10)] flex items-center justify-between px-6 py-6 z-30 relative">
+      {showLogout && <LogoutModal onClose={() => setShowLogout(false)} />}
       
       <div className="flex items-center gap-3">
         <div className="relative" ref={dropdownRef}>
@@ -83,9 +95,9 @@ export const Header = () => {
                 {menuItems.map((item, index) => (
                   <button
                     key={index}
-                    onClick={() => handleMenuClick(item.route)}
+                    onClick={() => handleMenuClick(item)}
                     className={`w-full text-left flex items-center px-4 py-3 rounded-lg cursor-pointer transition-colors ${
-                      isMenuItemActive(item.route)
+                      item.route && isMenuItemActive(item.route)
                         ? 'bg-[var(--color-secondary-5)]'
                         : 'hover:bg-[var(--color-secondary-5)]'
                     }`}
@@ -102,7 +114,7 @@ export const Header = () => {
         
         <div className="flex flex-col gap-[2px]">
           <span className="text-body-2 text-[var(--color-neutral-500)]">Anna's Kitchen</span>
-          <span className="text-subtitle-1 text-[var(--color-neutral-800)]">Cashier</span>
+          <span className="text-subtitle-1 text-[var(--color-neutral-800)]">{auth.shiftName || 'Cashier'}</span>
         </div>
       </div>
 

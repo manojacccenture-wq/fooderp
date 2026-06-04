@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { selectActiveTakeaways, selectCompletedTakeaways, updateTakeawayStatus, completeTakeaway } from '../../store/slices/takeawaySlice';
 import { selectActiveKots, removeKots } from '../../store/slices/kotSlice';
+import { addCompletedOrder } from '../../store/slices/orderHistorySlice';
 import { TakeawayCard } from './components/TakeawayCard';
 import { TakeawaySidebar } from './components/TakeawaySidebar';
 
@@ -42,6 +43,55 @@ export const TakeawayPage = () => {
     const currentKotIds = relatedKots.map(k => k.id);
     
     dispatch(completeTakeaway({ tokenNumber, items: currentActiveItems }));
+    
+    // Dispatch to Order History only if it's a pure takeaway
+    // Dine-in parcels are already captured during billing
+    if (selectedTakeaway && selectedTakeaway.source === 'take_away') {
+      const nowTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase();
+      const timeline = [];
+      
+      const firstKotTime = relatedKots.length > 0 ? new Date(relatedKots[0].createdAt) : new Date(selectedTakeaway.createdAt);
+      timeline.push({ time: firstKotTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(), event: 'Order Created' });
+      
+      relatedKots.forEach((kot, idx) => {
+        timeline.push({ time: new Date(kot.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(), event: `KOT Round ${idx + 1} Sent` });
+      });
+      
+      timeline.push({ time: nowTimeStr, event: 'Payment Completed' });
+      timeline.push({ time: nowTimeStr, event: 'Order Completed' });
+      timeline.push({ time: nowTimeStr, event: 'Handed Over' });
+
+      dispatch(addCompletedOrder({
+        id: selectedTakeaway.orderNumber,
+        kotNumber: `KOT-${selectedTakeaway.orderNumber}`,
+        tableNumber: selectedTakeaway.tableReference,
+        customerName: selectedTakeaway.customerInfo?.phone || 'Walk-in Customer',
+        type: 'Takeaway',
+        items: currentActiveItems.length ? currentActiveItems : selectedTakeaway.items,
+        subtotal: selectedTakeaway.financials?.subtotal || 0,
+        tax: selectedTakeaway.financials?.tax || 0,
+        discount: selectedTakeaway.financials?.discount || 0,
+        finalAmount: selectedTakeaway.financials?.finalAmount || 0,
+        paymentMode: selectedTakeaway.financials?.paymentMode || 'Cash',
+        cashier: 'Cashier',
+        shift: 'Morning',
+        orderStartTime: selectedTakeaway.createdAt || new Date().toISOString(),
+        duration: '30 min',
+        kots: relatedKots,
+        timeline,
+        paymentDetails: {
+          customerPaidAmount: selectedTakeaway.financials?.finalAmount || 0,
+          dueGivenAmount: 0,
+          changeReturned: 0,
+        },
+        takeawayAudit: {
+          tokenNumber: selectedTakeaway.tokenNumber,
+          status: 'Handed Over',
+          packedTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(),
+          handedOverTime: nowTimeStr
+        }
+      }));
+    }
     
     if (currentKotIds.length > 0) {
       dispatch(removeKots(currentKotIds));
