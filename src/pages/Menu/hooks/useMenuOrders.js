@@ -163,21 +163,19 @@ export const useMenuOrders = (setKotStatus) => {
   };
 
   const handleConfirmSplitPack = ({ item, serveQty, packQty }) => {
-    let itemFoundInDraft = false;
+    const isDraft = draftOrderItems.some(i => i.id === item.id);
 
-    setDraftOrderItems(prev => prev.map(i => {
-      if (i.id === item.id) {
-        itemFoundInDraft = true;
-        return {
-          ...i,
-          fulfillment: { ...i.fulfillment, dine_in: serveQty, take_away: packQty }
-        };
-      }
-      return i;
-    }));
-
-    // If it's not in draft, it must be in sentKotItems
-    if (!itemFoundInDraft) {
+    if (isDraft) {
+      setDraftOrderItems(prev => prev.map(i => {
+        if (i.id === item.id) {
+          return {
+            ...i,
+            fulfillment: { ...i.fulfillment, dine_in: serveQty, take_away: packQty }
+          };
+        }
+        return i;
+      }));
+    } else {
       setSentKotItems(prev => prev.map(i => {
         if (i.id === item.id) {
           return {

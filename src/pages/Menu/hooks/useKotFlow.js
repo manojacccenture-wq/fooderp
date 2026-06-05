@@ -3,7 +3,7 @@ import { useAppSelector } from '../../../store/hooks';
 import { startOrderForTable } from '../../../store/slices/tableSlice';
 import { getCurrentOrderStatus } from '../../../utils/orderStatus';
 import { generateKOT } from '../../../store/slices/kotSlice';
-import { generateToken, selectActiveTakeaways, selectCompletedTakeaways, selectDailyTokenCounter } from '../../../store/slices/takeawaySlice';
+import { generateToken, selectActiveTakeaways, selectCompletedTakeaways, selectDailyTokenCounter, createTakeawayEntry } from '../../../store/slices/takeawaySlice';
 import { assignOrderNumber } from '../../../store/slices/orderSlice';
 
 export const useKotFlow = ({
@@ -130,6 +130,20 @@ export const useKotFlow = ({
         tableReference: selectedTable,
         tokenNumber: assignedToken
       }));
+      
+      dispatch(createTakeawayEntry({
+        orderNumber: effectiveOrderNumber,
+        source: orderType,
+        tableReference: selectedTable,
+        customerInfo: phone ? { phone } : null,
+        status: 'Preparing',
+        tokenNumber: assignedToken,
+        items: takeAwayItems.map(item => ({
+          ...item,
+          quantity: item.fulfillment.take_away,
+          fulfillment: { dine_in: 0, take_away: item.fulfillment.take_away }
+        }))
+      }));
     }
 
     setSentKotItems(prevSent => [...prevSent, ...newItems]);
@@ -230,6 +244,20 @@ export const useKotFlow = ({
         items: takeAwayItems,
         tableReference: selectedTable,
         tokenNumber: assignedToken
+      }));
+      
+      dispatch(createTakeawayEntry({
+        orderNumber: effectiveOrderNumber,
+        source: orderType,
+        tableReference: selectedTable,
+        customerInfo: phone ? { phone } : null,
+        status: 'Preparing',
+        tokenNumber: assignedToken,
+        items: takeAwayItems.map(item => ({
+          ...item,
+          quantity: item.fulfillment.take_away,
+          fulfillment: { dine_in: 0, take_away: item.fulfillment.take_away }
+        }))
       }));
     }
 
