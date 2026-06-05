@@ -20,6 +20,7 @@ import {
   cancelTable
 } from '../../store/slices/tableSlice';
 import { cancelOrder } from '../../store/slices/orderSlice';
+import { selectActiveKots } from '../../store/slices/kotSlice';
 
 export const DineInPage = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export const DineInPage = () => {
   const tables = useAppSelector(selectAllTables);
   const selectedTableForOrder = useAppSelector(selectSelectedTableForOrder);
   const actionTarget = useAppSelector(selectActionTarget);
+  const activeKots = useAppSelector(selectActiveKots);
   
   const totalTables = 10; // "Top Number of Table (10)" as per design
 
@@ -60,18 +62,18 @@ export const DineInPage = () => {
       <style>
         {`
           .dinein-scrollbar::-webkit-scrollbar {
-            width: 8px;
+            width: 4px;
           }
           .dinein-scrollbar::-webkit-scrollbar-track {
             background: transparent;
-            border-radius: 999px;
+            border-radius: 4px;
           }
           .dinein-scrollbar:hover::-webkit-scrollbar-track {
-            background: #F3F4F6;
+            background: #f1f1f1;
           }
           .dinein-scrollbar::-webkit-scrollbar-thumb {
             background: transparent;
-            border-radius: 999px;
+            border-radius: 4px;
           }
           .dinein-scrollbar:hover::-webkit-scrollbar-thumb {
             background: #FBBF24;
@@ -119,11 +121,27 @@ export const DineInPage = () => {
                   let workflowStatus = null;
                   if (table.status === 'occupied') {
                     const data = table.orderData;
-                    if (!data) workflowStatus = 'DRAFT';
-                    else if (data.rightView === 'checkout') workflowStatus = 'BILLING';
-                    else if (data.kotStatus === 'ready') workflowStatus = 'READY';
-                    else if (data.kotStatus === 'sent' || (data.sentKotItems && data.sentKotItems.length > 0)) workflowStatus = 'KOT SENT';
-                    else workflowStatus = 'DRAFT';
+                    if (!data) {
+                      workflowStatus = 'DRAFT';
+                    } else if (data.rightView === 'checkout') {
+                      workflowStatus = 'BILLING';
+                    } else {
+                      const tableKots = activeKots.filter(k => String(k.tableReference) === String(table.tableNo));
+                      if (tableKots.length > 0) {
+                        if (tableKots.some(k => k.status === 'ready')) {
+                          workflowStatus = 'READY';
+                        } else if (tableKots.some(k => k.status === 'preparing')) {
+                          workflowStatus = 'PREPARING';
+                        } else {
+                          workflowStatus = 'KOT SENT';
+                        }
+                      } else {
+                        if (data.kotStatus === 'ready') workflowStatus = 'READY';
+                        else if (data.kotStatus === 'preparing') workflowStatus = 'PREPARING';
+                        else if (data.kotStatus === 'sent' || (data.sentKotItems && data.sentKotItems.length > 0)) workflowStatus = 'KOT SENT';
+                        else workflowStatus = 'DRAFT';
+                      }
+                    }
                   }
 
                   return (

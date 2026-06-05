@@ -45,6 +45,7 @@ const getCardStyleOptions = (status, workflowStatus) => {
   switch (workflowStatus) {
     case 'DRAFT': return { bg: 'bg-[#f8faff]/80', border: 'border-l-[#eaeaef]', label: 'DRAFT', labelColor: 'text-[#8e8ea9]' };
     case 'KOT SENT': return { bg: 'bg-[#f0f0ff]/80', border: 'border-l-[#6366f1]', label: 'KOT SENT', labelColor: 'text-[#6366f1]' };
+    case 'PREPARING': return { bg: 'bg-[#fff4e5]/80', border: 'border-l-[#f59e0b]', label: 'PREPARING', labelColor: 'text-[#f59e0b]' };
     case 'READY': return { bg: 'bg-[#e8fbf0]/80', border: 'border-l-[#24a44b]', label: 'READY TO SERVE', labelColor: 'text-[#24a44b]' };
     case 'BILLING': return { bg: 'bg-[#fff7e8]/80', border: 'border-l-[#ffb01d]', label: 'BILLING', labelColor: 'text-[#d88c00]' };
     case 'PAYMENT': return { bg: 'bg-[#fff0f0]/80', border: 'border-l-[#f24343]', label: 'PAYMENT PENDING', labelColor: 'text-[#f24343]' };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAppSelector } from '../../../store/hooks';
 import { startOrderForTable } from '../../../store/slices/tableSlice';
 import { getCurrentOrderStatus } from '../../../utils/orderStatus';
-import { generateKOT } from '../../../store/slices/kotSlice';
+import { generateKOT, updateKotStatus, selectActiveKots } from '../../../store/slices/kotSlice';
 import { generateToken, selectActiveTakeaways, selectCompletedTakeaways, selectDailyTokenCounter, createTakeawayEntry } from '../../../store/slices/takeawaySlice';
 import { assignOrderNumber } from '../../../store/slices/orderSlice';
 
@@ -33,13 +33,27 @@ export const useKotFlow = ({
   const completedTakeaways = useAppSelector(selectCompletedTakeaways);
   const dailyTokenCounter = useAppSelector(selectDailyTokenCounter);
   const lastTokenDate = useAppSelector(state => state.takeaway.lastTokenDate);
+  const activeKots = useAppSelector(selectActiveKots);
+
+  const tableKots = activeKots.filter(k => String(k.tableReference) === String(selectedTable));
+  
+  let derivedKotStatus = kotStatus;
+  if (tableKots.length > 0) {
+    if (tableKots.some(k => k.status === 'ready')) {
+      derivedKotStatus = 'ready';
+    } else if (tableKots.some(k => k.status === 'preparing')) {
+      derivedKotStatus = 'preparing';
+    } else {
+      derivedKotStatus = 'kot_sent';
+    }
+  }
 
   const globalOrderStatus = getCurrentOrderStatus({
     paymentStatus,
     isUpiModalOpen,
     rightView,
     paymentMode,
-    kotStatus,
+    kotStatus: derivedKotStatus,
     draftOrderItemsCount: draftOrderItems.length,
     sentKotItemsCount: sentKotItemsLength,
     hasSelectedTable: !!selectedTable
@@ -113,8 +127,12 @@ export const useKotFlow = ({
       }
     }
 
+    const dineInKotId = `KOT-${Date.now()}-D`;
+    const takeAwayKotId = `KOT-${Date.now()}-T`;
+
     if (dineInItems.length > 0) {
       dispatch(generateKOT({
+        id: dineInKotId,
         orderNumber: effectiveOrderNumber,
         type: 'dine_in',
         items: dineInItems,
@@ -124,6 +142,7 @@ export const useKotFlow = ({
 
     if (takeAwayItems.length > 0) {
       dispatch(generateKOT({
+        id: takeAwayKotId,
         orderNumber: effectiveOrderNumber,
         type: 'take_away',
         items: takeAwayItems,
@@ -154,9 +173,13 @@ export const useKotFlow = ({
     // Simulate KDS Status changes
     setTimeout(() => {
       setKotStatus(prev => prev === 'kot_sent' ? 'preparing' : prev);
+      if (dineInItems.length > 0) dispatch(updateKotStatus({ kotId: dineInKotId, status: 'preparing' }));
+      if (takeAwayItems.length > 0) dispatch(updateKotStatus({ kotId: takeAwayKotId, status: 'preparing' }));
     }, 2000);
     setTimeout(() => {
       setKotStatus(prev => prev === 'preparing' ? 'ready' : prev);
+      if (dineInItems.length > 0) dispatch(updateKotStatus({ kotId: dineInKotId, status: 'ready' }));
+      if (takeAwayItems.length > 0) dispatch(updateKotStatus({ kotId: takeAwayKotId, status: 'ready' }));
     }, 6000);
 
     if (orderType === 'take_away') {
@@ -228,8 +251,12 @@ export const useKotFlow = ({
       }
     }
 
+    const dineInKotId = `KOT-${Date.now()}-D`;
+    const takeAwayKotId = `KOT-${Date.now()}-T`;
+
     if (dineInItems.length > 0) {
       dispatch(generateKOT({
+        id: dineInKotId,
         orderNumber: effectiveOrderNumber,
         type: 'dine_in',
         items: dineInItems,
@@ -239,6 +266,7 @@ export const useKotFlow = ({
 
     if (takeAwayItems.length > 0) {
       dispatch(generateKOT({
+        id: takeAwayKotId,
         orderNumber: effectiveOrderNumber,
         type: 'take_away',
         items: takeAwayItems,
@@ -274,14 +302,19 @@ export const useKotFlow = ({
     setKotStatus('kot_sent');
     setTimeout(() => {
       setKotStatus(prev => prev === 'kot_sent' ? 'preparing' : prev);
+      if (dineInItems.length > 0) dispatch(updateKotStatus({ kotId: dineInKotId, status: 'preparing' }));
+      if (takeAwayItems.length > 0) dispatch(updateKotStatus({ kotId: takeAwayKotId, status: 'preparing' }));
     }, 2000);
     setTimeout(() => {
       setKotStatus(prev => prev === 'preparing' ? 'ready' : prev);
+      if (dineInItems.length > 0) dispatch(updateKotStatus({ kotId: dineInKotId, status: 'ready' }));
+      if (takeAwayItems.length > 0) dispatch(updateKotStatus({ kotId: takeAwayKotId, status: 'ready' }));
     }, 6000);
   };
 
   return {
-    kotStatus, setKotStatus,
+    kotStatus: derivedKotStatus,
+    setKotStatus,
     globalOrderStatus,
     handleSendKOT,
     handleSendHeldItem

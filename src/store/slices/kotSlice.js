@@ -9,16 +9,16 @@ const kotSlice = createSlice({
   initialState,
   reducers: {
     generateKOT: (state, action) => {
-      const { orderNumber, type, items, tableReference, tokenNumber } = action.payload;
+      const { id, orderNumber, type, items, tableReference, tokenNumber, status } = action.payload;
       
       const newKot = {
-        id: `KOT-${Date.now()}`,
+        id: id || `KOT-${Date.now()}`,
         orderNumber,
         type, // 'dine_in' or 'take_away'
         items: items.map(item => ({ ...item })), // deep copy items at this state
         tableReference: tableReference || null,
         tokenNumber: tokenNumber || null,
-        status: 'preparing', // 'preparing' | 'ready' | 'delivered'
+        status: status || 'kot_sent', // 'kot_sent' | 'preparing' | 'ready' | 'delivered'
         createdAt: new Date().toISOString(),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };

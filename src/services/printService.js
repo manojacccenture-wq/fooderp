@@ -19,14 +19,13 @@ export const findAvailablePrinters = async () => {
   try {
     const isConnected = await connectPrinter();
     if (!isConnected) return [];
-    
+
     return await qz.printers.find();
   } catch (err) {
     console.error('Error finding printers:', err);
     return [];
   }
 };
-
 
 export const printReceiptElement = async (printerName, element) => {
   try {
@@ -44,6 +43,10 @@ export const printReceiptElement = async (printerName, element) => {
     clone.style.top = '0px';
     clone.style.left = '0px';
     clone.style.zIndex = '-9999';
+
+    // Added for 80mm receipt rendering
+    clone.style.width = '80mm';
+
     document.body.appendChild(clone);
 
     const canvas = await html2canvas(clone, {
@@ -69,16 +72,23 @@ export const printReceiptElement = async (printerName, element) => {
     });
 
     pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-    
+
     // We get the raw base64 data string (ignoring the 'data:application/pdf;base64,' prefix)
     const base64Pdf = pdf.output('datauristring').split(',')[1];
-    
+
     console.log("PDF generated successfully");
     console.log("Base64 preview:", base64Pdf.substring(0, 100));
 
     const config = qz.configs.create(printerName, {
       margins: 0,
-      colorType: 'grayscale'
+      colorType: 'grayscale',
+
+      // Added for 80mm paper
+      units: 'mm',
+      size: {
+        width: 80,
+        height: pdfHeight
+      }
     });
 
     const data = [{
