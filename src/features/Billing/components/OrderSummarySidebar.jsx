@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import { SpecialInstructionTags } from '../../../components/orders/SpecialInstructionTags';
+import { SpecialInstructionTags } from '../../Menu/components/SpecialInstructionTags';
 
 // OrderItem internal component or imported
 const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, showDelete, isSelected, onSelect, onSplit, onReplace, replaceModeSelection, showQuantityControls = true, specialInstructions, onAddInstruction }) => {
@@ -276,4 +276,5 @@ export const OrderSummarySidebar = ({
     </div>
   );
 };
+
 

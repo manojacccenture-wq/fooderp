@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import clsx from 'clsx';
-import { SpecialInstructionTags } from '../../../components/orders/SpecialInstructionTags';
+import { SpecialInstructionTags } from './SpecialInstructionTags';
 
 export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecrease, onRemove, onSplit, onSplitPack, onReplace, showDelete, isSelected,
   onSelect, itemRef, showQuantityControls = true, specialInstructions, onAddInstruction, fulfillment, onToggleFulfillmentType, isParcelActive = false }) => {
@@ -209,3 +209,4 @@ export const OrderItem = ({ image, title, price, quantity, onIncrease, onDecreas
     </div>
   );
 };
+

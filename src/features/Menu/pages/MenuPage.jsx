@@ -12,8 +12,8 @@ import { SplitOrderModal } from '../../Billing/components/SplitOrderModal/SplitO
 import { SplitPackModal } from '../../Billing/components/SplitPackModal/SplitPackModal';
 import { ApplyDiscountModal } from '../../Billing/components/ApplyDiscountModal/ApplyDiscountModal';
 import { UpiPaymentModal } from '../../Billing/components/UpiPaymentModal';
-import { SpecialInstructionsModal } from '../../../components/orders/SpecialInstructionsModal';
-import { QuantitySelectorModal } from '../../../components/orders/QuantitySelectorModal';
+import { SpecialInstructionsModal } from '../components/SpecialInstructionsModal';
+import { QuantitySelectorModal } from '../components/QuantitySelectorModal';
 import { PrinterSelectionModal } from '../../Billing/components/PrinterSelectionModal';
 import { ReceiptPrintTemplate } from '../../Billing/components/ReceiptPrintTemplate';
 import { OrderSidebar } from '../components/Sidebar/OrderSidebar';
@@ -585,6 +585,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     </div>
   );
 };
+
+
 
 
 

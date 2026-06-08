@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { specialInstructionsSchema } from '../../validations/common.validation';
+import { specialInstructionsSchema } from '../../../validations/common.validation';
 
 export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose, onSave }) => {
   const [selections, setSelections] = useState({});
@@ -157,3 +157,4 @@ export const SpecialInstructionsModal = ({ isOpen, item, targetQuantity, onClose
     </div>
   );
 };
+
