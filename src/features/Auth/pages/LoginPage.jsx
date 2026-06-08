@@ -32,19 +32,7 @@ export const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      // TEMPORARILY DISABLED FOR LOCAL TESTING
-      // Existing API login code remains preserved below.
-      /*
       const result = await authService.performLogin(username, password);
-      */
-
-      const isMorning = username === 'morning' && password === '1234';
-      const isEvening = username === 'evening' && password === '1234';
-      const isLocalValid = isMorning || isEvening;
-
-      const result = isLocalValid 
-        ? { success: true, accessToken: 'local-access-token', tokenType: 'Bearer', refreshToken: 'local-refresh-token', expiresIn: 3600 }
-        : { success: false, error: 'Invalid username or password' };
       
       if (result.success) {
         // Fallback for demo shift name assignment based on username if needed
