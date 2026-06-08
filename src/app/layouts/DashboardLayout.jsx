@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { Header } from '../../components/layout/Header/Header';
-import { LockScreenWrapper } from '../../components/auth/LockScreenWrapper';
+import { Header } from '../../shared/components/layout/Header/Header';
+import { LockScreenWrapper } from '../../features/Auth/components/LockScreenWrapper';
 
 export const DashboardLayout = () => {
   return (
@@ -17,3 +17,4 @@ export const DashboardLayout = () => {
     </LockScreenWrapper>
   );
 };
+

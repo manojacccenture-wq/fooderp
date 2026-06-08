@@ -1,15 +1,15 @@
 import React from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
-import { MenuPage } from '../../pages/Menu/MenuPage';
-import { DineInPage } from '../../pages/DineIn/DineInPage';
-import { TakeawayPage } from '../../pages/Takeaway/TakeawayPage';
-import { ItemOnOffPage } from '../../pages/ItemOnOff/ItemOnOffPage';
-import { MoneyManagementPage } from '../../pages/MoneyManagement/MoneyManagementPage';
-import { OrderHistoryPage } from '../../pages/OrderHistory/OrderHistoryPage';
-import { OrderHistoryDetailsPage } from '../../pages/OrderHistoryDetails/OrderHistoryDetailsPage';
-import { ShiftSummaryPage } from '../../pages/ShiftSummary/ShiftSummaryPage';
-import { LoginPage } from '../../pages/Auth/LoginPage';
+import { MenuPage } from '../../features/Menu/pages/MenuPage';
+import { DineInPage } from '../../features/DineIn/pages/DineInPage';
+import { TakeawayPage } from '../../features/Takeaway/pages/TakeawayPage';
+import { ItemOnOffPage } from '../../features/Inventory/pages/ItemOnOff/ItemOnOffPage';
+import { MoneyManagementPage } from '../../features/Cashier/pages/MoneyManagement/MoneyManagementPage';
+import { OrderHistoryPage } from '../../features/Orders/pages/OrderHistoryPage';
+import { OrderHistoryDetailsPage } from '../../features/Orders/pages/OrderHistoryDetailsPage';
+import { ShiftSummaryPage } from '../../features/Cashier/pages/ShiftSummary/ShiftSummaryPage';
+import { LoginPage } from '../../features/Auth/pages/LoginPage';
 import { ProtectedRoute } from './ProtectedRoute';
 
 export const router = createBrowserRouter([
@@ -74,3 +74,9 @@ export const router = createBrowserRouter([
     ]
   }
 ]);
+
+
+
+
+
+
