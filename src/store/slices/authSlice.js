@@ -6,6 +6,7 @@ const initialState = {
   autoLockTimeout: 15, // Default 15 minutes
   currentUser: null, // 'morning' | 'evening'
   shiftName: null, // 'Morning Shift' | 'Evening Shift'
+  userPins: {}, // Stores custom overridden PINs { 'morning': '1111' }
   loginTime: null,
   openingCash: null,
   shiftHistory: [], // Array of completed shift closing records
@@ -31,11 +32,18 @@ const authSlice = createSlice({
     },
     unlockPOS: (state, action) => {
       const { pin } = action.payload;
-      // Valid pins for mock demo
-      const validPin = state.currentUser === 'morning' ? '1234' : '567890';
+      // Valid pins for mock demo, check userPins first
+      const validPin = state.userPins?.[state.currentUser] || (state.currentUser === 'morning' ? '1234' : '567890');
       if (pin === validPin) {
         state.isLocked = false;
       }
+    },
+    resetUserPin: (state, action) => {
+      const { user, newPin } = action.payload;
+      if (!state.userPins) state.userPins = {};
+      state.userPins[user] = newPin;
+      // Optionally auto-unlock the POS after reset
+      state.isLocked = false;
     },
     setAutoLockTimeout: (state, action) => {
       state.autoLockTimeout = action.payload;
@@ -63,6 +71,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { loginStartShift, endShift, lockPOS, unlockPOS, setAutoLockTimeout } = authSlice.actions;
+export const { loginStartShift, endShift, lockPOS, unlockPOS, resetUserPin, setAutoLockTimeout } = authSlice.actions;
 
 export default authSlice.reducer;
