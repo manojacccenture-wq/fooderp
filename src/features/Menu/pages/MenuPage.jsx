@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { selectAllTables } from '../../DineIn/store/tableSlice';
 import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber } from '../store/orderSlice';
-import { fetchMenuData } from '../store/productSlice';
+import { fetchMenuData, resetMenuStatus } from '../store/productSlice';
 import { createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
 
 // Components
@@ -43,12 +43,23 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const isTakeawayPage = location.pathname === '/dashboard/takeaways';
   
   const productStatus = useAppSelector(state => state.product.status);
+  const menuProducts = useAppSelector(state => state.product.items);
+  const menuCategories = useAppSelector(state => state.product.categories);
   
   useEffect(() => {
+    // API trigger condition: status === "idle"
     if (productStatus === 'idle') {
       dispatch(fetchMenuData());
     }
   }, [productStatus, dispatch]);
+
+  useEffect(() => {
+    // Reset status ONLY on component unmount (empty dependency array)
+    // This ensures fresh API call on next visit without triggering infinite render loops
+    return () => {
+      dispatch(resetMenuStatus());
+    };
+  }, [dispatch]);
   
   const itemRefs = useRef({});
   const paymentInputRef = useRef(null);

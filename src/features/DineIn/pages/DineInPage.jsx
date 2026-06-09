@@ -34,11 +34,10 @@ export const DineInPage = () => {
   const status = useAppSelector(state => state.table.status);
   const error = useAppSelector(state => state.table.error);
 
+  // Fetch tables every time the Dine-In page is mounted to ensure fresh data
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchTablesData());
-    }
-  }, [status, dispatch]);
+    dispatch(fetchTablesData());
+  }, [dispatch]);
   
   const totalTables = 10; // "Top Number of Table (10)" as per design
 

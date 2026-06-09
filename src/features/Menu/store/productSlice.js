@@ -24,6 +24,10 @@ const productSlice = createSlice({
   name: 'product',
   initialState,
   reducers: {
+    resetMenuStatus: (state) => {
+      state.status = 'idle';
+      state.error = null;
+    },
     addProduct: (state, action) => {
       state.items.push(action.payload);
     },
@@ -72,6 +76,6 @@ const productSlice = createSlice({
   }
 });
 
-export const { addProduct, toggleAvailability, changeStock, updateProduct, deleteProduct } = productSlice.actions;
+export const { resetMenuStatus, addProduct, toggleAvailability, changeStock, updateProduct, deleteProduct } = productSlice.actions;
 export default productSlice.reducer;
 
