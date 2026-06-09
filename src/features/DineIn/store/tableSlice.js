@@ -1,22 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const initialTableData = [
-  { id: 1, tableNo: "01", status: "available", guests: 0, customerName: "", reservedGuests: 0, duration: "" },
-  { id: 2, tableNo: "02", status: "occupied", guests: 4, customerName: "Rajkumar", reservedGuests: 0, duration: "25 min" },
-  { id: 3, tableNo: "03", status: "reserved", guests: 0, customerName: "", reservedGuests: 4, duration: "" },
-  { id: 4, tableNo: "04", status: "available", guests: 0, customerName: "", reservedGuests: 0, duration: "" },
-  { id: 5, tableNo: "05", status: "occupied", guests: 4, customerName: "Rajkumar", reservedGuests: 0, duration: "25 min" },
-  { id: 6, tableNo: "06", status: "reserved", guests: 0, customerName: "", reservedGuests: 4, duration: "" },
-  { id: 7, tableNo: "07", status: "available", guests: 0, customerName: "", reservedGuests: 0, duration: "" },
-  { id: 8, tableNo: "09", status: "reserved", guests: 0, customerName: "", reservedGuests: 4, duration: "" },
-  { id: 9, tableNo: "11", status: "occupied", guests: 4, customerName: "Rajkumar", reservedGuests: 0, duration: "25 min" },
-  { id: 10, tableNo: "10", status: "available", guests: 0, customerName: "", reservedGuests: 0, duration: "" },
-  { id: 11, tableNo: "12", status: "reserved", guests: 0, customerName: "", reservedGuests: 4, duration: "" },
-  { id: 12, tableNo: "13", status: "occupied", guests: 4, customerName: "Rajkumar", reservedGuests: 0, duration: "25 min" },
-];
+export const fetchTablesData = createAsyncThunk(
+  'table/fetchTablesData',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { tableService } = await import('../services/tableService');
+      const data = await tableService.fetchAndMapTables();
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 const initialState = {
-  tables: initialTableData,
+  tables: [],
+  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  error: null,
   selectedTableForOrder: null, // used in dine-in for start order
   actionTarget: null, // { type: 'change' | 'merge' | 'cancel-food' | 'replace-food', tableNo: string }
   activeTableMenu: '01', // for menu page
@@ -34,6 +34,9 @@ const tableSlice = createSlice({
     },
     setActionTarget: (state, action) => {
       state.actionTarget = action.payload;
+    },
+    clearActionTarget: (state) => {
+      state.actionTarget = null;
     },
     setActiveTableMenu: (state, action) => {
       state.activeTableMenu = action.payload;
@@ -146,6 +149,21 @@ const tableSlice = createSlice({
       }
     }
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTablesData.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(fetchTablesData.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.tables = action.payload;
+      })
+      .addCase(fetchTablesData.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload || 'Failed to fetch tables';
+      });
+  }
 });
 
 export const {

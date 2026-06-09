@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TableCard } from '../components/TableCard/TableCard';
 import { StartOrderModal } from '../components/StartOrderModal';
@@ -17,7 +17,8 @@ import {
   confirmSelection,
   confirmCancellation,
   confirmReplacement,
-  cancelTable
+  cancelTable,
+  fetchTablesData
 } from '../store/tableSlice';
 import { cancelOrder } from '../../Menu/store/orderSlice';
 import { selectActiveKots } from '../../Menu/store/kotSlice';
@@ -30,6 +31,14 @@ export const DineInPage = () => {
   const selectedTableForOrder = useAppSelector(selectSelectedTableForOrder);
   const actionTarget = useAppSelector(selectActionTarget);
   const activeKots = useAppSelector(selectActiveKots);
+  const status = useAppSelector(state => state.table.status);
+  const error = useAppSelector(state => state.table.error);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchTablesData());
+    }
+  }, [status, dispatch]);
   
   const totalTables = 10; // "Top Number of Table (10)" as per design
 
@@ -115,9 +124,27 @@ export const DineInPage = () => {
 
             {/* Scrollable Table Container */}
             <div className="flex-1 overflow-y-auto scroll-smooth pr-4 pb-8 dinein-scrollbar">
-              {/* Table Grid */}
-              <div className="grid grid-cols-3 gap-x-[34px] gap-y-[31px]">
-                {tables.map((table) => {
+              {status === 'loading' && (
+                <div className="w-full h-full flex flex-col items-center justify-center pt-20">
+                  <div className="w-10 h-10 border-4 border-[#ffb01d]/30 border-t-[#ffb01d] rounded-full animate-spin"></div>
+                  <p className="mt-4 text-[#8e8ea9] font-semibold">Loading tables...</p>
+                </div>
+              )}
+
+              {status === 'failed' && (
+                <div className="w-full h-full flex flex-col items-center justify-center pt-20 text-center">
+                  <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  </div>
+                  <h3 className="text-[16px] font-bold text-[#32324d] mb-1">Failed to load tables</h3>
+                  <p className="text-[14px] text-[#8e8ea9]">{error?.message || 'An unexpected error occurred'}</p>
+                </div>
+              )}
+
+              {status !== 'loading' && status !== 'failed' && (
+                /* Table Grid */
+                <div className="grid grid-cols-3 gap-x-[34px] gap-y-[31px]">
+                  {tables.map((table) => {
                   let workflowStatus = null;
                   if (table.status === 'occupied') {
                     const data = table.orderData;
@@ -165,6 +192,7 @@ export const DineInPage = () => {
                   );
                 })}
               </div>
+              )}
             </div>
           </div>
         )}

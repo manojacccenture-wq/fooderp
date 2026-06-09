@@ -1,12 +1,23 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { MENU_PRODUCTS } from '../../../data/menuProducts';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+export const fetchMenuData = createAsyncThunk(
+  'product/fetchMenuData',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { menuService } = await import('../services/menuService');
+      const data = await menuService.fetchAndMapMenus();
+      return data; // { categories, items }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 const initialState = {
-  items: MENU_PRODUCTS.map(item => ({
-    ...item,
-    isAvailable: item.isAvailable !== false,
-    stock: item.stock || 'In Stock'
-  })),
+  items: [],
+  categories: [],
+  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  error: null,
 };
 
 const productSlice = createSlice({
@@ -42,6 +53,22 @@ const productSlice = createSlice({
       const itemNo = action.payload;
       state.items = state.items.filter(p => p.itemNo !== itemNo);
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMenuData.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(fetchMenuData.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.items = action.payload.items;
+        state.categories = action.payload.categories;
+      })
+      .addCase(fetchMenuData.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload || 'Failed to fetch menu data';
+      });
   }
 });
 

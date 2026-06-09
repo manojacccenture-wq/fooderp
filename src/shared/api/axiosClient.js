@@ -5,7 +5,9 @@ const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Tenant-Id': import.meta.env.VITE_TENANT_ID,
+    // TenantId intentionally disabled for current API integration.
+    // Will be enabled later.
+    // 'Tenant-Id': import.meta.env.VITE_TENANT_ID,
   },
   timeout: 30000,
 });
@@ -35,18 +37,28 @@ axiosClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Normalize error shape for entire application
+    const normalizedError = {
+      message: error.response?.data?.Message || error.response?.data?.message || error.message || 'An unexpected error occurred',
+      status: error.response?.status || 500
+    };
+
+    // Ensure it flows correctly into Redux thunks that read `error.response?.data`
+    if (!error.response) {
+      error.response = {};
+    }
+    error.response.data = normalizedError;
+
     // Centralized error handling
-    if (error.response) {
-      const { status } = error.response;
-      if (status === 401) {
-        // Handle unauthorized (e.g., redirect to login, trigger logout action)
-        console.warn('Unauthorized Access - Token might be expired');
-      } else if (status === 403) {
-        console.warn('Forbidden Access');
-      }
-    } else if (error.request) {
+    if (normalizedError.status === 401) {
+      // Handle unauthorized (e.g., redirect to login, trigger logout action)
+      console.warn('Unauthorized Access - Token might be expired');
+    } else if (normalizedError.status === 403) {
+      console.warn('Forbidden Access');
+    } else if (error.request && !error.response?.config) {
       console.warn('Network Error - No response received');
     }
+    
     return Promise.reject(error);
   }
 );

@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { selectAllTables } from '../../DineIn/store/tableSlice';
 import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber } from '../store/orderSlice';
+import { fetchMenuData } from '../store/productSlice';
 import { createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
 
 // Components
@@ -40,6 +41,14 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const globalOrderCounter = useAppSelector(selectGlobalOrderCounter);
   const currentOrderNumber = useAppSelector(selectCurrentOrderNumber);
   const isTakeawayPage = location.pathname === '/dashboard/takeaways';
+  
+  const productStatus = useAppSelector(state => state.product.status);
+  
+  useEffect(() => {
+    if (productStatus === 'idle') {
+      dispatch(fetchMenuData());
+    }
+  }, [productStatus, dispatch]);
   
   const itemRefs = useRef({});
   const paymentInputRef = useRef(null);

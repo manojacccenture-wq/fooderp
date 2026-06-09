@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { useSelector } from 'react-redux';
 import { ProductCard } from './ProductCard/ProductCard';
 import { useMenuKeyboardNavigation } from '../../../shared/hooks/useMenuKeyboardNavigation';
-import { CATEGORIES } from '../../../data/menuProducts';
+// import { CATEGORIES } from '../../../data/menuProducts';
 import { KEYBOARD_ACTIONS } from '../../../config/keyboardShortcutsConfig';
 
 export const MenuContent = ({
@@ -30,7 +30,7 @@ export const MenuContent = ({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
   
-  const menuProducts = useSelector(state => state.product.items);
+  const { items: menuProducts, categories, status, error } = useSelector(state => state.product);
   
   const searchRef = useRef(null);
   const productRefs = useRef([]);
@@ -219,7 +219,7 @@ export const MenuContent = ({
       </div>
 
       <div className="flex items-center gap-[10px] mb-[10px] shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar pb-2">
-        {CATEGORIES.map((cat, index) => (
+        {categories && categories.length > 0 ? categories.map((cat, index) => (
           <button
             key={index}
             onClick={() => setActiveCategory(cat)}
@@ -232,19 +232,37 @@ export const MenuContent = ({
           >
             {cat}
           </button>
-        ))}
+        )) : null}
       </div>
 
       <div 
         ref={scrollContainerRef}
         className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 pb-6 scroll-smooth"
       >
-        <div 
-          className="grid gap-[10px] pb-[100px] items-stretch"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}
-        >
-          {visibleProducts.length > 0 ? (
-            visibleProducts.map((p, index) => {
+        {status === 'loading' && (
+          <div className="w-full h-full flex flex-col items-center justify-center pt-20">
+            <div className="w-10 h-10 border-4 border-[#ffb01d]/30 border-t-[#ffb01d] rounded-full animate-spin"></div>
+            <p className="mt-4 text-[#8e8ea9] font-semibold">Loading menu...</p>
+          </div>
+        )}
+
+        {status === 'failed' && (
+          <div className="w-full h-full flex flex-col items-center justify-center pt-20 text-center">
+            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <h3 className="text-[16px] font-bold text-[#32324d] mb-1">Failed to load menu</h3>
+            <p className="text-[14px] text-[#8e8ea9]">{error?.message || 'An unexpected error occurred'}</p>
+          </div>
+        )}
+
+        {status !== 'loading' && status !== 'failed' && (
+          <div 
+            className="grid gap-[10px] pb-[100px] items-stretch"
+            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}
+          >
+            {visibleProducts.length > 0 ? (
+              visibleProducts.map((p, index) => {
               const isActiveReplaceTarget = isReplaceMode && replacementSelectedProductId === p.itemNo;
               
               return (
@@ -308,7 +326,8 @@ export const MenuContent = ({
               <div className="w-6 h-6 border-2 border-[#ffb01d] border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
