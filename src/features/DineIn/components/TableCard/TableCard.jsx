@@ -104,7 +104,7 @@ export const TableCard = ({
   };
 
   const renderDropdown = () => {
-    if (minimalView || (status !== 'Occupied' && status !== 'Cleaning')) return null;
+    if (minimalView || (status !== 'Occupied' && status !== 'Cleaning' && status !== 'Billing')) return null;
     return (
       <div className="absolute top-[16px] left-[16px] z-20" ref={menuRef}>
         <button 
@@ -171,7 +171,7 @@ export const TableCard = ({
     );
   }
 
-  if (status === 'Occupied' || status === 'Cleaning') {
+  if (status === 'Occupied' || status === 'Cleaning' || status === 'Billing') {
     return (
       <div 
         className={`w-[293px] h-[183px] border-2 border-l-[6px] border-[#eaeaef] ${styles.border} ${styles.bg} rounded-[16px] relative shrink-0 cursor-pointer transition-colors duration-200`}
@@ -254,5 +254,19 @@ export const TableCard = ({
     );
   }
 
-  return null;
+  // Fallback for any unknown status to ensure table never disappears
+  return (
+    <div className={`w-[293px] h-[183px] border-2 border-l-[6px] border-[#eaeaef] ${styles.border} ${styles.bg} rounded-[16px] relative shrink-0 cursor-pointer transition-colors duration-200`}>
+      {renderDropdown()}
+      <h3 className="absolute top-[20px] left-[48px] text-[16px] leading-none font-extrabold text-[#4a4a6a]">Table {tableNo}</h3>
+      
+      <div className="absolute top-[16px] right-[16px] pointer-events-none">
+        <span className={`text-[10px] font-black uppercase tracking-[0.08em] ${styles.labelColor}`}>{styles.label}</span>
+      </div>
+
+      <div className="absolute top-[80px] left-0 right-0 flex justify-center">
+        <span className="text-[14px] font-medium text-[#8e8ea9]">Status: {status}</span>
+      </div>
+    </div>
+  );
 };

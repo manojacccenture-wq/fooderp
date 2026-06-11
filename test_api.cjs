@@ -21,8 +21,8 @@ async function test() {
 
 
   } catch (err) {
-    console.error(err.message);
-    if(err.response) console.error(err.response.data);
+    
+    if(err.response) 
   }
 }
 test();

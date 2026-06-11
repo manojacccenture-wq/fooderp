@@ -112,7 +112,7 @@ export const useKotFlow = ({
         return;
       }
     } catch (error) {
-      console.error("Failed to submit order API:", error);
+      
       alert("Failed to send order to KOT via API. Please check connection and try again.");
       return;
     }
@@ -259,7 +259,6 @@ export const useKotFlow = ({
       }
 
       const orderId = activeOrder.Id;
-      console.log(`[Complete Order] Selected OrderId: ${orderId} with Status: ${activeOrder.Status}`);
 
       // 3. Put Order Status -> "completed"
       const putOrderResponse = await putOrderStatus({ 
@@ -275,7 +274,7 @@ export const useKotFlow = ({
       // 4. Put Table Status -> "billing"
       const putTableResponse = await putTableStatus({ 
         tableId: actualTableId, 
-        payload: "billing" 
+        payload: "Billing" 
       }).unwrap();
 
       if (!putTableResponse?.IsSuccessful) {
@@ -290,7 +289,7 @@ export const useKotFlow = ({
       setRightView('checkout');
 
     } catch (error) {
-      console.error("Complete Order Sequence failed:", error);
+      
       alert("An error occurred while completing the order. Please try again.");
     }
   };

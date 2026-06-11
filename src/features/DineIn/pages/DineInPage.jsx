@@ -36,13 +36,21 @@ export const DineInPage = () => {
   });
 
   const tables = rtkTables || [];
+  
+  const sortedTables = [...tables].sort((a, b) => {
+    const numA = parseInt((a.tableNo || a.tableName || '').replace(/\D/g, ''), 10) || 0;
+    const numB = parseInt((b.tableNo || b.tableName || '').replace(/\D/g, ''), 10) || 0;
+    return numA - numB;
+  });
+
   const status = isLoading ? 'loading' : isError ? 'failed' : 'succeeded';
   const error = queryError;
 
   // Log the fresh API response to satisfy verification requirements
   useEffect(() => {
     if (rtkTables) {
-      console.log("Fresh Table Response", rtkTables);
+      console.log("RTK Tables Count", tables.length);
+      console.log("Sorted Tables", sortedTables);
     }
   }, [rtkTables]);
 
@@ -66,8 +74,8 @@ export const DineInPage = () => {
 
   const handleConfirmCancellation = async (reason, remarks) => {
     const selectedTable = tables.find(t => t.tableNo === actionTarget?.tableNo);
-    console.log("Selected Table", selectedTable);
-    console.log("Selected Reason", reason);
+    
+    
 
     if (!reason) {
       alert("Please select cancellation reason");
@@ -75,7 +83,7 @@ export const DineInPage = () => {
     }
 
     const orderId = selectedTable?.orderId;
-    console.log("Resolved OrderId", orderId);
+    
 
     if (!orderId) {
       alert("Unable to find Order ID for selected table.");
@@ -84,16 +92,12 @@ export const DineInPage = () => {
 
     try {
       const response = await cancelDineInOrder(orderId).unwrap();
-      console.log("Cancel Order Success", response);
+      
 
       if (response?.IsSuccessful === true || response?.isSuccessful === true) {
         const tableId = selectedTable?.tableId;
         const statusToSet = "Empty";
 
-        console.log("Updating Table Status", {
-          tableId,
-          status: statusToSet
-        });
 
         try {
           const tableResponse = await putTableStatus({
@@ -101,7 +105,7 @@ export const DineInPage = () => {
             payload: statusToSet
           }).unwrap();
           
-          console.log("PutTableStatus Response", tableResponse);
+          
 
           if (!tableResponse?.IsSuccessful) {
             alert(tableResponse?.Message || "Failed to update table status after cancellation.");
@@ -114,8 +118,8 @@ export const DineInPage = () => {
 
         dispatch(setActionTarget(null));
         dispatch(cancelOrder());
-        console.log("Invalidating Tables Tag");
-        console.log("Tables Refetched");
+        
+        
         dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers']));
       } else {
         alert(response?.Message || "Cancellation failed");
@@ -209,7 +213,7 @@ export const DineInPage = () => {
               {status !== 'loading' && status !== 'failed' && (
                 /* Table Grid */
                 <div className="grid grid-cols-3 gap-x-[34px] gap-y-[31px]">
-                  {tables.map((table) => {
+                  {sortedTables.map((table) => {
                   return (
                     <TableCard
                       key={table.id}

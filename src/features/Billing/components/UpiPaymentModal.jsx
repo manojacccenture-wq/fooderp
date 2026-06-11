@@ -18,7 +18,7 @@ export const UpiPaymentModal = ({ isOpen, onClose, onConfirm, amount, orderId, t
       const blob = await generateQrBlob(upiString);
       if (blob) downloadQr(blob, `QR_Order_${orderId}.png`);
     } catch (e) {
-      console.error(e);
+      
     }
   };
 

@@ -41,7 +41,7 @@ export const useTableFlow = ({
 
   const currentTableObj = useMemo(() => allTables.find(t => t.tableNo === selectedTable), [allTables, selectedTable]);
   const displayCustomerName = currentTableObj?.customerName || 'Walk-in Customer';
-  const isExistingSessionMode = currentTableObj?.status === 'Occupied' || currentTableObj?.status === 'Reserved';
+  const isExistingSessionMode = currentTableObj?.status === 'Occupied' || currentTableObj?.status === 'Reserved' || currentTableObj?.status === 'Billing';
   const isPhoneMissingForDineIn = orderType === 'dine_in' && !phone;
 
   useEffect(() => {
@@ -69,13 +69,18 @@ export const useTableFlow = ({
     
     const newTableObj = allTablesRef.current.find(t => t.tableNo === selectedTable);
     
-    if (newTableObj && newTableObj.status === 'Occupied') {
+    if (newTableObj && (newTableObj.status === 'Occupied' || newTableObj.status === 'Billing')) {
       // 1. BACKEND RESTORE FLOW
-      getOrder({ tableId: newTableObj.id || newTableObj.tableId, tableStatus: 'Occupied' })
+      console.log("Clicked Table", newTableObj);
+      console.log("Table Status", newTableObj.status);
+      console.log("Restore Flow Triggered");
+      console.log("Calling GetCustomerOrderByTableId");
+      
+      getOrder({ tableId: newTableObj.id || newTableObj.tableId, tableStatus: newTableObj.status })
         .unwrap()
         .then(response => {
-          console.log("Selected Table", newTableObj);
-          console.log("Order API Response", response);
+          
+          
           
           let activeOrder = null;
           if (response?.Data && Array.isArray(response.Data)) {
@@ -88,7 +93,7 @@ export const useTableFlow = ({
             }
           }
 
-          console.log("Active Order", activeOrder);
+          
 
           if (activeOrder) {
             // Restore Customer
@@ -97,7 +102,7 @@ export const useTableFlow = ({
               phone: activeOrder.CustomerMobile || '',
               address: activeOrder.CustomerAddress || ''
             };
-            console.log("Restored Customer", customer);
+            
             setOrderValue('guestCount', activeOrder.TotalGuest || newTableObj.guests || 4);
             setOrderValue('phone', customer.phone);
 
@@ -109,25 +114,36 @@ export const useTableFlow = ({
               price: item.Price,
               status: item.Status
             }));
-            console.log("Restored Items", orderItems);
+            
 
             // Restore Workflow Status
-            console.log("Restored Workflow Status", activeOrder.Status);
+            
             
             setSentKotItems(orderItems);
             setDraftOrderItems([]); // Do not create Draft status
             setHeldItems([]);
             
             const activeStatus = activeOrder.Status ? activeOrder.Status.toLowerCase() : 'placed';
+            const orderStatusStr = activeOrder.OrderStatus ? activeOrder.OrderStatus.toLowerCase() : '';
             setKotStatus(activeStatus);
-            setRightView('order');
+            
+            let targetScreen = 'order';
+            if (activeStatus === 'billing' || orderStatusStr === 'billing' || activeStatus === 'completed' || orderStatusStr === 'completed') {
+              targetScreen = 'checkout';
+            }
+
+            console.log("Table Clicked", newTableObj.tableNo || newTableObj.tableName);
+            console.log("Active Order Status", activeOrder.Status);
+            console.log("Navigation Target", targetScreen);
+            
+            setRightView(targetScreen);
           } else {
             // Fallback if no order found despite table being occupied
             setRightView('order');
           }
         })
         .catch(err => {
-          console.error("Error fetching order", err);
+          
           setRightView('order');
         });
 

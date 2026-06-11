@@ -14,7 +14,7 @@ export const generateQrBlob = async (upiString) => {
     if (!response.ok) throw new Error('Failed to fetch QR image');
     return await response.blob();
   } catch (error) {
-    console.error('Error generating QR blob:', error);
+    
     return null;
   }
 };
