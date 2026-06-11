@@ -46,7 +46,6 @@ const tableSlice = createSlice({
       const { tableNo, formData } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'Occupied';
         table.customerName = formData.name || table.customerName;
         table.guests = formData.guests || table.guests;
         table.duration = formData.time || table.duration;
@@ -61,14 +60,12 @@ const tableSlice = createSlice({
         if (oldTable) {
           const newTable = state.tables.find(t => t.tableNo === newTableNo);
           if (newTable) {
-            newTable.status = oldTable.status;
             newTable.customerName = oldTable.customerName;
             newTable.guests = oldTable.guests;
             newTable.reservedGuests = oldTable.reservedGuests;
             newTable.duration = oldTable.duration;
             newTable.customerPhone = oldTable.customerPhone;
           }
-          oldTable.status = 'Empty';
           oldTable.customerName = '';
           oldTable.guests = 0;
           oldTable.reservedGuests = 0;
@@ -81,7 +78,6 @@ const tableSlice = createSlice({
         if (oldTable) {
           state.tables.forEach(t => {
             if (targetTables.includes(t.tableNo)) {
-              t.status = 'Occupied';
               t.customerName = oldTable.customerName + " (Merged)";
               t.guests = oldTable.guests;
               t.duration = oldTable.duration;
@@ -95,7 +91,6 @@ const tableSlice = createSlice({
       const { tableNo } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'Empty';
         table.customerName = '';
         table.guests = 0;
         table.reservedGuests = 0;
@@ -122,7 +117,6 @@ const tableSlice = createSlice({
       const { tableNo, reason, remarks } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'Empty';
         table.customerName = '';
         table.guests = 0;
         table.reservedGuests = 0;
@@ -140,7 +134,6 @@ const tableSlice = createSlice({
       const { tableNo } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'Empty';
         table.customerName = '';
         table.guests = 0;
         table.reservedGuests = 0;

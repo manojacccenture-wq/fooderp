@@ -39,6 +39,7 @@ const getCardStyleOptions = (status) => {
 
   switch (backendStatus) {
     case 'Empty':
+    case 'Available':
       return { bg: 'bg-[#e8fbf0]/50', border: 'border-l-[#24a44b]', label: 'AVAILABLE', labelColor: 'text-[#24a44b]' };
     case 'Reserved':
       return { bg: 'bg-[#fff7e8]/50', border: 'border-l-[#ffb01d]', label: 'RESERVED', labelColor: 'text-[#d88c00]' };
@@ -131,7 +132,7 @@ export const TableCard = ({
   };
 
   
-  if (status === 'Empty') {
+  if (status === 'Empty' || status === 'Available') {
     return (
       <div 
         className={`w-[293px] h-[183px] cursor-pointer border-2 border-l-[6px] rounded-[16px] relative shrink-0 transition-all duration-200 focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(251,191,36,0.25)] hover:-translate-y-[1px] hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)] ${
