@@ -1,4 +1,17 @@
-import { createSlice, createSelector } from '@reduxjs/toolkit';
+import { createSlice, createSelector, createAsyncThunk } from '@reduxjs/toolkit';
+
+export const submitOrderKOT = createAsyncThunk(
+  'order/submitOrderKOT',
+  async (orderParams, { rejectWithValue }) => {
+    try {
+      const { orderService } = await import('../services/orderService');
+      const data = await orderService.submitOrder(orderParams);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message || 'Failed to submit order');
+    }
+  }
+);
 
 const initialState = {
   orderItems: [],
@@ -7,6 +20,8 @@ const initialState = {
   kotStatus: 'idle', // 'idle' | 'success_anim' | 'sent'
   globalOrderCounter: 1000, // Starts at 1000, continuous
   currentOrderNumber: null, // Assigned on checkout/KOT
+  apiStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  apiError: null,
 };
 
 const orderSlice = createSlice({
@@ -127,6 +142,20 @@ const orderSlice = createSlice({
       state.heldItems = [...state.heldItems];
     }
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(submitOrderKOT.pending, (state) => {
+        state.apiStatus = 'loading';
+        state.apiError = null;
+      })
+      .addCase(submitOrderKOT.fulfilled, (state) => {
+        state.apiStatus = 'succeeded';
+      })
+      .addCase(submitOrderKOT.rejected, (state, action) => {
+        state.apiStatus = 'failed';
+        state.apiError = action.payload || 'Failed to submit order';
+      });
+  }
 });
 
 export const {

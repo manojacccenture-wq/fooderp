@@ -75,12 +75,12 @@ export const getCurrentOrderStatus = ({
   if (draftOrderItemsCount > 0) return 'draft';
   if (sentKotItemsCount > 0) return 'kot_sent';
 
-  return hasSelectedTable ? 'draft' : 'available';
+  return hasSelectedTable ? 'draft' : 'Empty';
 };
 
 // Determines the status for inactive tables based strictly on Redux order data
 export const determineTableStatus = (table) => {
-  if (table.status === 'available') return 'available';
+  if (table.status === 'Empty') return 'Empty';
   
   const { orderData } = table;
   if (!orderData) return 'draft'; // Occuiped but no orderData means draft

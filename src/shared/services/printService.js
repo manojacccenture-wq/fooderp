@@ -8,7 +8,7 @@ export const connectPrinter = async () => {
       await qz.websocket.connect({ retries: 2, delay: 1 });
       return true;
     } catch (err) {
-      console.error('Failed to connect to QZ Tray:', err);
+      
       return false;
     }
   }
@@ -22,7 +22,7 @@ export const findAvailablePrinters = async () => {
 
     return await qz.printers.find();
   } catch (err) {
-    console.error('Error finding printers:', err);
+    
     return [];
   }
 };
@@ -163,8 +163,8 @@ export const printReceiptElement = async (printerName, element) => {
     // We get the raw base64 data string (ignoring the 'data:application/pdf;base64,' prefix)
     const base64Pdf = pdf.output('datauristring').split(',')[1];
 
-    console.log("PDF generated successfully");
-    console.log("Base64 preview:", base64Pdf.substring(0, 100));
+    
+    
 
     const config = qz.configs.create(printerName, {
       margins: 0,
@@ -187,7 +187,7 @@ export const printReceiptElement = async (printerName, element) => {
     await qz.print(config, data);
     return { success: true };
   } catch (err) {
-    console.error('Print failed:', err);
+    
     return { success: false, error: err.message };
   }
 };

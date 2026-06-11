@@ -6,6 +6,7 @@ import { selectAllTables } from '../../DineIn/store/tableSlice';
 import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber } from '../store/orderSlice';
 import { fetchMenuData, resetMenuStatus } from '../store/productSlice';
 import { createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
+import { useGetTablesWithOrderAmountQuery, useGetCustomerNameListQuery } from '../../../shared/api/apiSlice';
 
 // Components
 import { MenuContent } from '../components/MenuContent';
@@ -37,6 +38,11 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  
+  // Mount RTK Queries for auto-refresh architecture
+  useGetTablesWithOrderAmountQuery();
+  useGetCustomerNameListQuery();
+
   const allTables = useAppSelector(selectAllTables);
   const globalOrderCounter = useAppSelector(selectGlobalOrderCounter);
   const currentOrderNumber = useAppSelector(selectCurrentOrderNumber);
@@ -120,6 +126,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     kotStatus, setKotStatus,
     globalOrderStatus,
     handleSendKOT,
+    handleCompleteOrderSequence,
     handleSendHeldItem
   } = useKotFlow({
     draftOrderItems,
@@ -450,6 +457,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         setHeldItems={setHeldItems}
         setKotStatus={setKotStatus}
         kotStatus={kotStatus}
+        handleCompleteOrderSequence={handleCompleteOrderSequence}
         sentKotItems={sentKotItems}
         draftOrderItems={draftOrderItems}
         combinedItems={combinedItems}

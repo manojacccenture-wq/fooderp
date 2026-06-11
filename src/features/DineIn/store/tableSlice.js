@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { apiSlice } from '../../../shared/api/apiSlice';
 
 export const fetchTablesData = createAsyncThunk(
   'table/fetchTablesData',
@@ -45,7 +46,7 @@ const tableSlice = createSlice({
       const { tableNo, formData } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'occupied';
+        table.status = 'Occupied';
         table.customerName = formData.name || table.customerName;
         table.guests = formData.guests || table.guests;
         table.duration = formData.time || table.duration;
@@ -67,7 +68,7 @@ const tableSlice = createSlice({
             newTable.duration = oldTable.duration;
             newTable.customerPhone = oldTable.customerPhone;
           }
-          oldTable.status = 'available';
+          oldTable.status = 'Empty';
           oldTable.customerName = '';
           oldTable.guests = 0;
           oldTable.reservedGuests = 0;
@@ -80,7 +81,7 @@ const tableSlice = createSlice({
         if (oldTable) {
           state.tables.forEach(t => {
             if (targetTables.includes(t.tableNo)) {
-              t.status = 'occupied';
+              t.status = 'Occupied';
               t.customerName = oldTable.customerName + " (Merged)";
               t.guests = oldTable.guests;
               t.duration = oldTable.duration;
@@ -94,7 +95,7 @@ const tableSlice = createSlice({
       const { tableNo } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'available';
+        table.status = 'Empty';
         table.customerName = '';
         table.guests = 0;
         table.reservedGuests = 0;
@@ -113,7 +114,7 @@ const tableSlice = createSlice({
       const { tableNo, orderData } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       // NEVER restore order data to an available table. This fixes the zombie state!
-      if (table && table.status !== 'available') {
+      if (table && table.status !== 'Empty') {
         table.orderData = orderData;
       }
     },
@@ -121,7 +122,7 @@ const tableSlice = createSlice({
       const { tableNo, reason, remarks } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'available';
+        table.status = 'Empty';
         table.customerName = '';
         table.guests = 0;
         table.reservedGuests = 0;
@@ -139,7 +140,7 @@ const tableSlice = createSlice({
       const { tableNo } = action.payload;
       const table = state.tables.find(t => t.tableNo === tableNo);
       if (table) {
-        table.status = 'available';
+        table.status = 'Empty';
         table.customerName = '';
         table.guests = 0;
         table.reservedGuests = 0;
@@ -162,6 +163,10 @@ const tableSlice = createSlice({
       .addCase(fetchTablesData.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload || 'Failed to fetch tables';
+      })
+      .addMatcher(apiSlice.endpoints.getTablesWithOrderAmount.matchFulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.tables = action.payload;
       });
   }
 });

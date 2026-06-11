@@ -20,7 +20,7 @@ export const TableSelectionView = ({
 
   if (!isActive) return null;
 
-  const availableTables = tables.filter(t => t.status === 'available');
+  const availableTables = tables.filter(t => t.status === 'Empty');
 
   const toggleSelection = (tableNo) => {
     if (selectionMode === 'single') {

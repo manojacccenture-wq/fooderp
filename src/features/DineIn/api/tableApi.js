@@ -8,6 +8,7 @@ export const tableApi = {
    */
   getTables: async () => {
     const response = await axiosClient.get(API_ENDPOINTS.TABLES.GET_TABLES);
+    
     return response.data;
   },
 };

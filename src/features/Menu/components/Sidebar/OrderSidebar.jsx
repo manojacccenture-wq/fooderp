@@ -70,6 +70,7 @@ export const OrderSidebar = ({
   handlePrintBilling,
   handleOrderSubmit,
   handleSendKOT,
+  handleCompleteOrderSequence,
   handleSendHeldItem,
   handlePaymentSubmit,
   setOrderItems,
@@ -492,6 +493,7 @@ export const OrderSidebar = ({
         handlePrintBilling={handlePrintBilling}
         handleOrderSubmit={handleOrderSubmit}
         handleSendKOT={handleSendKOT}
+        handleCompleteOrderSequence={handleCompleteOrderSequence}
         setRightView={setRightView}
         handlePaymentSubmit={handlePaymentSubmit}
         setOrderItems={setOrderItems}

@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { useAppSelector } from '../../../store/hooks';
-import { startOrderForTable } from '../../DineIn/store/tableSlice';
+import { assignOrderNumber, submitOrderKOT } from '../../../features/Menu/store/orderSlice';
+import {
+  apiSlice,
+  useLazyGetCustomerOrderByTableIdQuery,
+  usePutOrderStatusMutation,
+  usePutTableStatusMutation
+} from '../../../shared/api/apiSlice';
+import { startOrderForTable, selectAllTables } from '../../DineIn/store/tableSlice';
 import { getCurrentOrderStatus } from '../../../shared/utils/orderStatus';
 import { generateKOT, updateKotStatus, selectActiveKots } from '../../../features/Menu/store/kotSlice';
 import { generateToken, selectActiveTakeaways, selectCompletedTakeaways, selectDailyTokenCounter, createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
-import { assignOrderNumber } from '../../../features/Menu/store/orderSlice';
 
 export const useKotFlow = ({
   draftOrderItems,
@@ -29,11 +35,16 @@ export const useKotFlow = ({
 }) => {
   const [kotStatus, setKotStatus] = useState('idle'); // 'idle' | 'success_anim' | 'sent' | 'kot_sent' | 'preparing' | 'ready'
   
+  const [getCustomerOrder] = useLazyGetCustomerOrderByTableIdQuery();
+  const [putOrderStatus] = usePutOrderStatusMutation();
+  const [putTableStatus] = usePutTableStatusMutation();
+
   const activeTakeaways = useAppSelector(selectActiveTakeaways);
   const completedTakeaways = useAppSelector(selectCompletedTakeaways);
   const dailyTokenCounter = useAppSelector(selectDailyTokenCounter);
   const lastTokenDate = useAppSelector(state => state.takeaway.lastTokenDate);
   const activeKots = useAppSelector(selectActiveKots);
+  const allTables = useAppSelector(selectAllTables);
 
   const tableKots = activeKots.filter(k => String(k.tableReference) === String(selectedTable));
   
@@ -59,7 +70,7 @@ export const useKotFlow = ({
     hasSelectedTable: !!selectedTable
   });
 
-  const handleSendKOT = () => {
+  const handleSendKOT = async () => {
     // If no order number exists, dispatch to create one.
     // However, since useKotFlow is a hook, we shouldn't rely on state updates being immediately available in this closure.
     // We will calculate the new order number locally if it's null.
@@ -84,6 +95,27 @@ export const useKotFlow = ({
       kotRound: nextRound,
       kotTime: kotTime
     }));
+
+    try {
+      const result = await dispatch(submitOrderKOT({
+        orderItems: newItems,
+        orderType,
+        phone,
+        selectedTable,
+        allTables
+      })).unwrap();
+
+      if (result?.IsSuccessful || result?.isSuccessful) {
+        dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers']));
+      } else {
+        alert("Failed to process order on the server. Please try again.");
+        return;
+      }
+    } catch (error) {
+      console.error("Failed to submit order API:", error);
+      alert("Failed to send order to KOT via API. Please check connection and try again.");
+      return;
+    }
 
     // Split items into dine_in and take_away for KOT generation
     const dineInItems = newItems.filter(item => (item.fulfillment?.dine_in || 0) > 0);
@@ -184,6 +216,82 @@ export const useKotFlow = ({
 
     if (orderType === 'take_away') {
       setRightView('checkout');
+    }
+  };
+
+  const handleCompleteOrderSequence = async () => {
+    if (!selectedTable) {
+      alert("Please select a table to complete the order.");
+      return;
+    }
+
+    try {
+      // Find the actual table object using tableNo
+      const tableObj = allTables.find(t => String(t.tableNo) === String(selectedTable));
+      const actualTableId = tableObj?.id;
+      const currentTableStatus = tableObj?.status || 'Occupied';
+
+      if (!actualTableId) {
+        alert("Could not determine the internal Table ID for the selected table.");
+        return;
+      }
+      
+      // 1. Get Customer Order By Table Id
+      const orderResponse = await getCustomerOrder({ 
+        tableId: actualTableId, 
+        tableStatus: currentTableStatus 
+      }).unwrap();
+
+      if (!orderResponse?.IsSuccessful || !orderResponse?.Data || orderResponse.Data.length === 0) {
+        alert("Failed to fetch active order for this table or no orders found.");
+        return;
+      }
+
+      // 2. Find the correct active order
+      const orders = orderResponse.Data;
+      const activeOrder = orders.find(o => o.Status !== 'Closed') 
+                       || orders.find(o => o.Status === 'Placed') 
+                       || orders[0];
+
+      if (!activeOrder) {
+        alert("No active order found for this table.");
+        return;
+      }
+
+      const orderId = activeOrder.Id;
+      console.log(`[Complete Order] Selected OrderId: ${orderId} with Status: ${activeOrder.Status}`);
+
+      // 3. Put Order Status -> "completed"
+      const putOrderResponse = await putOrderStatus({ 
+        orderId: orderId, 
+        payload: "completed" 
+      }).unwrap();
+
+      if (!putOrderResponse?.IsSuccessful) {
+        alert("Failed to update order status to completed.");
+        return;
+      }
+
+      // 4. Put Table Status -> "billing"
+      const putTableResponse = await putTableStatus({ 
+        tableId: actualTableId, 
+        payload: "billing" 
+      }).unwrap();
+
+      if (!putTableResponse?.IsSuccessful) {
+        alert("Failed to update table status to billing.");
+        return;
+      }
+
+      // 5. Invalidate RTK Query Tags to refresh tables and customers
+      dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers']));
+
+      // 6. Navigate to Checkout View
+      setRightView('checkout');
+
+    } catch (error) {
+      console.error("Complete Order Sequence failed:", error);
+      alert("An error occurred while completing the order. Please try again.");
     }
   };
 
@@ -317,6 +425,7 @@ export const useKotFlow = ({
     setKotStatus,
     globalOrderStatus,
     handleSendKOT,
+    handleCompleteOrderSequence,
     handleSendHeldItem
   };
 };

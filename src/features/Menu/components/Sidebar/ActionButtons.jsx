@@ -13,6 +13,7 @@ export const ActionButtons = ({
   handlePrintBilling,
   handleOrderSubmit,
   handleSendKOT,
+  handleCompleteOrderSequence,
   setRightView,
   handlePaymentSubmit,
   setOrderItems,
@@ -45,16 +46,17 @@ export const ActionButtons = ({
           </button>
         ) : kotStatus === 'success_anim' ? null : draftOrderItemsCount > 0 ? (
           <button 
-            className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" 
+            className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
             onClick={handleOrderSubmit(handleSendKOT)}
+            disabled={kotStatus === 'loading'}
           >
-            Send to KOT
+            {kotStatus === 'loading' ? 'Sending...' : 'Send to KOT'}
           </button>
         ) : sentKotItemsCount > 0 ? (
           <div className="flex flex-col gap-3">
             <button 
-              className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]" 
-              onClick={() => setRightView('checkout')}
+              className="w-full bg-[#ffb01d] text-white py-[14px] rounded-[16px] font-bold text-[16px] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)] disabled:opacity-50 disabled:cursor-not-allowed" 
+              onClick={handleCompleteOrderSequence}
             >
               Complete Order
             </button>

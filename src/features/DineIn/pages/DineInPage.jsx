@@ -22,21 +22,31 @@ import {
 } from '../store/tableSlice';
 import { cancelOrder } from '../../Menu/store/orderSlice';
 import { selectActiveKots } from '../../Menu/store/kotSlice';
+import { useGetTablesWithOrderAmountQuery, useCancelDineInOrderMutation, apiSlice } from '../../../shared/api/apiSlice';
 
 export const DineInPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [cancelDineInOrder] = useCancelDineInOrderMutation();
   
-  const tables = useAppSelector(selectAllTables);
+  const storeTables = useAppSelector(selectAllTables);
   const selectedTableForOrder = useAppSelector(selectSelectedTableForOrder);
   const actionTarget = useAppSelector(selectActionTarget);
   const activeKots = useAppSelector(selectActiveKots);
-  const status = useAppSelector(state => state.table.status);
-  const error = useAppSelector(state => state.table.error);
+  const storeStatus = useAppSelector(state => state.table.status);
+  const storeError = useAppSelector(state => state.table.error);
 
-  // Fetch tables every time the Dine-In page is mounted to ensure fresh data
+  const { data: rtkTables, isLoading, isError, error: queryError } = useGetTablesWithOrderAmountQuery(undefined, {
+    refetchOnMountOrArgChange: true
+  });
+
+  const tables = rtkTables || storeTables;
+  const status = isLoading ? 'loading' : isError ? 'failed' : (rtkTables ? 'succeeded' : storeStatus);
+  const error = isError ? queryError : storeError;
+
+  // We no longer manually fetch tables data via Thunk since RTK Query handles it automatically
   useEffect(() => {
-    dispatch(fetchTablesData());
+    // Left for potential side-effects if needed, but data fetching is removed
   }, [dispatch]);
   
   const totalTables = 10; // "Top Number of Table (10)" as per design
@@ -52,15 +62,43 @@ export const DineInPage = () => {
     dispatch(confirmSelection({ actionType: actionTarget?.type, oldTableNo, selectedTables }));
   };
 
-  const handleConfirmCancellation = (tableNo, data) => {
-    console.log('Cancellation confirmed for table:', tableNo, data);
-    dispatch(confirmCancellation({ tableNo, data }));
-    dispatch(cancelOrder());
-    dispatch(setActionTarget(null));
+  const handleConfirmCancellation = async (reason, remarks) => {
+    const selectedTable = tables.find(t => t.tableNo === actionTarget?.tableNo);
+    console.log("Selected Table", selectedTable);
+    console.log("Selected Reason", reason);
+
+    if (!reason) {
+      alert("Please select cancellation reason");
+      return;
+    }
+
+    const orderId = selectedTable?.orderId;
+    console.log("Resolved OrderId", orderId);
+
+    if (!orderId) {
+      alert("Unable to find Order ID for selected table.");
+      return;
+    }
+
+    try {
+      const response = await cancelDineInOrder(orderId).unwrap();
+      console.log("Cancel API Response", response);
+
+      if (response?.IsSuccessful === true || response?.isSuccessful === true) {
+        dispatch(setActionTarget(null));
+        dispatch(cancelOrder());
+        console.log("Refreshing Tables");
+        dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers']));
+      } else {
+        alert(response?.Message || "Cancellation failed");
+      }
+    } catch (err) {
+      alert(err?.data?.Message || err?.Message || "An error occurred while cancelling the order.");
+    }
   };
 
   const handleConfirmReplacement = (tableNo, data) => {
-    console.log('Replacement confirmed for table:', tableNo, data);
+    
     dispatch(confirmReplacement({ tableNo, data }));
     dispatch(setActionTarget(null));
   };
@@ -144,32 +182,6 @@ export const DineInPage = () => {
                 /* Table Grid */
                 <div className="grid grid-cols-3 gap-x-[34px] gap-y-[31px]">
                   {tables.map((table) => {
-                  let workflowStatus = null;
-                  if (table.status === 'occupied') {
-                    const data = table.orderData;
-                    if (!data) {
-                      workflowStatus = 'DRAFT';
-                    } else if (data.rightView === 'checkout') {
-                      workflowStatus = 'BILLING';
-                    } else {
-                      const tableKots = activeKots.filter(k => String(k.tableReference) === String(table.tableNo));
-                      if (tableKots.length > 0) {
-                        if (tableKots.some(k => k.status === 'ready')) {
-                          workflowStatus = 'READY';
-                        } else if (tableKots.some(k => k.status === 'preparing')) {
-                          workflowStatus = 'PREPARING';
-                        } else {
-                          workflowStatus = 'KOT SENT';
-                        }
-                      } else {
-                        if (data.kotStatus === 'ready') workflowStatus = 'READY';
-                        else if (data.kotStatus === 'preparing') workflowStatus = 'PREPARING';
-                        else if (data.kotStatus === 'sent' || (data.sentKotItems && data.sentKotItems.length > 0)) workflowStatus = 'KOT SENT';
-                        else workflowStatus = 'DRAFT';
-                      }
-                    }
-                  }
-
                   return (
                     <TableCard
                       key={table.id}
@@ -179,7 +191,8 @@ export const DineInPage = () => {
                       guests={table.guests}
                       duration={table.duration}
                       reservedGuests={table.reservedGuests}
-                      workflowStatus={workflowStatus}
+                      currentOrderAmount={table.currentOrderAmount}
+                      orderStatus={table.orderStatus}
                       onStartOrder={() => dispatch(setSelectedTableForOrder(table.tableNo))}
                       onResumeOrder={() => navigate('/dashboard/menu', { state: { tableNo: table.tableNo, existingSession: true } })}
                       onChangeTable={(tableNo) => dispatch(setActionTarget({ type: 'change', tableNo }))}
@@ -208,9 +221,7 @@ export const DineInPage = () => {
         isOpen={actionTarget?.type === 'cancel-table'}
         onClose={() => dispatch(setActionTarget(null))}
         onConfirm={(reason, remarks) => {
-          dispatch(cancelTable({ tableNo: actionTarget.tableNo, reason, remarks }));
-          dispatch(cancelOrder());
-          dispatch(setActionTarget(null));
+          handleConfirmCancellation(reason, remarks);
         }}
       />
     </div>

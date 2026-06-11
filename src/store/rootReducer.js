@@ -1,4 +1,5 @@
 import { combineReducers } from '@reduxjs/toolkit';
+import { apiSlice } from '../shared/api/apiSlice';
 import orderReducer from '../features/Menu/store/orderSlice';
 import tableReducer from '../features/DineIn/store/tableSlice';
 import paymentReducer from '../features/Billing/store/paymentSlice';
@@ -13,6 +14,7 @@ import authReducer from '../features/Auth/store/authSlice';
 import orderHistoryReducer from '../features/Orders/store/orderHistorySlice';
 
 const rootReducer = combineReducers({
+  [apiSlice.reducerPath]: apiSlice.reducer,
   auth: authReducer,
   orderHistory: orderHistoryReducer,
   order: orderReducer,

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const ProductCard = ({ image, itemNo, title, price, isVeg, quantity, isKeyboardSelected, isAvailable = true }) => {
+export const ProductCard = React.memo(({ image, itemNo, title, price, isVeg, quantity, isKeyboardSelected, isAvailable = true }) => {
   return (
     <div className={`bg-white h-[100px] w-full relative rounded-[12px] p-[10px] flex flex-col justify-between transition-all duration-200 ${!isAvailable ? 'opacity-50 grayscale-[0.2]' : ''} ${isKeyboardSelected ? 'border-2 border-[#f59e0b] shadow-[0_0_0_4px_rgba(245,158,11,0.18)] scale-[1.01] z-10' : quantity > 0 ? 'border border-[#faa300] shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04)]' : 'shadow-[0px_4px_20px_0px_rgba(50,50,71,0.04),0px_0px_1px_0px_rgba(12,26,75,0.03)] border border-[#eaeaef]'}`}>
       
@@ -33,5 +33,5 @@ export const ProductCard = ({ image, itemNo, title, price, isVeg, quantity, isKe
       </div>
     </div>
   );
-};
+});
 

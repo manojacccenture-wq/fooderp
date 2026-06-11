@@ -18,7 +18,7 @@ export const TableSelector = ({
           const num = table.tableNo;
           const tableStatus = determineTableStatus(table);
           const tableStyle = getOrderStatusStyles(tableStatus);
-          const isAvailable = table.status === 'available';
+          const isAvailable = table.status === 'Empty';
           const isDisabled = isDineInFlow ? (num !== selectedTable) : !isAvailable;
 
           return (

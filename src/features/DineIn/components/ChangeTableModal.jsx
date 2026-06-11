@@ -23,7 +23,7 @@ export const ChangeTableModal = ({ isOpen, onClose, tables, currentTableNo, onCo
 
   if (!isOpen) return null;
 
-  const availableTables = tables.filter(t => t.status === 'available');
+  const availableTables = tables.filter(t => t.status === 'Empty');
 
   const handleConfirm = () => {
     if (selectedTable) {

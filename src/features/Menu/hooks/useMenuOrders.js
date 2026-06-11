@@ -221,6 +221,8 @@ export const useMenuOrders = (setKotStatus) => {
         ...prev,
         {
           id: newId,
+          itemNo: product.itemNo,
+          uom: product.uom,
           image: product.image,
           title: product.title,
           price: Number(product.price),

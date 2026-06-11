@@ -7,25 +7,47 @@ export const tableService = {
    */
   fetchAndMapTables: async () => {
     const response = await tableApi.getTables();
+    
 
-    if (!response || !response.IsSuccessful || !response.Data) {
-      throw new Error(response?.Message || 'Failed to fetch tables from API');
+    let tablesData = [];
+
+    // Check for both PascalCase and camelCase keys
+    const isSuccessful = response?.IsSuccessful ?? response?.isSuccessful;
+    const data = response?.Data ?? response?.data;
+    const message = response?.Message ?? response?.message;
+
+    if (Array.isArray(response)) {
+      tablesData = response;
+    } else if (response && isSuccessful && data) {
+      tablesData = data;
+    } else {
+      throw new Error(message || 'Failed to fetch tables from API');
     }
 
-    return response.Data.map(item => ({
-      // Mappings exactly as requested
-      tableId: item.Id,
-      tableName: item.Name,
-      chairCount: item.Chairs,
-      status: item.Status?.toLowerCase() || 'available', // Safely map status
+    const mappedTables = tablesData.map(item => {
+      // Extract properties safely supporting both PascalCase and camelCase
+      const itemId = item.Id ?? item.id;
+      const itemName = item.Name ?? item.name;
+      const itemChairs = item.Chairs ?? item.chairs;
+      const itemStatus = item.Status ?? item.status;
 
-      // Mappings to preserve existing UI TableCard and DineIn component expectations
-      id: item.Id,
-      tableNo: item.Name,
-      guests: item.Chairs,
-      customerName: "",
-      reservedGuests: 0,
-      duration: ""
-    }));
+      return {
+        // Mappings exactly as requested
+        tableId: itemId,
+        tableName: itemName,
+        chairCount: itemChairs,
+        status: itemStatus || 'Empty', // Safely map status
+
+        // Mappings to preserve existing UI TableCard and DineIn component expectations
+        id: itemId,
+        tableNo: itemName,
+        guests: itemChairs,
+        customerName: "",
+        reservedGuests: 0,
+        duration: ""
+      };
+    });
+
+    return mappedTables;
   },
 };

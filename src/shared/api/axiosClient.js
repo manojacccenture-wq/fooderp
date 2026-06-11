@@ -18,7 +18,9 @@ axiosClient.interceptors.request.use(
     // Inject Authorization token if available in Redux state
     const state = store.getState();
     const token = state.auth?.accessToken;
+    
     const tokenType = state.auth?.tokenType || 'Bearer';
+    
     
     if (token) {
       config.headers.Authorization = `${tokenType} ${token}`;
@@ -52,11 +54,11 @@ axiosClient.interceptors.response.use(
     // Centralized error handling
     if (normalizedError.status === 401) {
       // Handle unauthorized (e.g., redirect to login, trigger logout action)
-      console.warn('Unauthorized Access - Token might be expired');
+      
     } else if (normalizedError.status === 403) {
-      console.warn('Forbidden Access');
+      
     } else if (error.request && !error.response?.config) {
-      console.warn('Network Error - No response received');
+      
     }
     
     return Promise.reject(error);

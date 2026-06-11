@@ -19,7 +19,7 @@ async function test() {
       }
     });
 
-    console.log(JSON.stringify(menuRes.data).substring(0, 500));
+
   } catch (err) {
     console.error(err.message);
     if(err.response) console.error(err.response.data);

@@ -34,23 +34,20 @@ const ThreeDotsIcon = () => (
   </svg>
 );
 
-const getCardStyleOptions = (status, workflowStatus) => {
-  if (status === 'available') {
-    return { bg: 'bg-[#e8fbf0]/50', border: 'border-l-[#24a44b]', label: 'AVAILABLE', labelColor: 'text-[#24a44b]' };
-  }
-  if (status === 'reserved') {
-    return { bg: 'bg-[#fff7e8]/50', border: 'border-l-[#ffb01d]', label: 'RESERVED', labelColor: 'text-[#d88c00]' };
-  }
-  
-  switch (workflowStatus) {
-    case 'DRAFT': return { bg: 'bg-[#f8faff]/80', border: 'border-l-[#eaeaef]', label: 'DRAFT', labelColor: 'text-[#8e8ea9]' };
-    case 'KOT SENT': return { bg: 'bg-[#f0f0ff]/80', border: 'border-l-[#6366f1]', label: 'KOT SENT', labelColor: 'text-[#6366f1]' };
-    case 'PREPARING': return { bg: 'bg-[#fff4e5]/80', border: 'border-l-[#f59e0b]', label: 'PREPARING', labelColor: 'text-[#f59e0b]' };
-    case 'READY': return { bg: 'bg-[#e8fbf0]/80', border: 'border-l-[#24a44b]', label: 'READY TO SERVE', labelColor: 'text-[#24a44b]' };
-    case 'BILLING': return { bg: 'bg-[#fff7e8]/80', border: 'border-l-[#ffb01d]', label: 'BILLING', labelColor: 'text-[#d88c00]' };
-    case 'PAYMENT': return { bg: 'bg-[#fff0f0]/80', border: 'border-l-[#f24343]', label: 'PAYMENT PENDING', labelColor: 'text-[#f24343]' };
-    case 'COMPLETED': return { bg: 'bg-[#e8fbf0]/80', border: 'border-l-[#166534]', label: 'COMPLETED', labelColor: 'text-[#166534]' };
-    default: return { bg: 'bg-[#f8faff]/80', border: 'border-l-[#eaeaef]', label: 'OCCUPIED', labelColor: 'text-[#8e8ea9]' };
+const getCardStyleOptions = (status) => {
+  const backendStatus = status;
+
+  switch (backendStatus) {
+    case 'Empty':
+      return { bg: 'bg-[#e8fbf0]/50', border: 'border-l-[#24a44b]', label: 'AVAILABLE', labelColor: 'text-[#24a44b]' };
+    case 'Reserved':
+      return { bg: 'bg-[#fff7e8]/50', border: 'border-l-[#ffb01d]', label: 'RESERVED', labelColor: 'text-[#d88c00]' };
+    case 'Occupied':
+      return { bg: 'bg-[#f8faff]/80', border: 'border-l-[#eaeaef]', label: 'OCCUPIED', labelColor: 'text-[#8e8ea9]' };
+    case 'Cleaning':
+      return { bg: 'bg-[#fff0f0]/80', border: 'border-l-[#f24343]', label: 'CLEANING', labelColor: 'text-[#f24343]' };
+    default: 
+      return { bg: 'bg-[#f8faff]/80', border: 'border-l-[#eaeaef]', label: backendStatus?.toUpperCase() || 'UNKNOWN', labelColor: 'text-[#8e8ea9]' };
   }
 };
 
@@ -61,7 +58,8 @@ export const TableCard = ({
   guests,
   duration,
   reservedGuests,
-  workflowStatus,
+  currentOrderAmount,
+  orderStatus,
   onStartOrder,
   onChangeTable,
   onMergeTable,
@@ -76,7 +74,7 @@ export const TableCard = ({
   const menuRef = useRef(null);
   const navigate=useNavigate()
   
-  const styles = getCardStyleOptions(status, workflowStatus);
+  const styles = getCardStyleOptions(status);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -105,7 +103,7 @@ export const TableCard = ({
   };
 
   const renderDropdown = () => {
-    if (minimalView || status !== 'occupied') return null;
+    if (minimalView || (status !== 'Occupied' && status !== 'Cleaning')) return null;
     return (
       <div className="absolute top-[16px] left-[16px] z-20" ref={menuRef}>
         <button 
@@ -133,7 +131,7 @@ export const TableCard = ({
   };
 
   
-  if (status === 'available') {
+  if (status === 'Empty') {
     return (
       <div 
         className={`w-[293px] h-[183px] cursor-pointer border-2 border-l-[6px] rounded-[16px] relative shrink-0 transition-all duration-200 focus:outline-none focus-visible:shadow-[0_0_0_3px_rgba(251,191,36,0.25)] hover:-translate-y-[1px] hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)] ${
@@ -172,7 +170,7 @@ export const TableCard = ({
     );
   }
 
-  if (status === 'occupied') {
+  if (status === 'Occupied' || status === 'Cleaning') {
     return (
       <div 
         className={`w-[293px] h-[183px] border-2 border-l-[6px] border-[#eaeaef] ${styles.border} ${styles.bg} rounded-[16px] relative shrink-0 cursor-pointer transition-colors duration-200`}
@@ -185,20 +183,24 @@ export const TableCard = ({
           <span className={`text-[10px] font-black uppercase tracking-[0.08em] ${styles.labelColor}`}>{styles.label}</span>
         </div>
         
-        {/* Customer Name Row */}
+        {/* Customer/Order Row */}
         <div className="absolute top-[61px] left-[19px] flex items-center gap-[12px] h-[36px]">
           <div className="w-[36px] h-[36px] bg-[#f6f6f9] rounded-[32px] flex items-center justify-center shrink-0">
             <UserIcon />
           </div>
-          <span className="text-[12px] font-semibold text-[#8e8ea9]">{customerName}</span>
+          <span className="text-[12px] font-semibold text-[#8e8ea9] max-w-[100px] truncate">
+            {customerName || (orderStatus ? `Status: ${orderStatus}` : 'Walk-in')}
+          </span>
         </div>
 
-        {/* Timer Row */}
+        {/* Timer/Amount Row */}
         <div className="absolute top-[127px] left-[19px] flex items-center gap-[12px] h-[36px]">
           <div className="w-[36px] h-[36px] bg-[#f6f6f9] rounded-[32px] flex items-center justify-center shrink-0">
             <TimerIcon />
           </div>
-          <span className="text-[12px] font-semibold text-[#8e8ea9]">{duration}</span>
+          <span className="text-[12px] font-semibold text-[#8e8ea9]">
+            {currentOrderAmount ? `$${Number(currentOrderAmount).toFixed(2)}` : duration}
+          </span>
         </div>
 
         {/* Guests Row */}
@@ -219,7 +221,7 @@ export const TableCard = ({
     );
   }
 
-  if (status === 'reserved') {
+  if (status === 'Reserved') {
     return (
       <div className={`w-[293px] h-[183px] border-2 border-l-[6px] border-[#eaeaef] ${styles.border} ${styles.bg} rounded-[16px] relative shrink-0`}>
         {renderDropdown()}

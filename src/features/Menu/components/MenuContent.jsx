@@ -28,13 +28,11 @@ export const MenuContent = ({
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState("All Dishes");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(12);
   
   const { items: menuProducts, categories, status, error } = useSelector(state => state.product);
   
   const searchRef = useRef(null);
   const productRefs = useRef([]);
-  const observerTarget = useRef(null);
   const scrollContainerRef = useRef(null);
 
   const filteredProducts = useMemo(() => {
@@ -87,45 +85,13 @@ export const MenuContent = ({
   // Remove automatic category switching on search typing to prevent jarring UX
   // It's better to stay in the current category and filter within it.
 
-  // Reset index and visible count on filter change
+  // Reset index on filter change
   useEffect(() => {
     setKeyboardSelectedIndex(0);
-    setVisibleCount(12);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
   }, [search, activeCategory, setKeyboardSelectedIndex]);
-
-  // Infinite scroll observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount(prev => Math.min(prev + 12, filteredProducts.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
-  }, [filteredProducts.length, visibleCount]);
-
-  // If keyboard selects an item beyond visible, expand visible list
-  useEffect(() => {
-    if (keyboardSelectedIndex >= visibleCount) {
-      setVisibleCount(keyboardSelectedIndex + 12);
-    }
-  }, [keyboardSelectedIndex, visibleCount]);
-
-  const visibleProducts = filteredProducts.slice(0, visibleCount);
 
   // Scroll to selected
   useEffect(() => {
@@ -158,7 +124,15 @@ export const MenuContent = ({
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [activeKeyboardSection, keyboardSelectedIndex, visibleProducts]);
+  }, [activeKeyboardSection, keyboardSelectedIndex, filteredProducts]);
+
+  const quantityMap = useMemo(() => {
+    const map = {};
+    orderItems.forEach(item => {
+      map[item.title] = item.quantity;
+    });
+    return map;
+  }, [orderItems]);
 
   return (
     <div className="flex flex-col w-full h-[100vh] max-w-full overflow-hidden px-4 pt-4">
@@ -261,8 +235,8 @@ export const MenuContent = ({
             className="grid gap-[10px] pb-[100px] items-stretch"
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}
           >
-            {visibleProducts.length > 0 ? (
-              visibleProducts.map((p, index) => {
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((p, index) => {
               const isActiveReplaceTarget = isReplaceMode && replacementSelectedProductId === p.itemNo;
               
               return (
@@ -302,7 +276,7 @@ export const MenuContent = ({
                     quantity={
                       isReplaceMode
                         ? 0
-                        : orderItems.find(item => item.title === p.title)?.quantity || 0
+                        : quantityMap[p.title] || 0
                     }
                     isAvailable={p.isAvailable !== false}
                   />
@@ -318,12 +292,6 @@ export const MenuContent = ({
               </div>
               <h3 className="text-[16px] font-bold text-[#32324d] mb-1">No items found</h3>
               <p className="text-[#8e8ea9] text-[14px]">No items available in this category</p>
-            </div>
-          )}
-          
-          {visibleCount < filteredProducts.length && (
-            <div ref={observerTarget} className="col-span-full h-20 flex items-center justify-center">
-              <div className="w-6 h-6 border-2 border-[#ffb01d] border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
           </div>
