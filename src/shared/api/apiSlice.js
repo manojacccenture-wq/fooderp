@@ -86,6 +86,7 @@ export const apiSlice = createApi({
         url: `${API_ENDPOINTS.DINE_IN.GET_CUSTOMER_ORDER_BY_TABLE_ID}?tableId=${tableId}&tableStatus=${tableStatus}`,
         method: 'GET',
       }),
+      providesTags: ['Order'],
     }),
     putOrderStatus: builder.mutation({
       query: ({ orderId, payload }) => ({
@@ -109,6 +110,14 @@ export const apiSlice = createApi({
         method: 'POST',
       }),
       invalidatesTags: ['Tables', 'Customers'],
+    }),
+    cancelOrderItem: builder.mutation({
+      query: ({ orderItemId, payload }) => ({
+        url: `${API_ENDPOINTS.ORDERS.CANCEL_ORDER_ITEM}?OrderItemId=${orderItemId}`,
+        method: 'PUT',
+        data: payload,
+      }),
+      invalidatesTags: ['Order'],
     }),
     putOrderPaymentStatus: builder.mutation({
       query: ({ orderId, payload }) => ({
@@ -138,4 +147,5 @@ export const {
   useCancelDineInOrderMutation,
   usePutOrderPaymentStatusMutation,
   useCloseOrderMutation,
+  useCancelOrderItemMutation,
 } = apiSlice;

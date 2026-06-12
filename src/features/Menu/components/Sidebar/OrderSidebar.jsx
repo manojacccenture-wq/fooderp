@@ -66,6 +66,7 @@ export const OrderSidebar = ({
   paymentErrors,
   paymentInputRef,
   changeToReturn,
+  amountDue,
   setCustomerPaidAmount,
   handlePrintBilling,
   handleOrderSubmit,
@@ -86,9 +87,13 @@ export const OrderSidebar = ({
   currentOrderNumber,
   totalPackQuantity,
   hasPackedItems,
-  handleSendPackToTakeaway
+  handleSendPackToTakeaway,
+  refreshOrder
 }) => {
   const [isSplitBillExpanded, setIsSplitBillExpanded] = useState(false);
+  const [denomCounts, setDenomCounts] = useState({
+    500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0
+  });
 
 
 
@@ -109,17 +114,33 @@ export const OrderSidebar = ({
     actualOrderNumber = currentOrderNumber;
   }
 
+  useEffect(() => {
+    setDenomCounts({
+      500: 0, 200: 0, 100: 0, 50: 0, 20: 0, 10: 0
+    });
+  }, [actualOrderNumber]);
+
+  const handleDenomClick = (amt, operation) => {
+    const numAmt = Number(amt);
+    if (operation === 'add') {
+      setDenomCounts(prev => ({ ...prev, [amt]: prev[amt] + 1 }));
+      setCustomerPaidAmount(prev => Number(prev) + numAmt);
+    } else if (operation === 'sub') {
+      setDenomCounts(prev => {
+        if (prev[amt] > 0) {
+          setCustomerPaidAmount(prevAmount => Math.max(0, Number(prevAmount) - numAmt));
+          return { ...prev, [amt]: prev[amt] - 1 };
+        }
+        return prev;
+      });
+    }
+  };
+
   const allLinkedTakeaways = [...activeTakeaways, ...completedTakeaways].filter(t => {
     if (!actualOrderNumber) return false;
     
     // Must match the table's actual order number
-    if (t.orderNumber !== actualOrderNumber) return false;
-
-    // Additional safety check for dine-in
-    if (isDineInFlow && selectedTable) {
-      return t.tableReference === selectedTable;
-    }
-    return true;
+    return t.orderNumber === actualOrderNumber;
   });
   
   const linkedTakeaway = allLinkedTakeaways.length > 0 ? allLinkedTakeaways[allLinkedTakeaways.length - 1] : null;
@@ -189,6 +210,7 @@ export const OrderSidebar = ({
                 handleDecrease={handleDecrease}
                 handleRemove={handleRemove}
                 handleOpenInstructions={handleOpenInstructions}
+                setSelectedOrderItem={setSelectedOrderItem}
                 activeKeyboardSection={activeKeyboardSection}
                 setActiveKeyboardSection={setActiveKeyboardSection}
               />
@@ -376,15 +398,22 @@ export const OrderSidebar = ({
                 
                 <div className="grid grid-cols-2 gap-2 mb-3 mt-2">
                   {['500', '200', '100', '50', '20', '10'].map(amt => (
-                    <button key={amt} onClick={() => setCustomerPaidAmount(prev => Number(prev) + Number(amt))} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-center gap-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] transition-all duration-200 active:scale-[0.98]">
-                      <span className="text-[#ff9556] text-center text-2xl">-</span>{amt}<span className="text-[#ff9556] text-center text-2xl">+</span>
-                    </button>
+                    <div key={amt} className="h-[36px] border border-[#ffb01d] rounded-[16px] flex items-center justify-between px-1 text-[12px] font-bold text-[#32324d] hover:bg-[#fff7e8] bg-white transition-all duration-200">
+                      <div className="flex items-center">
+                        <button onClick={(e) => { e.preventDefault(); handleDenomClick(amt, 'sub'); }} className="text-[#ff9556] text-center text-2xl px-2 active:scale-[0.98] leading-none pb-1">-</button>
+                        <span className="w-7 text-center">{amt}</span>
+                        <button onClick={(e) => { e.preventDefault(); handleDenomClick(amt, 'add'); }} className="text-[#ff9556] text-center text-2xl px-2 active:scale-[0.98] leading-none pb-1">+</button>
+                      </div>
+                      <div className="bg-[#fff7e8] text-[#ff9556] px-2 py-0.5 rounded-full mr-1">x{denomCounts[amt]}</div>
+                    </div>
                   ))}
                 </div>
                 <button onClick={() => paymentInputRef.current?.focus()} className="w-full h-[36px] border border-[#ffb01d] rounded-[16px] text-[#666687] text-[12px] font-bold hover:bg-[#fff7e8] mb-4 transition-all duration-200 active:scale-[0.98]">Custom amount</button>
 
-                <div className="bg-[#b4efc6]/20 py-2 rounded-[16px] text-center">
-                  <span className="text-[12px] font-bold text-[#24a44b]">₹{changeToReturn.toFixed(2)} change to return</span>
+                <div className={clsx("py-2 rounded-[16px] text-center", amountDue > 0 ? "bg-[#ffe2e5]/30" : "bg-[#b4efc6]/20")}>
+                  <span className={clsx("text-[12px] font-bold", amountDue > 0 ? "text-[#e23744]" : "text-[#24a44b]")}>
+                    {amountDue > 0 ? `₹${amountDue.toFixed(2)} due` : `₹${changeToReturn.toFixed(2)} change to return`}
+                  </span>
                 </div>
               </div>
             )}

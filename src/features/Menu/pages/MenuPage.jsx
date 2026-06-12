@@ -6,7 +6,7 @@ import { selectAllTables } from '../../DineIn/store/tableSlice';
 import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber } from '../store/orderSlice';
 import { fetchMenuData, resetMenuStatus } from '../store/productSlice';
 import { createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
-import { useGetTablesWithOrderAmountQuery, useGetCustomerNameListQuery } from '../../../shared/api/apiSlice';
+import { useGetTablesWithOrderAmountQuery, useGetCustomerNameListQuery, useCancelOrderItemMutation } from '../../../shared/api/apiSlice';
 
 // Components
 import { MenuContent } from '../components/MenuContent';
@@ -74,6 +74,11 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [activeKeyboardSection, setActiveKeyboardSection] = useState('menu'); // 'menu' | 'order'
   const [isHelperModalOpen, setIsHelperModalOpen] = useState(false);
 
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelRemarks, setCancelRemarks] = useState('');
+  const [cancelError, setCancelError] = useState('');
+  const [cancelOrderItemApi] = useCancelOrderItemMutation();
+
   // 1. Menu Orders Hook
   const {
     draftOrderItems, setDraftOrderItems,
@@ -106,7 +111,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     isExistingSessionMode,
     isPhoneMissingForDineIn,
     registerOrder, watchOrder, handleOrderSubmit, orderErrors,
-    phone, guestCount
+    phone, guestCount, refreshOrder
   } = useTableFlow({
     allTables,
     dispatch,
@@ -178,6 +183,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   } = usePaymentFlow({
     dispatch,
     selectedTable,
+    currentTableObj,
     orderType,
     navigate,
     resetOrders,
@@ -197,6 +203,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const appliedTip = customTip !== '' ? Number(customTip) : selectedTip;
   const payableAmount = splitCalculatedAmount + appliedTip;
   const changeToReturn = customerPaidAmount > payableAmount ? customerPaidAmount - payableAmount : 0;
+  const amountDue = customerPaidAmount < payableAmount ? payableAmount - customerPaidAmount : 0;
   const isSplitView = heldItems.length > 0;
   const shouldShowOrderControls = sentKotItems.length === 0 && rightView !== 'checkout';
   const statusStyles = getOrderStatusStyles(globalOrderStatus);
@@ -381,7 +388,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
           <div className="flex flex-col h-full w-full max-w-[769px]">
             <div className="flex gap-4 mb-6">
               <button
-                onClick={() => setCenterView('cancel_item')}
+                onClick={() => { setCenterView('cancel_item'); setCancelReason(''); setCancelRemarks(''); setCancelError(''); }}
                 className={clsx("px-6 py-[10px] rounded-[16px] font-bold text-[16px]", centerView === 'cancel_item' ? "bg-[#e23744] text-white" : "bg-[#ffb01d] text-white")}
                 style={centerView !== 'cancel_item' ? { opacity: 0.5 } : {}}
               >
@@ -399,13 +406,79 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
               <div className="bg-white rounded-[16px] p-6 shadow-sm border border-[#eaeaef] flex flex-col gap-6 w-full max-w-[400px]">
                 <h3 className="text-[18px] font-bold text-[#32324d] m-0">Confirm Cancellation</h3>
                 <p className="text-[#666687] m-0">Are you sure you want to cancel <strong>{selectedItemForAction.title}</strong>?</p>
+                
+                <div className="flex flex-col gap-2">
+                  <label className="text-[13px] font-bold text-[#666687]">Cancellation Reason <span className="text-red-500">*</span></label>
+                  {['Customer Changed Mind', 'Wrong Item Ordered', 'Item Not Available', 'Kitchen Delay', 'Other'].map(reason => (
+                    <label key={reason} className="flex items-center gap-2 cursor-pointer p-2 rounded-[12px] hover:bg-[#f3f5f9] border border-transparent has-[:checked]:border-[#ffb01d] has-[:checked]:bg-[#fff7e8]">
+                      <input 
+                        type="radio" 
+                        name="cancelReason" 
+                        value={reason} 
+                        checked={cancelReason === reason} 
+                        onChange={(e) => { setCancelReason(e.target.value); setCancelError(''); }}
+                        className="w-4 h-4 text-[#ffb01d] focus:ring-[#ffb01d]"
+                      />
+                      <span className="text-[13px] font-semibold text-[#32324d]">{reason}</span>
+                    </label>
+                  ))}
+                  {cancelError && !cancelError.includes('remarks') && <p className="text-red-500 text-xs font-semibold">{cancelError}</p>}
+                </div>
+
+                {cancelReason === 'Other' && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[13px] font-bold text-[#666687]">Remarks <span className="text-red-500">*</span></label>
+                    <textarea 
+                      value={cancelRemarks}
+                      onChange={(e) => { setCancelRemarks(e.target.value); setCancelError(''); }}
+                      className="border border-[#eaeaef] rounded-[12px] p-3 text-[13px] outline-none focus:border-[#ffb01d] resize-none h-20"
+                    />
+                    {cancelError && cancelError.includes('remarks') && <p className="text-red-500 text-xs font-semibold">{cancelError}</p>}
+                  </div>
+                )}
+
                 <div className="flex gap-3 mt-2">
-                  <button onClick={() => setCenterView('menu')} className="flex-1 py-3 rounded-[12px] bg-[#f3f5f9] text-[#32324d] font-bold hover:bg-[#eaeaef] transition-colors">No, keep it</button>
+                  <button onClick={() => { setCenterView('menu'); setCancelReason(''); setCancelRemarks(''); setCancelError(''); }} className="flex-1 py-3 rounded-[12px] bg-[#f3f5f9] text-[#32324d] font-bold hover:bg-[#eaeaef] transition-colors">No, keep it</button>
                   <button
-                    onClick={() => {
-                      setSentKotItems(prev => prev.filter(i => i.id !== selectedItemForAction.id));
-                      setDraftOrderItems(prev => prev.filter(i => i.id !== selectedItemForAction.id));
-                      setCenterView('menu');
+                    onClick={async () => {
+                      if (!cancelReason) {
+                        setCancelError('Please select a cancellation reason.');
+                        return;
+                      }
+                      if (cancelReason === 'Other' && !cancelRemarks.trim()) {
+                        setCancelError('Please enter remarks.');
+                        return;
+                      }
+
+                      if (selectedItemForAction.orderItemId) {
+                        try {
+                          const res = await cancelOrderItemApi({
+                            orderItemId: selectedItemForAction.orderItemId,
+                            payload: {
+                              Id: selectedItemForAction.orderItemId,
+                              Reason: cancelReason,
+                              Feedback: cancelReason === 'Other' ? cancelRemarks : ''
+                            }
+                          }).unwrap();
+                          
+                          if (res?.IsSuccessful || res?.isSuccessful) {
+                            setCenterView('menu');
+                            setCancelReason('');
+                            setCancelRemarks('');
+                            alert('Item cancelled successfully');
+                            if (refreshOrder) refreshOrder();
+                          } else {
+                            setCancelError(res?.Message || res?.message || 'Failed to cancel item.');
+                          }
+                        } catch (err) {
+                          setCancelError('An error occurred while cancelling the item.');
+                        }
+                      } else {
+                        // For draft items without backend ID, just remove locally
+                        setSentKotItems(prev => prev.filter(i => i.id !== selectedItemForAction.id));
+                        setDraftOrderItems(prev => prev.filter(i => i.id !== selectedItemForAction.id));
+                        setCenterView('menu');
+                      }
                     }}
                     className="flex-1 py-3 rounded-[12px] bg-[#e23744] text-white font-bold hover:bg-[#c92f3a] transition-colors"
                   >
@@ -503,6 +576,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         paymentErrors={paymentErrors}
         paymentInputRef={paymentInputRef}
         changeToReturn={changeToReturn}
+        amountDue={amountDue}
         setCustomerPaidAmount={setCustomerPaidAmount}
         handlePrintBilling={handlePrintBilling}
         handleOrderSubmit={handleOrderSubmit}
@@ -520,6 +594,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         totalPackQuantity={totalPackQuantity}
         hasPackedItems={hasPackedItems}
         handleSendPackToTakeaway={handleSendPackToTakeaway}
+        refreshOrder={refreshOrder}
       />
       </div>
 

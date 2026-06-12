@@ -65,9 +65,7 @@ export const useTableFlow = ({
     currentOrderDataRef.current = { draftOrderItems, sentKotItems, heldItems, kotStatus, rightView };
   }, [draftOrderItems, sentKotItems, heldItems, kotStatus, rightView]);
 
-  useEffect(() => {
-    const tableToSave = selectedTable;
-    
+  const refreshOrder = () => {
     const newTableObj = allTablesRef.current.find(t => t.tableNo === selectedTable);
     
     if (newTableObj && (newTableObj.status === 'Occupied' || newTableObj.status === 'Billing')) {
@@ -108,13 +106,20 @@ export const useTableFlow = ({
             setOrderValue('phone', customer.phone);
 
             // Restore Items
-            const orderItems = (activeOrder.OrderItems || []).map(item => ({
-              id: item.MenuItemId,
-              title: item.Name,
-              quantity: item.Quantity,
-              price: item.Price,
-              status: item.Status
-            }));
+            const orderItems = (activeOrder.OrderItems || [])
+              .filter(item => 
+                item.IsCancelled !== true && 
+                item.Status !== "Cancelled" && 
+                item.KitchenStatus !== "Cancelled"
+              )
+              .map(item => ({
+                id: item.MenuItemId,
+                orderItemId: item.Id,
+                title: item.Name,
+                quantity: item.Quantity,
+                price: item.Price,
+                status: item.Status
+              }));
             
 
             // Restore Workflow Status
@@ -170,6 +175,11 @@ export const useTableFlow = ({
     } else {
       setRightView('order');
     }
+  };
+
+  useEffect(() => {
+    const tableToSave = selectedTable;
+    refreshOrder();
 
     return () => {
       if (tableToSave) {
@@ -208,7 +218,8 @@ export const useTableFlow = ({
     isExistingSessionMode,
     isPhoneMissingForDineIn,
     registerOrder, watchOrder, handleOrderSubmit, orderErrors, setOrderValue,
-    phone, guestCount
+    phone, guestCount,
+    refreshOrder
   };
 };
 

@@ -18,12 +18,17 @@ export const ReceiptPrintTemplate = ({
   date,
   upiString = ''
 }) => {
-  // Generate QR code URL if UPI
+  // Generate QR code URL if UPI (for legacy payment mode rendering if needed)
   const qrUrl = getQrUrl(upiString);
+
+  // Dynamic Bill UPI QR Configuration
+  const UPI_ID = '9031006009-1@okbizaxis';
+  const billUpiString = `upi://pay?pa=${UPI_ID}&pn=Annas Kitchen&am=${amount?.toFixed(2)}&cu=INR`;
+  const dynamicQrUrl = getQrUrl(billUpiString);
 
   return (
     <div id="printable-receipt" className="print-only" style={{ position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -10 }}>
-      <div id="receipt-print-content" className="receipt-container" style={{ width: '300px', backgroundColor: '#ffffff', color: '#000', fontFamily: 'monospace', padding: '10px', margin: '0', fontSize: '12px', lineHeight: '1.4' }}>
+      <div id="receipt-print-content" className="receipt-container" style={{ width: '80mm', boxSizing: 'border-box', backgroundColor: '#ffffff', color: '#000', fontFamily: 'monospace', padding: '5mm 4mm', margin: '0', fontSize: '12px', lineHeight: '1.4' }}>
         
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '15px' }}>
@@ -164,6 +169,13 @@ export const ReceiptPrintTemplate = ({
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
           <p style={{ margin: '0', fontWeight: 'bold' }}>Thank You For Visiting!</p>
           <p style={{ margin: '5px 0 0 0', fontSize: '10px' }}>Have a nice day!</p>
+        </div>
+
+        {/* Dynamic UPI Payment QR */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '15px' }}>
+          <img src={dynamicQrUrl} alt="UPI Payment QR Code" style={{ width: '120px', height: '120px' }} />
+          <p style={{ margin: '5px 0 0 0', fontSize: '10px', fontWeight: 'bold' }}>Scan & Pay via UPI</p>
+          <p style={{ margin: '2px 0 0 0', fontSize: '10px' }}>{UPI_ID}</p>
         </div>
 
       </div>

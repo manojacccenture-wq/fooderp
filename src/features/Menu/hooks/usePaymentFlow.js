@@ -16,7 +16,7 @@ import {
   apiSlice
 } from '../../../shared/api/apiSlice';
 
-export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, resetOrders, setKotStatus, handleSendKOT, totalPackQuantity, draftOrderItems, combinedItems, phone, currentOrderNumber, globalOrderCounter }) => {
+export const usePaymentFlow = ({ dispatch, selectedTable, currentTableObj, orderType, navigate, resetOrders, setKotStatus, handleSendKOT, totalPackQuantity, draftOrderItems, combinedItems, phone, currentOrderNumber, globalOrderCounter }) => {
   const activeKots = useSelector(selectActiveKots);
   const [putOrderPaymentStatus] = usePutOrderPaymentStatusMutation();
   const [closeOrder] = useCloseOrderMutation();
@@ -33,7 +33,7 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
   const { register: registerPayment, watch: watchPayment, handleSubmit: handlePaymentSubmit, formState: { errors: paymentErrors }, setValue: setPaymentValue, reset: resetPaymentForm } = useForm({
     resolver: zodResolver(paymentCheckoutSchema),
     defaultValues: {
-      customerPaidAmount: 600,
+      customerPaidAmount: 0,
       customTip: '',
       dueCustomerName: '',
       dueMobileNumber: '',
@@ -131,7 +131,8 @@ export const usePaymentFlow = ({ dispatch, selectedTable, orderType, navigate, r
       }
 
       // STEP 3: Put Table Status Empty
-      const tableStatusResponse = await putTableStatus({ tableId: selectedTable, status: "Empty" }).unwrap();
+      const targetTableId = currentTableObj?.id || currentTableObj?.tableId || selectedTable;
+      const tableStatusResponse = await putTableStatus({ tableId: targetTableId, status: "Empty" }).unwrap();
       console.log("Put Table Status Response", tableStatusResponse);
       if (!tableStatusResponse?.IsSuccessful) {
         alert("Failed to update table status to Empty. Keep billing session open.");

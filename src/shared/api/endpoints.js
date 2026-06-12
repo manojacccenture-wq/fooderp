@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     PUT_ORDER_STATUS: '/api/Franchisee/PutOrderStatus',
     PUT_ORDER_PAYMENT_STATUS: '/api/Franchisee/PutOrderPaymentStatus',
     CANCEL_DINE_IN_ORDER: '/api/Franchisee/CancelDineInOrder',
+    CANCEL_ORDER_ITEM: '/api/Franchisee/CancelOrderItem',
   },
   CUSTOMERS: {
     GET_CUSTOMER_NAME_LIST: '/CustomerMaster/GetCustomerNameList',
