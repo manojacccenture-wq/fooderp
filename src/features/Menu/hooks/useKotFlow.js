@@ -274,7 +274,7 @@ export const useKotFlow = ({
       // 4. Put Table Status -> "billing"
       const putTableResponse = await putTableStatus({ 
         tableId: actualTableId, 
-        payload: "Billing" 
+        status: "Billing" 
       }).unwrap();
 
       if (!putTableResponse?.IsSuccessful) {

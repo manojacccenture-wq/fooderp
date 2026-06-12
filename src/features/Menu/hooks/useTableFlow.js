@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { menuOrderSchema } from '../../../validations/order.validation';
 import { updateTableOrder } from '../../DineIn/store/tableSlice';
+import { setCurrentOrderNumber } from '../../../features/Menu/store/orderSlice';
 import { useLazyGetCustomerOrderByTableIdQuery } from '../../../shared/api/apiSlice';
 
 export const useTableFlow = ({
@@ -71,10 +72,10 @@ export const useTableFlow = ({
     
     if (newTableObj && (newTableObj.status === 'Occupied' || newTableObj.status === 'Billing')) {
       // 1. BACKEND RESTORE FLOW
-      console.log("Clicked Table", newTableObj);
-      console.log("Table Status", newTableObj.status);
-      console.log("Restore Flow Triggered");
-      console.log("Calling GetCustomerOrderByTableId");
+      
+      
+      
+      
       
       getOrder({ tableId: newTableObj.id || newTableObj.tableId, tableStatus: newTableObj.status })
         .unwrap()
@@ -126,15 +127,16 @@ export const useTableFlow = ({
             const activeStatus = activeOrder.Status ? activeOrder.Status.toLowerCase() : 'placed';
             const orderStatusStr = activeOrder.OrderStatus ? activeOrder.OrderStatus.toLowerCase() : '';
             setKotStatus(activeStatus);
+            dispatch(setCurrentOrderNumber(activeOrder.Id));
             
             let targetScreen = 'order';
             if (activeStatus === 'billing' || orderStatusStr === 'billing' || activeStatus === 'completed' || orderStatusStr === 'completed') {
               targetScreen = 'checkout';
             }
 
-            console.log("Table Clicked", newTableObj.tableNo || newTableObj.tableName);
-            console.log("Active Order Status", activeOrder.Status);
-            console.log("Navigation Target", targetScreen);
+            
+            
+            
             
             setRightView(targetScreen);
           } else {

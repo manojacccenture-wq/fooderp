@@ -44,7 +44,9 @@ const getCardStyleOptions = (status) => {
     case 'Reserved':
       return { bg: 'bg-[#fff7e8]/50', border: 'border-l-[#ffb01d]', label: 'RESERVED', labelColor: 'text-[#d88c00]' };
     case 'Occupied':
-      return { bg: 'bg-[#f8faff]/80', border: 'border-l-[#eaeaef]', label: 'OCCUPIED', labelColor: 'text-[#8e8ea9]' };
+      return { bg: 'bg-[#eff6ff]', border: 'border-l-[#2563eb]', label: 'OCCUPIED', labelColor: 'text-[#2563eb]' };
+    case 'Billing':
+      return { bg: 'bg-[#fffbeb]', border: 'border-l-[#f59e0b]', label: 'BILLING', labelColor: 'text-[#f59e0b]' };
     case 'Cleaning':
       return { bg: 'bg-[#fff0f0]/80', border: 'border-l-[#f24343]', label: 'CLEANING', labelColor: 'text-[#f24343]' };
     default: 
@@ -200,7 +202,7 @@ export const TableCard = ({
             <TimerIcon />
           </div>
           <span className="text-[12px] font-semibold text-[#8e8ea9]">
-            {currentOrderAmount ? `$${Number(currentOrderAmount).toFixed(2)}` : duration}
+            {currentOrderAmount ? `₹${Number(currentOrderAmount).toFixed(2)}` : duration}
           </span>
         </div>
 

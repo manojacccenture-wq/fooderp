@@ -73,6 +73,9 @@ const orderSlice = createSlice({
     clearOrderNumber: (state) => {
       state.currentOrderNumber = null;
     },
+    setCurrentOrderNumber: (state, action) => {
+      state.currentOrderNumber = action.payload;
+    },
     increaseQuantity: (state, action) => {
       const id = action.payload;
       const existing = state.orderItems.find((item) => item.id === id);
@@ -173,6 +176,7 @@ export const {
   toggleFulfillmentType,
   assignOrderNumber,
   clearOrderNumber,
+  setCurrentOrderNumber,
   removeHeldItem,
   clearSplitState,
   refreshHeldItems

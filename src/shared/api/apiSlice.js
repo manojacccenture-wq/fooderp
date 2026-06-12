@@ -96,10 +96,10 @@ export const apiSlice = createApi({
       }),
     }),
     putTableStatus: builder.mutation({
-      query: ({ tableId, payload }) => ({
+      query: ({ tableId, status }) => ({
         url: `${API_ENDPOINTS.TABLES.PUT_TABLE_STATUS}/${tableId}`,
         method: 'PUT',
-        data: payload,
+        data: status,
         headers: { 'Content-Type': 'application/json' },
       }),
     }),
@@ -109,6 +109,22 @@ export const apiSlice = createApi({
         method: 'POST',
       }),
       invalidatesTags: ['Tables', 'Customers'],
+    }),
+    putOrderPaymentStatus: builder.mutation({
+      query: ({ orderId, payload }) => ({
+        url: `${API_ENDPOINTS.ORDERS.PUT_ORDER_PAYMENT_STATUS}/${orderId}`,
+        method: 'PUT',
+        data: payload,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    }),
+    closeOrder: builder.mutation({
+      query: (payload) => ({
+        url: API_ENDPOINTS.ORDERS.CLOSE_ORDER,
+        method: 'POST',
+        data: payload,
+        headers: { 'Content-Type': 'application/json' },
+      }),
     }),
   }),
 });
@@ -120,4 +136,6 @@ export const {
   usePutOrderStatusMutation,
   usePutTableStatusMutation,
   useCancelDineInOrderMutation,
+  usePutOrderPaymentStatusMutation,
+  useCloseOrderMutation,
 } = apiSlice;

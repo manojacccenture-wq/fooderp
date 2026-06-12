@@ -49,8 +49,8 @@ export const DineInPage = () => {
   // Log the fresh API response to satisfy verification requirements
   useEffect(() => {
     if (rtkTables) {
-      console.log("RTK Tables Count", tables.length);
-      console.log("Sorted Tables", sortedTables);
+      
+      
     }
   }, [rtkTables]);
 
@@ -102,7 +102,7 @@ export const DineInPage = () => {
         try {
           const tableResponse = await putTableStatus({
             tableId,
-            payload: statusToSet
+            status: statusToSet
           }).unwrap();
           
           

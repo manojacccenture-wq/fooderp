@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
     POST_ORDER: '/api/Franchisee/PostOrder',
     CLOSE_ORDER: '/api/Franchisee/CloseOrder',
     PUT_ORDER_STATUS: '/api/Franchisee/PutOrderStatus',
+    PUT_ORDER_PAYMENT_STATUS: '/api/Franchisee/PutOrderPaymentStatus',
     CANCEL_DINE_IN_ORDER: '/api/Franchisee/CancelDineInOrder',
   },
   CUSTOMERS: {
