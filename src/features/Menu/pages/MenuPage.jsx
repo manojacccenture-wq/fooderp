@@ -79,6 +79,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   const [cancelError, setCancelError] = useState('');
   const [cancelOrderItemApi] = useCancelOrderItemMutation();
 
+  const phoneRef = useRef('');
+
   // 1. Menu Orders Hook
   const {
     draftOrderItems, setDraftOrderItems,
@@ -98,7 +100,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     handleSplitClick, handleSplitPackClick, handleReplaceClick, handleOpenInstructions,
     handleQuantityConfirm, handleSaveInstructions, handleConfirmSplit, handleConfirmSplitPack,
     handleProductCardClick
-  } = useMenuOrders();
+  } = useMenuOrders(undefined, phoneRef);
 
   // 2. Table Flow Hook
   const {
@@ -125,6 +127,10 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     setHeldItems,
     setKotStatus: NOOP // will sync with useKotFlow
   });
+
+  useEffect(() => {
+    phoneRef.current = phone;
+  }, [phone]);
 
   // 3. KOT Flow Hook
   

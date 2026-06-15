@@ -12,7 +12,7 @@ export const areItemsEqual = (item1, item2) => {
          areInstructionsEqual(item1.specialInstructions, item2.specialInstructions);
 };
 
-export const useMenuOrders = (setKotStatus) => {
+export const useMenuOrders = (setKotStatus, phoneRef) => {
   const dispatch = useDispatch();
   const [draftOrderItems, setDraftOrderItems] = useState([]);
   const [sentKotItems, setSentKotItems] = useState([]);
@@ -162,7 +162,7 @@ export const useMenuOrders = (setKotStatus) => {
     }
   };
 
-  const handleConfirmSplitPack = ({ item, serveQty, packQty }) => {
+  const handleConfirmSplitPack = async ({ item, serveQty, packQty }) => {
     const isDraft = draftOrderItems.some(i => i.id === item.id);
 
     if (isDraft) {
@@ -190,6 +190,34 @@ export const useMenuOrders = (setKotStatus) => {
         type: 'kot/updateKotItemFulfillment', 
         payload: { itemId: item.id, serveQty, packQty } 
       });
+      
+      // Auto-generate Takeaway order for packed items on existing orders
+      if (packQty > 0) {
+        try {
+          const takeawayItem = {
+            ...item,
+            quantity: packQty,
+            fulfillment: { take_away: packQty, dine_in: 0 }
+          };
+          
+          const { submitOrderKOT } = await import('../store/orderSlice');
+          await dispatch(submitOrderKOT({
+            orderItems: [takeawayItem],
+            orderType: 'take_away',
+            phone: phoneRef?.current || '9087397440',
+            selectedTable: null,
+            allTables: [],
+            currentOrderNumber: null,
+            isExistingOrder: false
+          })).unwrap();
+          
+          const { apiSlice } = await import('../../../shared/api/apiSlice');
+          dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers', 'Order']));
+          
+        } catch (error) {
+          console.error("Failed to auto-generate split Takeaway order:", error);
+        }
+      }
     }
   };
 
