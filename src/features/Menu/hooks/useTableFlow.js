@@ -33,7 +33,7 @@ export const useTableFlow = ({
 
   const { register: registerOrder, watch: watchOrder, handleSubmit: handleOrderSubmit, formState: { errors: orderErrors }, setValue: setOrderValue } = useForm({
     resolver: zodResolver(menuOrderSchema),
-    defaultValues: { phone: '', guestCount: 4 },
+    defaultValues: { phone: '9087397440', guestCount: 4 },
     shouldUnregister: false
   });
 
@@ -48,10 +48,14 @@ export const useTableFlow = ({
   useEffect(() => {
     if (currentTableObj) {
       if (currentTableObj.guests) setOrderValue('guestCount', currentTableObj.guests);
-      if (currentTableObj.customerPhone) setOrderValue('phone', currentTableObj.customerPhone);
+      if (currentTableObj.customerPhone) {
+        setOrderValue('phone', currentTableObj.customerPhone);
+      } else {
+        setOrderValue('phone', '9087397440');
+      }
     } else {
       setOrderValue('guestCount', 4);
-      setOrderValue('phone', '');
+      setOrderValue('phone', '9087397440');
     }
   }, [currentTableObj, setOrderValue]);
 
@@ -103,7 +107,12 @@ export const useTableFlow = ({
             };
 
             setOrderValue('guestCount', activeOrder.TotalGuest || newTableObj.guests || 4);
-            setOrderValue('phone', customer.phone);
+            
+            if (!customer.phone || customer.name === 'Walk-in Customer' || !customer.name) {
+              setOrderValue('phone', '9087397440');
+            } else {
+              setOrderValue('phone', customer.phone);
+            }
 
             // Restore Items
             console.log("Active Order Items from API:", activeOrder.OrderItems);
