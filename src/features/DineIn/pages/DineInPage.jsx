@@ -19,13 +19,14 @@ import {
 } from '../store/tableSlice';
 import { cancelOrder } from '../../Menu/store/orderSlice';
 import { selectActiveKots } from '../../Menu/store/kotSlice';
-import { useGetTablesWithOrderAmountQuery, useCancelDineInOrderMutation, usePutTableStatusMutation, apiSlice } from '../../../shared/api/apiSlice';
+import { useGetTablesWithOrderAmountQuery, useCancelDineInOrderMutation, usePutTableStatusMutation, usePostOrdersModelMutation, apiSlice } from '../../../shared/api/apiSlice';
 
 export const DineInPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [cancelDineInOrder] = useCancelDineInOrderMutation();
   const [putTableStatus] = usePutTableStatusMutation();
+  const [postOrdersModel] = usePostOrdersModelMutation();
   
   const selectedTableForOrder = useAppSelector(selectSelectedTableForOrder);
   const actionTarget = useAppSelector(selectActionTarget);
@@ -61,11 +62,37 @@ export const DineInPage = () => {
   
   const totalTables = 10; // "Top Number of Table (10)" as per design
 
-  const handleStartOrderSubmit = (formData) => {
-    dispatch(startOrderForTable({ tableNo: selectedTableForOrder, formData }));
-    // Keep flow intact: Navigate to menu
-    navigate('/dashboard/menu', { state: { tableNo: selectedTableForOrder } });
-    dispatch(setSelectedTableForOrder(null));
+  const handleStartOrderSubmit = async (formData) => {
+    const selectedTableObj = tables.find(t => t.tableNo === selectedTableForOrder);
+    if (!selectedTableObj) return;
+
+    const payload = {
+      CustomerName: formData.customerName,
+      CustomerAddress: formData.customerAddress || "N/A",
+      CustomerMobile: formData.customerMobile,
+      TableId: parseInt(selectedTableObj.id, 10) || 0,
+      TableName: selectedTableForOrder,
+      Covers: parseInt(formData.covers, 10) || 0,
+      OrderSource: "D",
+      OrderType: "Dine In",
+      Status: "Placed",
+      OrderItems: []
+    };
+
+    try {
+      const response = await postOrdersModel(payload).unwrap();
+      
+      if (response?.IsSuccessful || response?.isSuccessful) {
+        // Successfully created order. Close modal.
+        dispatch(setSelectedTableForOrder(null));
+        // Redirect to menu, pass existingSession true so it pulls down the new active order
+        navigate('/dashboard/menu', { state: { tableNo: selectedTableForOrder, existingSession: true } });
+      } else {
+        alert(response?.Message || "Failed to start order");
+      }
+    } catch (error) {
+      alert(error?.data?.Message || error?.Message || "Failed to start order");
+    }
   };
 
   const handleSelectionConfirm = (oldTableNo, selectedTables) => {

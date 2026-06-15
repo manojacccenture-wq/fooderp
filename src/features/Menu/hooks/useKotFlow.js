@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppSelector } from '../../../store/hooks';
-import { assignOrderNumber, submitOrderKOT } from '../../../features/Menu/store/orderSlice';
+import { assignOrderNumber, submitOrderKOT, setCurrentOrderNumber } from '../../../features/Menu/store/orderSlice';
 import {
   apiSlice,
   useLazyGetCustomerOrderByTableIdQuery,
@@ -31,7 +31,8 @@ export const useKotFlow = ({
   sentKotItems,
   sentKotItemsLength,
   globalOrderCounter,
-  currentOrderNumber
+  currentOrderNumber,
+  refreshOrder
 }) => {
   const [kotStatus, setKotStatus] = useState('idle'); // 'idle' | 'success_anim' | 'sent' | 'kot_sent' | 'preparing' | 'ready'
   
@@ -76,6 +77,13 @@ export const useKotFlow = ({
     // We will calculate the new order number locally if it's null.
     const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
     
+    
+
+    if (sentKotItemsLength > 0 && !currentOrderNumber) {
+      alert("Please wait for the current order to sync with the server before sending more items.");
+      return;
+    }
+
     if (!currentOrderNumber) {
       dispatch(assignOrderNumber());
     }
@@ -96,22 +104,77 @@ export const useKotFlow = ({
       kotTime: kotTime
     }));
 
+    
+
+    const combinedOrderItems = [
+      ...sentKotItems,
+      ...newItems
+    ];
+    console.log("combinedOrderItems in useKotFlow:", combinedOrderItems);
+
+    
+
+    let result;
+
     try {
-      const result = await dispatch(submitOrderKOT({
-        orderItems: newItems,
+      
+      result = await dispatch(submitOrderKOT({
+        orderItems: combinedOrderItems,
         orderType,
         phone,
         selectedTable,
-        allTables
+        allTables,
+        currentOrderNumber,
+        isExistingOrder: sentKotItemsLength > 0
       })).unwrap();
+      
+    } catch (error) {
+      
+      
+      alert("Failed to send order to KOT via API. Please check connection and try again.");
+      return;
+    }
 
-      if (result?.IsSuccessful || result?.isSuccessful) {
-        dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers']));
+    try {
+      
+      const isSuccess = result?.IsSuccessful || result?.isSuccessful;
+      
+      
+      if (isSuccess) {
+        try {
+          
+          if (!isExistingOrder && result?.Data) {
+             
+             const newOrderId = typeof result.Data === 'object' ? result.Data.Id : result.Data;
+             if (newOrderId) dispatch(setCurrentOrderNumber(newOrderId));
+          }
+        } catch (e) {
+          
+          
+        }
+
+        try {
+          
+          dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers']));
+        } catch (e) {
+          
+          
+        }
+
+        try {
+          
+          if (refreshOrder) refreshOrder();
+        } catch (e) {
+          
+          
+        }
       } else {
+        
         alert("Failed to process order on the server. Please try again.");
         return;
       }
     } catch (error) {
+      
       
       alert("Failed to send order to KOT via API. Please check connection and try again.");
       return;
@@ -197,7 +260,56 @@ export const useKotFlow = ({
       }));
     }
 
-    setSentKotItems(prevSent => [...prevSent, ...newItems]);
+    try {
+      if (selectedTable) {
+        const tableObj = allTables.find(t => String(t.tableNo) === String(selectedTable));
+        const numericTableId = tableObj ? tableObj.id : selectedTable;
+        const orderResponse = await getCustomerOrder({ tableId: numericTableId, tableStatus: 'Occupied' }).unwrap();
+        if (orderResponse?.IsSuccessful && orderResponse?.Data) {
+          let activeOrder = null;
+          if (!Array.isArray(orderResponse.Data)) {
+            activeOrder = orderResponse.Data;
+          } else {
+            activeOrder = orderResponse.Data.find(x => x.Status === "Placed") || 
+                          orderResponse.Data.find(x => x.Status !== "Closed");
+            if (!activeOrder && orderResponse.Data.length > 0) {
+              activeOrder = [...orderResponse.Data].sort((a, b) => new Date(b.OrderTakenAt) - new Date(a.OrderTakenAt))[0] || orderResponse.Data[0];
+            }
+          }
+          
+          if (activeOrder && activeOrder.OrderItems) {
+            console.log("Hydrated OrderId:", activeOrder.Id);
+            console.log("Redux currentOrderNumber before:", currentOrderNumber);
+            dispatch(setCurrentOrderNumber(activeOrder.Id));
+            console.log("Redux currentOrderNumber after dispatch:", activeOrder.Id);
+
+            const hydratedItems = activeOrder.OrderItems.map(item => ({
+              id: item.Id,
+              itemNo: item.MenuItemId,
+              orderItemId: item.Id,
+              orderId: item.OrderId,
+              ticketId: item.TicketId,
+              title: item.Name,
+              quantity: item.Quantity,
+              price: item.Price,
+              status: item.Status,
+              isCancelled: item.IsCancelled === true || item.Status === "Cancelled" || item.KitchenStatus === "Cancelled"
+            }));
+            
+            setSentKotItems(hydratedItems);
+          } else {
+            setSentKotItems(prevSent => [...prevSent, ...newItems]);
+          }
+        } else {
+          setSentKotItems(prevSent => [...prevSent, ...newItems]);
+        }
+      } else {
+        setSentKotItems(prevSent => [...prevSent, ...newItems]);
+      }
+    } catch (err) {
+      setSentKotItems(prevSent => [...prevSent, ...newItems]);
+    }
+
     setDraftOrderItems([]);
 
     setKotStatus('kot_sent');

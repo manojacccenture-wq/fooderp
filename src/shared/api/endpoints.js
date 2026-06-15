@@ -16,6 +16,8 @@ export const API_ENDPOINTS = {
   },
   ORDERS: {
     POST_ORDER: '/api/Franchisee/PostOrder',
+    POST_ORDER_TAKE_AWAY: '/api/Franchisee/PostOrderTakeAway',
+    UPDATE_ORDER_ITEMS_WEB: '/api/Franchisee/UpdateOrderItemsWeb',
     CLOSE_ORDER: '/api/Franchisee/CloseOrder',
     PUT_ORDER_STATUS: '/api/Franchisee/PutOrderStatus',
     PUT_ORDER_PAYMENT_STATUS: '/api/Franchisee/PutOrderPaymentStatus',
@@ -24,5 +26,6 @@ export const API_ENDPOINTS = {
   },
   CUSTOMERS: {
     GET_CUSTOMER_NAME_LIST: '/CustomerMaster/GetCustomerNameList',
+    POST_ORDERS_MODEL: '/api/Customer/PostOrdersModel',
   }
 };

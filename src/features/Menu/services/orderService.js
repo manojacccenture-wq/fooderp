@@ -11,7 +11,8 @@ export const orderService = {
    * @param {Array} params.allTables - Array of all tables to look up TableId.
    * @returns {Promise<any>}
    */
-  submitOrder: async ({ orderItems, orderType, phone, selectedTable, allTables }) => {
+  submitOrder: async ({ orderItems, orderType, phone, selectedTable, allTables, currentOrderNumber, isExistingOrder }) => {
+
     // Determine mapping values
     const mappedOrderType = orderType === 'dine_in' ? 'Dine In' : 'Take Away';
     const mappedOrderSource = orderType === 'dine_in' ? 'D' : 'T';
@@ -44,8 +45,13 @@ export const orderService = {
         Status: "Placed",
         Unit: item.uom || "Nos",
         OrderType: mappedOrderType,
+        orderItemId: item.orderItemId,
+        ticketId: item.ticketId || item.kotRound || 1,
+        TotalPrice: total
       };
     });
+
+    console.log("mappedOrderItems in orderService:", mappedOrderItems);
 
     const payload = {
       OrderType: mappedOrderType,
@@ -74,7 +80,51 @@ export const orderService = {
       GrandTotal: grandTotal.toFixed(2),
     };
 
-    const response = await orderApi.postOrder(payload);
+    let response;
+
+    // CASE 2 - Existing Order
+
+    if (isExistingOrder && currentOrderNumber) {
+
+
+      const updatePayload = mappedOrderItems.map(item => {
+        console.log('Mapped Item:', item);
+
+        return {
+          Id: item.orderItemId || 0,
+          OrderId: currentOrderNumber,
+          MenuItemId: Number(item.MenuItemId),
+          Name: item.Name,
+          Quantity: Number(item.Quantity),
+          Price: Number(item.Price),
+          TicketId: item.ticketId || item.TicketId || 1,
+          Total: Number(item.TotalPrice || (item.Price * item.Quantity)),
+          Unit: item.Unit || "Nos",
+          OrderType: item.OrderType,
+          Status: item.Status || "Placed",
+          IsCancelled: null
+        };
+      });
+
+      console.log("updatePayload in orderService:", updatePayload);
+
+      response = await orderApi.updateOrderItems({ orderId: currentOrderNumber, payload: updatePayload });
+      return response;
+    }
+
+    // CASE 1 - New Order
+    if (mappedOrderType === 'Take Away') {
+      const { PaymentInfo, ...orderModel } = payload;
+      const takeAwayPayload = {
+        model: orderModel,
+        PaymentModel: {
+          PaymentInfo: PaymentInfo
+        }
+      };
+      response = await orderApi.postOrderTakeAway(takeAwayPayload);
+    } else {
+      response = await orderApi.postOrder(payload);
+    }
     return response;
   },
 };

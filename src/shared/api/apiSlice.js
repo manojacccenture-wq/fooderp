@@ -135,6 +135,14 @@ export const apiSlice = createApi({
         headers: { 'Content-Type': 'application/json' },
       }),
     }),
+    postOrdersModel: builder.mutation({
+      query: (payload) => ({
+        url: API_ENDPOINTS.CUSTOMERS.POST_ORDERS_MODEL,
+        method: 'POST',
+        data: payload,
+      }),
+      invalidatesTags: ['Tables', 'Customers'],
+    }),
   }),
 });
 
@@ -148,4 +156,5 @@ export const {
   usePutOrderPaymentStatusMutation,
   useCloseOrderMutation,
   useCancelOrderItemMutation,
+  usePostOrdersModelMutation,
 } = apiSlice;

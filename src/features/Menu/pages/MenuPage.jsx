@@ -127,6 +127,7 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
   });
 
   // 3. KOT Flow Hook
+  
   const {
     kotStatus, setKotStatus,
     globalOrderStatus,
@@ -152,7 +153,8 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     sentKotItems,
     sentKotItemsLength: sentKotItems.length,
     globalOrderCounter,
-    currentOrderNumber
+    currentOrderNumber,
+    refreshOrder
   });
 
   // Reset function to clear all orders

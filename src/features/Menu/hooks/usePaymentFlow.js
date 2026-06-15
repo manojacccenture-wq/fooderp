@@ -70,7 +70,7 @@ export const usePaymentFlow = ({ dispatch, selectedTable, currentTableObj, order
 
     const orderId = currentOrderNumber;
     if (!orderId) {
-      console.error("No active order found for settlement.");
+      
       alert("No active order found for settlement.");
       return;
     }
@@ -106,13 +106,13 @@ export const usePaymentFlow = ({ dispatch, selectedTable, currentTableObj, order
       paymentPayload.DueAmount = watchPayment('dueAmount') || payableAmount;
     }
 
-    console.log("Active Order", orderId);
-    console.log("Payment Payload", paymentPayload);
+    
+    
 
     try {
       // STEP 1: Update Payment Status
       const paymentResponse = await putOrderPaymentStatus({ orderId, payload: paymentPayload }).unwrap();
-      console.log("Payment Status Response", paymentResponse);
+      
       if (!paymentResponse?.IsSuccessful) {
         throw new Error("Payment Update Failed");
       }
@@ -125,7 +125,7 @@ export const usePaymentFlow = ({ dispatch, selectedTable, currentTableObj, order
       };
       
       const closeOrderResponse = await closeOrder(closeOrderPayload).unwrap();
-      console.log("Close Order Response", closeOrderResponse);
+      
       if (!closeOrderResponse?.IsSuccessful) {
         throw new Error("Close Order Failed");
       }
@@ -133,7 +133,7 @@ export const usePaymentFlow = ({ dispatch, selectedTable, currentTableObj, order
       // STEP 3: Put Table Status Empty
       const targetTableId = currentTableObj?.id || currentTableObj?.tableId || selectedTable;
       const tableStatusResponse = await putTableStatus({ tableId: targetTableId, status: "Empty" }).unwrap();
-      console.log("Put Table Status Response", tableStatusResponse);
+      
       if (!tableStatusResponse?.IsSuccessful) {
         alert("Failed to update table status to Empty. Keep billing session open.");
         return;
@@ -160,7 +160,7 @@ export const usePaymentFlow = ({ dispatch, selectedTable, currentTableObj, order
       }, 2500);
 
     } catch (err) {
-      console.error(err);
+      
       alert(err.message || "Payment settlement failed.");
     }
   };

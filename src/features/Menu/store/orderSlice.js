@@ -3,6 +3,8 @@ import { createSlice, createSelector, createAsyncThunk } from '@reduxjs/toolkit'
 export const submitOrderKOT = createAsyncThunk(
   'order/submitOrderKOT',
   async (orderParams, { rejectWithValue }) => {
+    
+    
     try {
       const { orderService } = await import('../services/orderService');
       const data = await orderService.submitOrder(orderParams);
@@ -74,6 +76,7 @@ const orderSlice = createSlice({
       state.currentOrderNumber = null;
     },
     setCurrentOrderNumber: (state, action) => {
+      
       state.currentOrderNumber = action.payload;
     },
     increaseQuantity: (state, action) => {
@@ -186,7 +189,10 @@ export const selectOrderItems = (state) => state.order.orderItems;
 export const selectHeldItems = (state) => state.order.heldItems;
 export const selectOrderType = (state) => state.order.orderType;
 export const selectKotStatus = (state) => state.order.kotStatus;
-export const selectCurrentOrderNumber = (state) => state.order.currentOrderNumber;
+export const selectCurrentOrderNumber = (state) => {
+  
+  return state.order.currentOrderNumber;
+};
 export const selectGlobalOrderCounter = (state) => state.order.globalOrderCounter;
 
 // Derived Selectors

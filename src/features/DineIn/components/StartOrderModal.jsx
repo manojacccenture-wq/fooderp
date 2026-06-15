@@ -27,7 +27,7 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(startOrderSchema),
     mode: "onSubmit",
-    defaultValues: { name: '', guests: '', reserve: '', time: '', mobile: '' }
+    defaultValues: { customerName: '', customerMobile: '', customerAddress: 'N/A', covers: 0 }
   });
 
   useEffect(() => {
@@ -68,7 +68,19 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
           >
             <BackIcon />
           </button>
-          <h2 className="text-[16px] font-bold text-[#32324d]">Book table</h2>
+          <h2 className="text-[16px] font-bold text-[#32324d]">Start Order</h2>
+        </div>
+
+        {/* Read Only Table Info */}
+        <div className="flex justify-between items-center bg-[#f8faff] rounded-[12px] p-4 mb-6 border border-[#eaeaef]">
+          <div>
+            <p className="text-[12px] text-[#8e8ea9] font-medium mb-1">Selected Table</p>
+            <p className="text-[16px] font-bold text-[#32324d]">{tableNo}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[12px] text-[#8e8ea9] font-medium mb-1">Order Type</p>
+            <p className="text-[16px] font-bold text-[#32324d]">Dine In</p>
+          </div>
         </div>
 
         {/* Form Fields */}
@@ -76,59 +88,41 @@ export const StartOrderModal = ({ isOpen, onClose, tableNo, onSubmit }) => {
           <div>
             <input 
               type="text" 
-              placeholder="Name" 
+              placeholder="Customer Name *" 
               className={inputClass}
-              {...register('name')}
+              {...register('customerName')}
             />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+            {errors.customerName && <p className="text-red-500 text-xs mt-1">{errors.customerName.message}</p>}
           </div>
           
           <div>
             <input 
-              type="text" 
-              placeholder="Guests" 
+              type="tel" 
+              placeholder="Mobile Number *" 
               className={inputClass}
-              {...register('guests')}
+              {...register('customerMobile')}
             />
-            {errors.guests && <p className="text-red-500 text-xs mt-1">{errors.guests.message}</p>}
-          </div>
-
-          <div className="relative">
-            <select 
-              className={`${inputClass} appearance-none cursor-pointer`}
-              {...register('reserve')}
-              defaultValue=""
-            >
-              <option value="" disabled hidden>Reserve</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <ChevronDownIcon />
-            </div>
-            {errors.reserve && <p className="text-red-500 text-xs mt-1 absolute -bottom-5">{errors.reserve.message}</p>}
-          </div>
-
-          <div className="relative">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <ClockIcon />
-            </div>
-            <input 
-              type="time" 
-              className={`${inputClass} pl-12 pr-4 cursor-pointer`}
-              {...register('time')}
-            />
-            {errors.time && <p className="text-red-500 text-xs mt-1 absolute -bottom-5">{errors.time.message}</p>}
+            {errors.customerMobile && <p className="text-red-500 text-xs mt-1">{errors.customerMobile.message}</p>}
           </div>
 
           <div>
             <input 
-              type="tel" 
-              placeholder="Mobile No" 
+              type="text" 
+              placeholder="Customer Address *" 
               className={inputClass}
-              {...register('mobile')}
+              {...register('customerAddress')}
             />
-            {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile.message}</p>}
+            {errors.customerAddress && <p className="text-red-500 text-xs mt-1">{errors.customerAddress.message}</p>}
+          </div>
+
+          <div>
+            <input 
+              type="number" 
+              placeholder="Number of Guests" 
+              className={inputClass}
+              {...register('covers')}
+            />
+            {errors.covers && <p className="text-red-500 text-xs mt-1">{errors.covers.message}</p>}
           </div>
         </div>
 

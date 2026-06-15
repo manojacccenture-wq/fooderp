@@ -28,7 +28,7 @@ export const useTableFlow = ({
   const [orderType, setOrderType] = useState(stateOrderType); // 'dine_in' | 'take_away'
   const [selectedTable, setSelectedTable] = useState(initialTable);
   const [rightView, setRightView] = useState('order'); // 'order' | 'checkout'
-  
+
   const [getOrder] = useLazyGetCustomerOrderByTableIdQuery();
 
   const { register: registerOrder, watch: watchOrder, handleSubmit: handleOrderSubmit, formState: { errors: orderErrors }, setValue: setOrderValue } = useForm({
@@ -67,32 +67,32 @@ export const useTableFlow = ({
 
   const refreshOrder = () => {
     const newTableObj = allTablesRef.current.find(t => t.tableNo === selectedTable);
-    
+
     if (newTableObj && (newTableObj.status === 'Occupied' || newTableObj.status === 'Billing')) {
       // 1. BACKEND RESTORE FLOW
-      
-      
-      
-      
-      
+
+
+
+
+
       getOrder({ tableId: newTableObj.id || newTableObj.tableId, tableStatus: newTableObj.status })
         .unwrap()
         .then(response => {
-          
-          
-          
+
+
+
           let activeOrder = null;
           if (response?.Data && Array.isArray(response.Data)) {
             // Priority: Status === "Placed" Else Status !== "Closed" Else Latest OrderTakenAt Else First item
-            activeOrder = response.Data.find(x => x.Status === "Placed") || 
-                          response.Data.find(x => x.Status !== "Closed");
-            
+            activeOrder = response.Data.find(x => x.Status === "Placed") ||
+              response.Data.find(x => x.Status !== "Closed");
+
             if (!activeOrder && response.Data.length > 0) {
               activeOrder = [...response.Data].sort((a, b) => new Date(b.OrderTakenAt) - new Date(a.OrderTakenAt))[0] || response.Data[0];
             }
           }
 
-          
+
 
           if (activeOrder) {
             // Restore Customer
@@ -101,48 +101,60 @@ export const useTableFlow = ({
               phone: activeOrder.CustomerMobile || '',
               address: activeOrder.CustomerAddress || ''
             };
-            
+
             setOrderValue('guestCount', activeOrder.TotalGuest || newTableObj.guests || 4);
             setOrderValue('phone', customer.phone);
 
             // Restore Items
+            console.log("Active Order Items from API:", activeOrder.OrderItems);
+
             const orderItems = (activeOrder.OrderItems || [])
-              .filter(item => 
-                item.IsCancelled !== true && 
-                item.Status !== "Cancelled" && 
-                item.KitchenStatus !== "Cancelled"
-              )
-              .map(item => ({
-                id: item.MenuItemId,
-                orderItemId: item.Id,
-                title: item.Name,
-                quantity: item.Quantity,
-                price: item.Price,
-                status: item.Status
-              }));
-            
+              .map(item => {
+                console.log("Processing Item:", item);
+
+                return {
+                  Id: item.Id,
+                  itemNo: item.MenuItemId,
+                  orderItemId: item.Id,
+                  orderId: item.OrderId,
+                  ticketId: item.TicketId,
+                  title: item.Name,
+                  quantity: item.Quantity,
+                  price: item.Price,
+                  status: item.Status,
+                  isCancelled:
+                    item.IsCancelled === true ||
+                    item.Status === "Cancelled" ||
+                    item.KitchenStatus === "Cancelled"
+                };
+              });
+
+            console.log("Mapped Order Items:", orderItems);
+
+
 
             // Restore Workflow Status
-            
-            
+
+
             setSentKotItems(orderItems);
             setDraftOrderItems([]); // Do not create Draft status
             setHeldItems([]);
-            
+
             const activeStatus = activeOrder.Status ? activeOrder.Status.toLowerCase() : 'placed';
             const orderStatusStr = activeOrder.OrderStatus ? activeOrder.OrderStatus.toLowerCase() : '';
             setKotStatus(activeStatus);
+
             dispatch(setCurrentOrderNumber(activeOrder.Id));
-            
+
             let targetScreen = 'order';
             if (activeStatus === 'billing' || orderStatusStr === 'billing' || activeStatus === 'completed' || orderStatusStr === 'completed') {
               targetScreen = 'checkout';
             }
 
-            
-            
-            
-            
+
+
+
+
             setRightView(targetScreen);
           } else {
             // Fallback if no order found despite table being occupied
@@ -150,7 +162,7 @@ export const useTableFlow = ({
           }
         })
         .catch(err => {
-          
+
           setRightView('order');
         });
 
@@ -158,11 +170,11 @@ export const useTableFlow = ({
       // 2. EXISTING DRAFT / LOCAL RESTORE FLOW (For Empty tables)
       const { draftOrderItems: savedDraft = [], sentKotItems: savedSent = [], heldItems: savedHeld = [], kotStatus: savedKot = 'idle', rightView: savedRightView = 'order' } = newTableObj.orderData;
       const oldOrderItems = newTableObj.orderData.orderItems || [];
-      
+
       const currentDraftLength = currentOrderDataRef.current.draftOrderItems.length;
       const currentSentLength = currentOrderDataRef.current.sentKotItems.length;
       const currentHeldLength = currentOrderDataRef.current.heldItems.length;
-      
+
       if (savedDraft.length > 0 || savedSent.length > 0 || oldOrderItems.length > 0 || savedHeld.length > 0) {
         setDraftOrderItems(prev => prev.length === 0 && currentSentLength === 0 ? (savedDraft.length ? savedDraft : oldOrderItems) : prev);
         setSentKotItems(prev => prev.length === 0 && currentDraftLength === 0 ? savedSent : prev);
@@ -185,7 +197,7 @@ export const useTableFlow = ({
       if (tableToSave) {
         const existingTable = allTablesRef.current.find(t => t.tableNo === tableToSave);
         const existingOrder = existingTable?.orderData || {};
-        
+
         dispatch(updateTableOrder({
           tableNo: tableToSave,
           orderData: {

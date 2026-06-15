@@ -29,7 +29,7 @@ export const CurrentOrders = ({
     <div className="px-4 mt-4 flex flex-col gap-4">
       {(() => {
         const sentKotRounds = sentKotItems.reduce((acc, item) => {
-          const round = item.kotRound || 1;
+          const round = item.ticketId || item.kotRound || 1;
           if (!acc[round]) {
             acc[round] = { round, time: item.kotTime, items: [] };
           }
@@ -54,7 +54,7 @@ export const CurrentOrders = ({
                 <span className="text-[12px] font-semibold text-[#8e8ea9]">{roundObj.time || 'Pending'}</span>
               </div>
               <div className="p-3 flex flex-col gap-3">
-                {roundObj.items.map((item) => {
+                {roundObj.items.filter(i => !i.isCancelled).map((item) => {
                   const isParcelActive = activeKots.some(k => k.type === 'take_away' && k.items.some(i => i.id === item.id));
                   return (
                     <OrderItem
@@ -78,6 +78,33 @@ export const CurrentOrders = ({
                     />
                   );
                 })}
+
+                {roundObj.items.some(i => i.isCancelled) && (
+                  <>
+                    {roundObj.items.filter(i => !i.isCancelled).length > 0 && <div className="h-px bg-[#eaeaef] my-1" />}
+                    <div className="flex flex-col gap-2 mt-1">
+                      {roundObj.items.filter(i => i.isCancelled).map((item) => (
+                        <div key={`sent-canc-${item.id}`} className="bg-[#ffeaea] border border-[#ffb3b3] rounded-[12px] p-2 flex gap-2.5 items-center shadow-sm opacity-60">
+                          <div className="w-[42px] h-[42px] shrink-0">
+                            <img src={item.image || '/placeholder-food.png'} alt={item.title} className="w-full h-full object-cover rounded-[6px] grayscale opacity-70" />
+                          </div>
+                          <div className="flex-1 flex flex-col gap-0.5">
+                            <div className="flex justify-between items-start gap-2">
+                              <h3 className="text-[13px] font-bold text-[#32324d] leading-tight line-through">{item.title}</h3>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">Cancelled</span>
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <div className="text-[14px] font-bold text-[#666687] line-through">₹{item.price} x {item.quantity}</div>
+                              <div className="text-[14px] font-black text-[#32324d] line-through">₹{(item.price * item.quantity).toFixed(2)}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           );
