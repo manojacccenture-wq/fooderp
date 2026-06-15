@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { selectAllTables } from '../../DineIn/store/tableSlice';
-import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber } from '../store/orderSlice';
+import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber, setCurrentOrderNumber } from '../store/orderSlice';
 import { fetchMenuData, resetMenuStatus } from '../store/productSlice';
 import { createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
 import { useGetTablesWithOrderAmountQuery, useGetCustomerNameListQuery, useCancelOrderItemMutation } from '../../../shared/api/apiSlice';
@@ -156,6 +156,34 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     currentOrderNumber,
     refreshOrder
   });
+
+  // Takeaway Edit Hydration
+  useEffect(() => {
+    const editOrder = location.state?.editOrder;
+    if (editOrder && !isDineInFlow) {
+      dispatch(setCurrentOrderNumber(editOrder.Id));
+      
+      const restoredItems = (editOrder.OrderItems || []).map(item => ({
+        Id: item.Id,
+        itemNo: item.MenuItemId,
+        orderItemId: item.Id,
+        orderId: item.OrderId,
+        ticketId: item.TicketId,
+        title: item.Name,
+        quantity: item.Quantity,
+        price: item.Price,
+        status: item.Status,
+        isCancelled: item.IsCancelled === true || item.Status === "Cancelled" || item.KitchenStatus === "Cancelled"
+      }));
+      
+      setSentKotItems(restoredItems);
+      
+      // Clear state so it doesn't run again on reload
+      const stateCopy = { ...location.state };
+      delete stateCopy.editOrder;
+      window.history.replaceState(stateCopy, document.title);
+    }
+  }, [location.state, dispatch, isDineInFlow, setSentKotItems]);
 
   // Reset function to clear all orders
   const resetOrders = () => {

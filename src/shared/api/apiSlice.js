@@ -88,6 +88,13 @@ export const apiSlice = createApi({
       }),
       providesTags: ['Order'],
     }),
+    getCurrentTakeAwayOrders: builder.query({
+      query: () => ({
+        url: API_ENDPOINTS.DINE_IN.GET_CURRENT_TAKE_AWAY_ORDERS,
+        method: 'GET',
+      }),
+      providesTags: ['Order'],
+    }),
     putOrderStatus: builder.mutation({
       query: ({ orderId, payload }) => ({
         url: `${API_ENDPOINTS.ORDERS.PUT_ORDER_STATUS}/${orderId}`,
@@ -150,6 +157,7 @@ export const {
   useGetTablesWithOrderAmountQuery,
   useGetCustomerNameListQuery,
   useLazyGetCustomerOrderByTableIdQuery,
+  useGetCurrentTakeAwayOrdersQuery,
   usePutOrderStatusMutation,
   usePutTableStatusMutation,
   useCancelDineInOrderMutation,

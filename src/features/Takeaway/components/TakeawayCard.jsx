@@ -22,7 +22,7 @@ export const TakeawayCard = ({ takeaway, isSelected, onClick }) => {
         <div className="flex flex-col">
           <span className="text-[10px] font-bold text-[#8e8ea9] uppercase tracking-wider">Token</span>
           <span className="text-[20px] font-black text-[#32324d] leading-none mt-[2px]">
-            #{String(takeaway.tokenNumber).padStart(3, '0')}
+            #{takeaway.tokenNumber }
           </span>
         </div>
         <div className={clsx("px-2 py-[2px] rounded-full text-[10px] font-bold border", currentStyle)}>
@@ -37,11 +37,21 @@ export const TakeawayCard = ({ takeaway, isSelected, onClick }) => {
         </div>
         <div className="flex justify-between items-center text-[12px]">
           <span className="text-[#8e8ea9]">Customer:</span>
-          <span className="font-bold text-[#32324d] truncate max-w-[90px] text-right">{takeaway.customerInfo?.phone || 'Walk-in'}</span>
+          <span className="font-bold text-[#32324d] truncate max-w-[120px] text-right" title={`${takeaway.customerInfo?.name || 'Walk-in'} - ${takeaway.customerInfo?.phone || ''}`}>
+            {takeaway.customerInfo?.name && takeaway.customerInfo?.name !== 'Walk-in Customer' ? takeaway.customerInfo.name : takeaway.customerInfo?.phone || 'Walk-in'}
+          </span>
         </div>
         <div className="flex justify-between items-center text-[12px]">
           <span className="text-[#8e8ea9]">Time:</span>
           <span className="font-bold text-[#32324d]">{takeaway.time}</span>
+        </div>
+        <div className="flex justify-between items-center text-[12px]">
+          <span className="text-[#8e8ea9]">Kitchen:</span>
+          <span className="font-bold text-[#32324d]">{takeaway.kitchenStatus || 'N/A'}</span>
+        </div>
+        <div className="flex justify-between items-center text-[12px]">
+          <span className="text-[#8e8ea9]">Bill:</span>
+          <span className="font-bold text-[#24a44b]">₹{takeaway.totalBill || 0}</span>
         </div>
         {takeaway.status === 'Completed' && takeaway.completedAt && (
           <div className="flex justify-between items-center text-[12px] mt-1 pt-1 border-t border-[#eaeaef]">

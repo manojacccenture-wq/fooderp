@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
   },
   DINE_IN: {
     GET_CUSTOMER_ORDER_BY_TABLE_ID: '/api/DineIn/GetCustomerOrderByTableId',
+    GET_CURRENT_TAKE_AWAY_ORDERS: '/api/DineIn/GetCurrentTakeAwayOrders',
   },
   TABLES: {
     GET_TABLES: '/api/Table/GetTables',
@@ -16,7 +17,6 @@ export const API_ENDPOINTS = {
   },
   ORDERS: {
     POST_ORDER: '/api/Franchisee/PostOrder',
-    POST_ORDER_TAKE_AWAY: '/api/Franchisee/PostOrderTakeAway',
     UPDATE_ORDER_ITEMS_WEB: '/api/Franchisee/UpdateOrderItemsWeb',
     CLOSE_ORDER: '/api/Franchisee/CloseOrder',
     PUT_ORDER_STATUS: '/api/Franchisee/PutOrderStatus',

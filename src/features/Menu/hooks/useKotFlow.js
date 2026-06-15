@@ -154,8 +154,8 @@ export const useKotFlow = ({
         }
 
         try {
-          
-          dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers']));
+          // IMPORTANT: Also invalidate 'Order' so that GetCurrentTakeAwayOrders automatically refetches
+          dispatch(apiSlice.util.invalidateTags(['Tables', 'Customers', 'Order']));
         } catch (e) {
           
           

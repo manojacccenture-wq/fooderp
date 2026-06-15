@@ -63,6 +63,7 @@ export const orderService = {
       TableName: selectedTable || "",
       Status: "Placed",
       FranchiseeId: "", // Not available in current Auth flow
+      KitchenNote: "",
       OrderItems: mappedOrderItems,
       PaymentInfo: {
         PaymentStatus: "Paid",
@@ -113,18 +114,7 @@ export const orderService = {
     }
 
     // CASE 1 - New Order
-    if (mappedOrderType === 'Take Away') {
-      const { PaymentInfo, ...orderModel } = payload;
-      const takeAwayPayload = {
-        model: orderModel,
-        PaymentModel: {
-          PaymentInfo: PaymentInfo
-        }
-      };
-      response = await orderApi.postOrderTakeAway(takeAwayPayload);
-    } else {
-      response = await orderApi.postOrder(payload);
-    }
+    response = await orderApi.postOrder(payload);
     return response;
   },
 };

@@ -12,15 +12,6 @@ export const orderApi = {
     return response.data;
   },
   /**
-   * Submits a Take Away order (KOT) to the backend API.
-   * @param {Object} payload The order payload.
-   * @returns {Promise<any>}
-   */
-  postOrderTakeAway: async (payload) => {
-    const response = await axiosClient.post(API_ENDPOINTS.ORDERS.POST_ORDER_TAKE_AWAY, payload);
-    return response.data;
-  },
-  /**
    * Updates an existing order with new items.
    * @param {Object} params
    * @param {string|number} params.orderId

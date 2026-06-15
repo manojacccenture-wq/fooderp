@@ -1,25 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../../store/hooks';
-import { selectActiveTakeaways, selectCompletedTakeaways, updateTakeawayStatus, completeTakeaway } from '../store/takeawaySlice';
-import { selectActiveKots, removeKots } from '../../Menu/store/kotSlice';
-import { addCompletedOrder } from '../../Orders/store/orderHistorySlice';
+import { useGetCurrentTakeAwayOrdersQuery } from '../../../shared/api/apiSlice';
 import { TakeawayCard } from '../components/TakeawayCard';
 import { TakeawaySidebar } from '../components/TakeawaySidebar';
 
 export const TakeawayPage = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const activeTakeaways = useAppSelector(selectActiveTakeaways);
-  const completedTakeaways = useAppSelector(selectCompletedTakeaways);
-  const activeKots = useAppSelector(selectActiveKots);
   
+  const { data: response, isLoading } = useGetCurrentTakeAwayOrdersQuery(undefined, { pollingInterval: 10000 });
+
+  const apiTakeaways = (response?.Data || []).map(order => ({
+      id: order.Id,
+      tokenNumber: order.TokenNo,
+      orderNumber: order.Id,
+      customerInfo: { phone: order.CustomerMobile, name: order.CustomerName },
+      status: order.Status,
+      kitchenStatus: order.KitchenStatus,
+      totalBill: order.TotalBill,
+      time: order.OrderTakenAt || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      source: 'take_away',
+      rawOrder: order,
+      items: (order.OrderItems || []).map(item => ({
+         id: item.Id,
+         title: item.Name,
+         price: item.Price,
+         quantity: item.Quantity,
+         fulfillment: { take_away: item.Quantity }
+      }))
+  }));
+
+  const activeTakeaways = apiTakeaways.filter(t => t.status !== 'Completed' && t.status !== 'Closed');
+  const completedTakeaways = apiTakeaways.filter(t => t.status === 'Completed' || t.status === 'Closed');
+
   const [selectedTakeawayId, setSelectedTakeawayId] = useState(null);
   const [filter, setFilter] = useState('Active'); // 'Active' | 'Completed' | 'All'
 
   const displayedTakeaways = filter === 'Active' ? activeTakeaways
     : filter === 'Completed' ? completedTakeaways
-    : [...activeTakeaways, ...completedTakeaways].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    : [...activeTakeaways, ...completedTakeaways].sort((a, b) => b.id - a.id);
 
   // Auto-select first token if none is selected
   useEffect(() => {
@@ -29,86 +47,14 @@ export const TakeawayPage = () => {
   }, [selectedTakeawayId, displayedTakeaways]);
 
   const selectedTakeaway = displayedTakeaways.find(t => t.id === selectedTakeawayId);
-  const relatedKots = selectedTakeaway 
-    ? activeKots.filter(k => k.orderNumber === selectedTakeaway.orderNumber && k.type === 'take_away' && k.tokenNumber === selectedTakeaway.tokenNumber)
-    : [];
-
-  const handleStatusChange = (tokenNumber, newStatus) => {
-    dispatch(updateTakeawayStatus({ tokenNumber, status: newStatus }));
-  };
-
-  const handleHandover = (tokenNumber) => {
-    // Extract items to store in completed batch
-    const currentActiveItems = relatedKots.flatMap(k => k.items);
-    const currentKotIds = relatedKots.map(k => k.id);
-    
-    dispatch(completeTakeaway({ tokenNumber, items: currentActiveItems }));
-    
-    // Dispatch to Order History only if it's a pure takeaway
-    // Dine-in parcels are already captured during billing
-    if (selectedTakeaway && selectedTakeaway.source === 'take_away') {
-      const nowTimeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase();
-      const timeline = [];
-      
-      const firstKotTime = relatedKots.length > 0 ? new Date(relatedKots[0].createdAt) : new Date(selectedTakeaway.createdAt);
-      timeline.push({ time: firstKotTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(), event: 'Order Created' });
-      
-      relatedKots.forEach((kot, idx) => {
-        timeline.push({ time: new Date(kot.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(), event: `KOT Round ${idx + 1} Sent` });
-      });
-      
-      timeline.push({ time: nowTimeStr, event: 'Payment Completed' });
-      timeline.push({ time: nowTimeStr, event: 'Order Completed' });
-      timeline.push({ time: nowTimeStr, event: 'Handed Over' });
-
-      dispatch(addCompletedOrder({
-        id: selectedTakeaway.orderNumber,
-        kotNumber: `KOT-${selectedTakeaway.orderNumber}`,
-        tableNumber: selectedTakeaway.tableReference,
-        customerName: selectedTakeaway.customerInfo?.phone || 'Walk-in Customer',
-        type: 'Takeaway',
-        items: currentActiveItems.length ? currentActiveItems : selectedTakeaway.items,
-        subtotal: selectedTakeaway.financials?.subtotal || 0,
-        tax: selectedTakeaway.financials?.tax || 0,
-        discount: selectedTakeaway.financials?.discount || 0,
-        finalAmount: selectedTakeaway.financials?.finalAmount || 0,
-        paymentMode: selectedTakeaway.financials?.paymentMode || 'Cash',
-        cashier: 'Cashier',
-        shift: 'Morning',
-        orderStartTime: selectedTakeaway.createdAt || new Date().toISOString(),
-        duration: '30 min',
-        kots: relatedKots,
-        timeline,
-        paymentDetails: {
-          customerPaidAmount: selectedTakeaway.financials?.finalAmount || 0,
-          dueGivenAmount: 0,
-          changeReturned: 0,
-        },
-        takeawayAudit: {
-          tokenNumber: selectedTakeaway.tokenNumber,
-          status: 'Handed Over',
-          packedTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }).toLowerCase(),
-          handedOverTime: nowTimeStr
-        }
-      }));
-    }
-    
-    if (currentKotIds.length > 0) {
-      dispatch(removeKots(currentKotIds));
-    }
-    
-    if (selectedTakeaway && selectedTakeaway.tokenNumber === tokenNumber) {
-      setSelectedTakeawayId(null);
-    }
-  };
 
   const handleOpenMenu = () => {
     if (!selectedTakeaway) return;
     
     if (selectedTakeaway.source === 'dine_in' && selectedTakeaway.tableReference) {
-      navigate('/dashboard/menu', { state: { tableNo: selectedTakeaway.tableReference, orderType: 'dine_in' } });
+      navigate('/dashboard/menu', { state: { tableNo: selectedTakeaway.tableReference, orderType: 'dine_in', editOrder: selectedTakeaway.rawOrder } });
     } else {
-      navigate('/dashboard/menu', { state: { orderType: 'take_away' } });
+      navigate('/dashboard/menu', { state: { orderType: 'take_away', editOrder: selectedTakeaway.rawOrder } });
     }
   };
 
@@ -174,10 +120,7 @@ export const TakeawayPage = () => {
         {selectedTakeaway ? (
           <TakeawaySidebar
             takeaway={selectedTakeaway}
-            relatedKots={relatedKots}
             onClose={() => setSelectedTakeawayId(null)}
-            onStatusChange={handleStatusChange}
-            onHandover={() => handleHandover(selectedTakeaway.tokenNumber)}
             onOpenMenu={handleOpenMenu}
           />
         ) : (
