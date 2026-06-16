@@ -51,7 +51,7 @@ export const orderService = {
       };
     });
 
-    console.log("mappedOrderItems in orderService:", mappedOrderItems);
+    
 
     const payload = {
       OrderType: mappedOrderType,
@@ -89,7 +89,7 @@ export const orderService = {
 
 
       const updatePayload = mappedOrderItems.map(item => {
-        console.log('Mapped Item:', item);
+        
 
         return {
           Id: item.orderItemId || 0,
@@ -107,7 +107,7 @@ export const orderService = {
         };
       });
 
-      console.log("updatePayload in orderService:", updatePayload);
+      
 
       response = await orderApi.updateOrderItems({ orderId: currentOrderNumber, payload: updatePayload });
       return response;

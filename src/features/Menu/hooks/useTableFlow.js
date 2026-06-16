@@ -115,11 +115,11 @@ export const useTableFlow = ({
             }
 
             // Restore Items
-            console.log("Active Order Items from API:", activeOrder.OrderItems);
+            
 
             const orderItems = (activeOrder.OrderItems || [])
               .map(item => {
-                console.log("Processing Item:", item);
+                
 
                 return {
                   Id: item.Id,
@@ -138,7 +138,7 @@ export const useTableFlow = ({
                 };
               });
 
-            console.log("Mapped Order Items:", orderItems);
+            
 
 
 

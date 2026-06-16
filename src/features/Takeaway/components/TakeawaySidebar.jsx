@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 export const TakeawaySidebar = ({ takeaway, onClose, onOpenMenu }) => {
-  console.log('takeaway: ', takeaway)
+  
   const allItems = takeaway.items || [];
 
   return (

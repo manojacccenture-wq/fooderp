@@ -10,7 +10,6 @@ import {
 import { startOrderForTable, selectAllTables } from '../../DineIn/store/tableSlice';
 import { getCurrentOrderStatus } from '../../../shared/utils/orderStatus';
 import { generateKOT, updateKotStatus, selectActiveKots } from '../../../features/Menu/store/kotSlice';
-import { generateToken, selectActiveTakeaways, selectCompletedTakeaways, selectDailyTokenCounter, createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
 
 export const useKotFlow = ({
   draftOrderItems,
@@ -40,10 +39,6 @@ export const useKotFlow = ({
   const [putOrderStatus] = usePutOrderStatusMutation();
   const [putTableStatus] = usePutTableStatusMutation();
 
-  const activeTakeaways = useAppSelector(selectActiveTakeaways);
-  const completedTakeaways = useAppSelector(selectCompletedTakeaways);
-  const dailyTokenCounter = useAppSelector(selectDailyTokenCounter);
-  const lastTokenDate = useAppSelector(state => state.takeaway.lastTokenDate);
   const activeKots = useAppSelector(selectActiveKots);
   const allTables = useAppSelector(selectAllTables);
 
@@ -110,7 +105,7 @@ export const useKotFlow = ({
       ...sentKotItems,
       ...newItems
     ];
-    console.log("combinedOrderItems in useKotFlow:", combinedOrderItems);
+    
 
     
 
@@ -184,44 +179,6 @@ export const useKotFlow = ({
     const dineInItems = newItems.filter(item => (item.fulfillment?.dine_in || 0) > 0);
     const takeAwayItems = newItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
     
-    let assignedToken = null;
-
-    if (takeAwayItems.length > 0 || orderType === 'take_away') {
-      const allTakeaways = [...activeTakeaways, ...completedTakeaways];
-      const existingToken = allTakeaways.find(t => 
-        t.orderNumber === effectiveOrderNumber && 
-        (selectedTable ? t.tableReference === selectedTable : true)
-      );
-
-      if (existingToken) {
-        assignedToken = existingToken.tokenNumber;
-        
-        // Ensure there's an active batch for this token. If not, create one.
-        const isActive = activeTakeaways.some(t => t.tokenNumber === assignedToken);
-        if (!isActive) {
-          dispatch(generateToken({
-            orderNumber: effectiveOrderNumber,
-            source: orderType,
-            tableReference: selectedTable,
-            customerInfo: phone ? { phone } : null,
-            status: 'Preparing',
-            tokenNumber: assignedToken
-          }));
-        }
-      } else {
-        const today = new Date().toDateString();
-        assignedToken = lastTokenDate === today ? dailyTokenCounter + 1 : 1;
-        
-        dispatch(generateToken({
-          orderNumber: effectiveOrderNumber,
-          source: orderType,
-          tableReference: selectedTable,
-          customerInfo: phone ? { phone } : null,
-          status: 'Preparing'
-        }));
-      }
-    }
-
     const dineInKotId = `KOT-${Date.now()}-D`;
     const takeAwayKotId = `KOT-${Date.now()}-T`;
 
@@ -242,21 +199,7 @@ export const useKotFlow = ({
         type: 'take_away',
         items: takeAwayItems,
         tableReference: selectedTable,
-        tokenNumber: assignedToken
-      }));
-      
-      dispatch(createTakeawayEntry({
-        orderNumber: effectiveOrderNumber,
-        source: orderType,
-        tableReference: selectedTable,
-        customerInfo: phone ? { phone } : null,
-        status: 'Preparing',
-        tokenNumber: assignedToken,
-        items: takeAwayItems.map(item => ({
-          ...item,
-          quantity: item.fulfillment.take_away,
-          fulfillment: { dine_in: 0, take_away: item.fulfillment.take_away }
-        }))
+        tokenNumber: null
       }));
     }
 
@@ -278,10 +221,10 @@ export const useKotFlow = ({
           }
           
           if (activeOrder && activeOrder.OrderItems) {
-            console.log("Hydrated OrderId:", activeOrder.Id);
-            console.log("Redux currentOrderNumber before:", currentOrderNumber);
+            
+            
             dispatch(setCurrentOrderNumber(activeOrder.Id));
-            console.log("Redux currentOrderNumber after dispatch:", activeOrder.Id);
+            
 
             const hydratedItems = activeOrder.OrderItems.map(item => ({
               id: item.Id,
@@ -435,41 +378,6 @@ export const useKotFlow = ({
     const dineInItems = !isTakeaway ? [{...newItem, fulfillment: {dine_in: newItem.quantity, take_away: 0}}] : [];
     const takeAwayItems = isTakeaway ? [{...newItem, fulfillment: {dine_in: 0, take_away: newItem.quantity}}] : [];
 
-    let assignedToken = null;
-
-    if (takeAwayItems.length > 0 || orderType === 'take_away') {
-      const allTakeaways = [...activeTakeaways, ...completedTakeaways];
-      const existingToken = allTakeaways.find(t => 
-        t.orderNumber === effectiveOrderNumber && 
-        (selectedTable ? t.tableReference === selectedTable : true)
-      );
-
-      if (existingToken) {
-        assignedToken = existingToken.tokenNumber;
-        const isActive = activeTakeaways.some(t => t.tokenNumber === assignedToken);
-        if (!isActive) {
-          dispatch(generateToken({
-            orderNumber: effectiveOrderNumber,
-            source: orderType,
-            tableReference: selectedTable,
-            customerInfo: phone ? { phone } : null,
-            status: 'Preparing',
-            tokenNumber: assignedToken
-          }));
-        }
-      } else {
-        const today = new Date().toDateString();
-        assignedToken = lastTokenDate === today ? dailyTokenCounter + 1 : 1;
-        dispatch(generateToken({
-          orderNumber: effectiveOrderNumber,
-          source: orderType,
-          tableReference: selectedTable,
-          customerInfo: phone ? { phone } : null,
-          status: 'Preparing'
-        }));
-      }
-    }
-
     const dineInKotId = `KOT-${Date.now()}-D`;
     const takeAwayKotId = `KOT-${Date.now()}-T`;
 
@@ -490,21 +398,7 @@ export const useKotFlow = ({
         type: 'take_away',
         items: takeAwayItems,
         tableReference: selectedTable,
-        tokenNumber: assignedToken
-      }));
-      
-      dispatch(createTakeawayEntry({
-        orderNumber: effectiveOrderNumber,
-        source: orderType,
-        tableReference: selectedTable,
-        customerInfo: phone ? { phone } : null,
-        status: 'Preparing',
-        tokenNumber: assignedToken,
-        items: takeAwayItems.map(item => ({
-          ...item,
-          quantity: item.fulfillment.take_away,
-          fulfillment: { dine_in: 0, take_away: item.fulfillment.take_away }
-        }))
+        tokenNumber: null
       }));
     }
 

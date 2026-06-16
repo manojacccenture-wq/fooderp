@@ -5,7 +5,6 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { selectAllTables } from '../../DineIn/store/tableSlice';
 import { selectGlobalOrderCounter, selectCurrentOrderNumber, clearOrderNumber, setCurrentOrderNumber } from '../store/orderSlice';
 import { fetchMenuData, resetMenuStatus } from '../store/productSlice';
-import { createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
 import { useGetTablesWithOrderAmountQuery, useGetCustomerNameListQuery, useCancelOrderItemMutation } from '../../../shared/api/apiSlice';
 
 // Components
@@ -273,23 +272,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     const parcelItems = sentKotItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
     
     if (parcelItems.length > 0) {
-      const takeAwayItemsToPass = parcelItems.map(item => ({
-        ...item,
-        quantity: item.fulfillment.take_away,
-        fulfillment: { dine_in: 0, take_away: item.fulfillment.take_away }
-      }));
-      
-      const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
-
-      dispatch(createTakeawayEntry({
-        orderNumber: effectiveOrderNumber,
-        source: 'dine_in',
-        tableReference: selectedTable,
-        customerInfo: phone ? { phone } : null,
-        status: 'Preparing',
-        items: takeAwayItemsToPass
-      }));
-
       // Cleanup local sentKotItems (remove items entirely moved to takeaway)
       setSentKotItems(prev => prev.filter(item => {
         if ((item.fulfillment?.take_away || 0) > 0) {
@@ -308,29 +290,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
     if (orderType === 'take_away') {
       if (draftOrderItems && draftOrderItems.length > 0 && handleSendKOT) {
         handleSendKOT();
-      }
-
-      const allItems = combinedItems || [];
-      const parcelItems = allItems.filter(item => (item.fulfillment?.take_away || 0) > 0);
-      
-      if (parcelItems.length > 0 || orderType === 'take_away') {
-        const takeAwayItemsToPass = orderType === 'take_away'
-          ? allItems
-          : parcelItems.map(item => ({
-              ...item,
-              quantity: item.fulfillment?.take_away || item.quantity
-            }));
-
-        const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
-
-        dispatch(createTakeawayEntry({
-          orderNumber: effectiveOrderNumber,
-          source: orderType,
-          tableReference: selectedTable,
-          customerInfo: phone ? { phone } : null,
-          status: 'Preparing',
-          items: takeAwayItemsToPass
-        }));
       }
 
       setTimeout(() => {
@@ -650,28 +609,6 @@ export const MenuPage = ({ initialOrderType = 'dine_in' }) => {
         item={selectedItemForAction}
         onConfirm={({ item, serveQty, packQty }) => {
           handleConfirmSplitPack({ item, serveQty, packQty });
-          
-          const isSentKotItem = sentKotItems.some(i => i.id === item.id);
-          if (isSentKotItem) {
-             const oldPackQty = sentKotItems.find(i => i.id === item.id)?.fulfillment?.take_away || 0;
-             const deltaPack = packQty - oldPackQty;
-             
-             if (deltaPack !== 0) {
-                const effectiveOrderNumber = currentOrderNumber || (globalOrderCounter + 1);
-                dispatch(createTakeawayEntry({
-                  orderNumber: effectiveOrderNumber,
-                  source: 'dine_in',
-                  tableReference: selectedTable,
-                  customerInfo: phone ? { phone } : null,
-                  status: 'Preparing',
-                  items: [{
-                    ...item,
-                    quantity: deltaPack,
-                    fulfillment: { dine_in: 0, take_away: deltaPack }
-                  }]
-                }));
-             }
-          }
         }}
       />
       <ApplyDiscountModal

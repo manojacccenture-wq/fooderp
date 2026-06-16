@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { paymentCheckoutSchema } from '../../../validations/payment.validation';
 import { completeTableOrder } from '../../DineIn/store/tableSlice';
 import { clearOrderNumber } from '../../../features/Menu/store/orderSlice';
-import { createTakeawayEntry } from '../../Takeaway/store/takeawaySlice';
 import { addTransaction } from '../../Cashier/store/moneyManagementSlice';
 import { addCompletedOrder } from '../../Orders/store/orderHistorySlice';
 import { useSelector } from 'react-redux';
